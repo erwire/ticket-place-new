@@ -1,0 +1,13 @@
+[userinfo]
+  login = "admin@domain.not"
+  password = "Super_Admin"
+  auth = true
+  authorized = 2023-01-18T18:22:10.1219634+03:00
+  session = true
+  activated = 1987-07-05T05:45:00Z
+
+[driverinfo]
+  path = "Стандартный"
+  com = "3"
+  time = "5"
+  baseurl = "https://ticket-place.ru"
