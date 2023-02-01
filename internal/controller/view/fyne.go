@@ -18,7 +18,7 @@ type Flags struct {
 
 type FyneApp struct {
 	//приложение
-	service     services.Service
+	service     *services.Service
 	application fyne.App
 	//! главное окно
 	mainWindow fyne.Window
@@ -84,10 +84,10 @@ type FyneApp struct {
 	flag Flags
 }
 
-func NewFyneApp(a fyne.App, service ...services.Service) *FyneApp {
+func NewFyneApp(a fyne.App, service *services.Service) *FyneApp {
 	return &FyneApp{
 		application: a,
-		//service:     service,
+		service:     service,
 	}
 }
 
@@ -344,4 +344,8 @@ func (f *FyneApp) ShowWarning(err string) {
 	f.Warning.WarningText.Text = err
 	f.Warning.WarningText.Refresh()
 	f.Warning.WarningWindow.Show()
+}
+
+func (f *FyneApp) Listen() {
+	f.service.Listener.Listen()
 }

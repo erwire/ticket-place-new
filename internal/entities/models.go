@@ -54,7 +54,7 @@ type Click struct {
 	} `json:"data"`
 }
 
-type RefaundCheck struct {
+type Refound struct {
 	Data struct {
 		Id            int    `json:"id"`
 		DateTime      string `json:"date_time"`
@@ -348,7 +348,7 @@ type RefaundCheck struct {
 	} `json:"data"`
 }
 
-type Recepeit struct {
+type Sell struct {
 	Data struct {
 		Id       int         `json:"id"`
 		OrderId  int         `json:"order_id"`
@@ -554,132 +554,5 @@ type Recepeit struct {
 			UserFullname string      `json:"user_fullname"`
 			Date         interface{} `json:"date"`
 		} `json:"tickets"`
-	} `json:"data"`
-}
-
-type Refs struct {
-	Data struct {
-		Id          int         `json:"id"`
-		OrderId     int         `json:"order_id"`
-		SellerId    interface{} `json:"seller_id"`
-		AgentId     interface{} `json:"agent_id"`
-		Seller      interface{} `json:"seller"`
-		SellerName  string      `json:"seller_name"`
-		SellerType  string      `json:"seller_type"`
-		ContactId   interface{} `json:"contact_id"`
-		ContactName string      `json:"contact_name"`
-		ClientId    int         `json:"client_id"`
-		ClientName  string      `json:"client_name"`
-		Type        string      `json:"type"`
-		PaymentType string      `json:"payment_type"`
-		User        struct {
-			Id              int         `json:"id"`
-			Name            string      `json:"name"`
-			Email           string      `json:"email"`
-			EmailVerifiedAt time.Time   `json:"email_verified_at"`
-			CreatedAt       time.Time   `json:"created_at"`
-			UpdatedAt       time.Time   `json:"updated_at"`
-			Position        string      `json:"position"`
-			Organization    string      `json:"organization"`
-			Avatar          interface{} `json:"avatar"`
-			ContactId       int         `json:"contact_id"`
-			SellerId        interface{} `json:"seller_id"`
-			Timezone        string      `json:"timezone"`
-		} `json:"user"`
-		UserId  int `json:"user_id"`
-		EventId int `json:"event_id"`
-		Event   struct {
-			Id            int    `json:"id"`
-			Name          string `json:"name"`
-			Datetime      string `json:"datetime"`
-			Type          string `json:"type"`
-			TimeLength    string `json:"timeLength"`
-			AgeLimit      string `json:"ageLimit"`
-			ShowId        int    `json:"show_id"`
-			HallId        int    `json:"hall_id"`
-			PlaceHallName string `json:"place_hall_name"`
-			Promoter      struct {
-				Name string `json:"name"`
-			} `json:"promoter"`
-			TicketFund     string `json:"ticketFund"`
-			TicketProvider struct {
-				Name string `json:"name"`
-			} `json:"ticketProvider"`
-			TicketBook int `json:"ticketBook"`
-			Tickets    struct {
-				Total int `json:"total"`
-			} `json:"tickets"`
-			Seats struct {
-				Total int `json:"total"`
-			} `json:"seats"`
-			Place struct {
-				Id       int      `json:"id"`
-				Name     string   `json:"name"`
-				Rows     int      `json:"rows"`
-				MaxSeats int      `json:"maxSeats"`
-				Sides    []string `json:"sides"`
-				Sectors  []string `json:"sectors"`
-				Map      string   `json:"map"`
-			} `json:"place"`
-			RentalPeriodId int    `json:"rental_period_id"`
-			RentalPeriod   string `json:"rental_period"`
-			StatusName     string `json:"status_name"`
-			Status         string `json:"status"`
-		} `json:"event"`
-		ShowId           interface{} `json:"show_id"`
-		ShowName         string      `json:"show_name"`
-		DateTime         string      `json:"date_time"`
-		Amount           string      `json:"amount"`
-		Status           string      `json:"status"`
-		ReservedDateTime string      `json:"reserved_date_time"`
-		Seats            []struct {
-			Id        int         `json:"id"`
-			OrderId   int         `json:"order_id"`
-			SeatId    int         `json:"seat_id"`
-			CreatedAt interface{} `json:"created_at"`
-			UpdatedAt interface{} `json:"updated_at"`
-			Seat      struct {
-				Id          int         `json:"id"`
-				HallId      int         `json:"hall_id"`
-				EventId     int         `json:"event_id"`
-				SeatNumber  int         `json:"seat_number"`
-				RowSector   int         `json:"row_sector"`
-				CoordText   interface{} `json:"coord_text"`
-				CoordAngle  interface{} `json:"coord_angle"`
-				CoordRadius interface{} `json:"coord_radius"`
-				CoordLength interface{} `json:"coord_length"`
-				Status      string      `json:"status"`
-				FundId      interface{} `json:"fund_id"`
-				Price       int         `json:"price"`
-				SeatId      int         `json:"seat_id"`
-				CreatedAt   interface{} `json:"created_at"`
-				UpdatedAt   time.Time   `json:"updated_at"`
-				SectorId    interface{} `json:"sector_id"`
-				PriceZone   int         `json:"price_zone"`
-				Sector      interface{} `json:"sector"`
-				Ticket      interface{} `json:"ticket"`
-			} `json:"seat"`
-		} `json:"seats"`
-		StatusName        string        `json:"status_name"`
-		Tickets           []interface{} `json:"tickets"`
-		Funds             []interface{} `json:"funds"`
-		Note              interface{}   `json:"note"`
-		AvailableStatuses []struct {
-			Id    string `json:"id"`
-			Label string `json:"label"`
-		} `json:"available_statuses"`
-		Refund       interface{} `json:"refund"`
-		Token        string      `json:"token"`
-		CountTickets interface{} `json:"count_tickets"`
-		CashboxId    interface{} `json:"cashbox_id"`
-		Cashboxes    []struct {
-			Id          int    `json:"id"`
-			Name        string `json:"name"`
-			SellerId    int    `json:"seller_id"`
-			Address     string `json:"address"`
-			SellerName  string `json:"seller_name"`
-			CompanyId   string `json:"company_id"`
-			CompanyName string `json:"company_name"`
-		} `json:"cashboxes"`
 	} `json:"data"`
 }
