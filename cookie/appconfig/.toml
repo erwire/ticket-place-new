@@ -1,0 +1,5 @@
+path = "./path/to/string"
+com = "3"
+time = ""
+baseurl = "ticket-place.ru"
+polling_period = 10000000000

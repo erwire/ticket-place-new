@@ -4,45 +4,6 @@ import (
 	"time"
 )
 
-type Info struct {
-	User    UserInfo   `toml:"userinfo"`
-	Driver  DriverInfo `toml:"driverinfo"`
-	Logined Logined
-}
-
-type UserInfo struct {
-	Login      string    `toml:"login"`
-	Password   string    `toml:"password"`
-	Auth       bool      `toml:"auth"`
-	Authorized time.Time `toml:"authorized"`
-	Session    bool      `toml:"session"`
-	Activated  time.Time `toml:"activated"`
-}
-
-type DriverInfo struct {
-	Path       string `toml:"path"`
-	Com        string `toml:"com"`
-	Time       string `toml:"time"`
-	Connection string `toml:"baseurl"`
-}
-
-type Logined struct {
-	AccessToken string `json:"accessToken"`
-	TokenType   string `json:"token_type"`
-	UserData    struct {
-		ID       int    `json:"id"`
-		FullName string `json:"fullName"`
-		Username string `json:"username"`
-		Avatar   string `json:"avatar"`
-		Email    string `json:"email"`
-		Role     string `json:"role"`
-		Ability  []struct {
-			Subject string `json:"subject"`
-			Action  string `json:"action"`
-		} `json:"ability"`
-	} `json:"userData"`
-}
-
 type Click struct {
 	Data struct {
 		Id        int       `json:"id"`

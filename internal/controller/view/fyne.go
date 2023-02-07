@@ -1,12 +1,15 @@
 package view
 
 import (
+	"fmt"
 	"fptr/internal/services"
+	"fptr/pkg/toml"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"image/color"
 	"time"
@@ -14,6 +17,9 @@ import (
 
 type Flags struct {
 	PrintOnKKTTicketCheckBox, PrintCheckBox, PrintOnPrinterTicketBox bool
+}
+
+type Selected struct {
 }
 
 type FyneApp struct {
@@ -26,6 +32,7 @@ type FyneApp struct {
 	authForm struct {
 		form                      dialog.Dialog
 		loginEntry, passwordEntry *widget.Entry
+		settingButton             *widget.Button
 	}
 
 	header struct {
@@ -64,11 +71,12 @@ type FyneApp struct {
 		DriverSettingButton, DriverPrintHistoryButton           *widget.Button
 		DriverSettingLabel                                      *widget.Label
 		DriverComPortEntry, DriverPathEntry, DriverAddressEntry *widget.Entry
-		DriverKKTForm                                           *widget.Form
+		DriverPollingPeriodSelect                               *widget.Select
+		DriverSettingForm                                       *widget.Form
 		DriverKKTComFormItem                                    *widget.FormItem
 		DriverKKTPathFormItem                                   *widget.FormItem
-		DriverApiForm                                           *widget.Form
 		DriverApiAddressFormItem                                *widget.FormItem
+		DriverPollingPeriodFormItem                             *widget.FormItem
 	}
 
 	MainWindowAccordion *widget.Accordion
@@ -79,15 +87,16 @@ type FyneApp struct {
 		WarningText   *canvas.Text
 	}
 
-	AlertWindow dialog.Dialog
+	AlertWindow   dialog.Dialog
+	SettingWindow dialog.Dialog
 	//Флаги
 	flag Flags
 }
 
-func NewFyneApp(a fyne.App, service *services.Service) *FyneApp {
+func NewFyneApp(a fyne.App) *FyneApp { //, service *services.Service
 	return &FyneApp{
 		application: a,
-		service:     service,
+		//service:     service,
 	}
 }
 
@@ -95,6 +104,8 @@ func (f *FyneApp) StartApp() {
 	f.ConfigureMainWindows()
 	f.ConfigureAuthDialogForm()
 	f.ConfigureWarningAlert()
+	f.ConfigureSettingWindow()
+	f.SetupCookie()
 	f.mainWindow.ShowAndRun()
 }
 
@@ -102,6 +113,30 @@ func (f *FyneApp) StartApp() {
 // ! Окно
 func (f *FyneApp) NewMainWindow() {
 	f.mainWindow = f.application.NewWindow("Ticket-Place")
+}
+
+func (f *FyneApp) NewSettingWindow() {
+	content := container.NewVBox(
+		container.New(layout.NewFormLayout(), widget.NewLabel("Путь к драйверу"), f.DriverSetting.DriverPathEntry),
+		container.New(layout.NewFormLayout(), widget.NewLabel("Адрес сервера"), f.DriverSetting.DriverAddressEntry),
+		container.New(layout.NewFormLayout(), widget.NewLabel("COM-порт ККТ"), f.DriverSetting.DriverComPortEntry),
+		container.New(layout.NewFormLayout(), widget.NewLabel("Период опроса сервера"), f.DriverSetting.DriverPollingPeriodSelect),
+		widget.NewLabel(""),
+	)
+
+	f.SettingWindow = dialog.NewCustomConfirm("Настройки приложения", "Сохранить", "Отменить", content, f.SettingWindowPressed, f.mainWindow)
+}
+
+func (f *FyneApp) ConfigureSettingWindow() {
+	f.NewSettingWindow()
+	f.SettingWindow.Resize(fyne.NewSize(500, 500))
+}
+
+func (f *FyneApp) SettingWindowPressed(choice bool) {
+	settings := f.formDriverData()
+	if choice {
+		fmt.Println(toml.WriteToml(toml.DriverInfoPath, settings))
+	}
 }
 
 func (f *FyneApp) ConfigureMainWindows() {
@@ -132,16 +167,23 @@ func (f *FyneApp) ConfigureAuthDialogForm() {
 
 func (f *FyneApp) NewAuthForm() {
 	f.authForm.loginEntry, f.authForm.passwordEntry = widget.NewEntry(), widget.NewPasswordEntry()
+	f.authForm.settingButton = widget.NewButton("Настройки", func() {
+		f.SettingWindow.Show()
+	})
 	var authFormItems []*widget.FormItem
-	authFormItems = append(authFormItems, widget.NewFormItem("Логин", f.authForm.loginEntry), widget.NewFormItem("Пароль", f.authForm.passwordEntry))
+	authFormItems = append(authFormItems,
+		widget.NewFormItem("Логин", f.authForm.loginEntry),
+		widget.NewFormItem("Пароль", f.authForm.passwordEntry),
+		widget.NewFormItem("Настройки", f.authForm.settingButton),
+	)
 	f.authForm.form = dialog.NewForm("Авторизация", "Войти", "Выйти", authFormItems, f.Authorization, f.mainWindow)
 }
 
-func (f *FyneApp) Authorization(choice bool) { //! исправить обновление имени
+func (f *FyneApp) Authorization(choice bool) { //! обработчик действий
 	if choice {
-		f.header.usernameLabel.Text = f.authForm.loginEntry.Text
-		f.header.usernameLabel.Refresh()
-		f.ShowWarning("Ошибка доступа")
+		//f.header.usernameLabel.Text = f.authForm.loginEntry.Text
+		//f.header.usernameLabel.Refresh()
+		//f.ShowWarning("Ошибка доступа")
 	} else {
 		f.mainWindow.Close()
 	}
@@ -265,29 +307,35 @@ func (f *FyneApp) NewDriverSettingAccordionItem() {
 	f.DriverSetting.DriverComPortEntry = widget.NewEntry()
 	f.DriverSetting.DriverPathEntry = widget.NewEntry()
 	f.DriverSetting.DriverAddressEntry = widget.NewEntry()
-
+	f.DriverSetting.DriverPollingPeriodSelect = widget.NewSelect(
+		[]string{"1s", "2s", "3s", "4s", "5s", "10s", "15s"},
+		f.DriverPollingPeriodSelected,
+	)
+	f.DriverSetting.DriverPollingPeriodSelect.Resize(fyne.NewSize(300, 300))
+	f.DriverSetting.DriverPollingPeriodSelect.Refresh()
 	f.DriverSetting.DriverKKTComFormItem = widget.NewFormItem("COM-порт кассы", f.DriverSetting.DriverComPortEntry)
 	f.DriverSetting.DriverKKTPathFormItem = widget.NewFormItem("Путь к драйверу", f.DriverSetting.DriverPathEntry)
 	f.DriverSetting.DriverApiAddressFormItem = widget.NewFormItem("Адрес сервера", f.DriverSetting.DriverAddressEntry)
-
-	f.DriverSetting.DriverKKTForm = widget.NewForm(f.DriverSetting.DriverKKTComFormItem, f.DriverSetting.DriverKKTPathFormItem)
-	f.DriverSetting.DriverApiForm = widget.NewForm(f.DriverSetting.DriverApiAddressFormItem)
+	f.DriverSetting.DriverPollingPeriodFormItem = widget.NewFormItem("Период опроса сервера", f.DriverSetting.DriverPollingPeriodSelect)
+	f.DriverSetting.DriverSettingForm = widget.NewForm(
+		f.DriverSetting.DriverKKTComFormItem,
+		f.DriverSetting.DriverKKTPathFormItem,
+		f.DriverSetting.DriverApiAddressFormItem,
+		f.DriverSetting.DriverPollingPeriodFormItem,
+	)
 
 }
 
 func (f *FyneApp) ConfigureDriverSettingAccordionItem() {
 	f.NewDriverSettingAccordionItem()
-	f.DriverSetting.DriverKKTForm.SubmitText = "Подтвердить"
-	f.DriverSetting.DriverKKTForm.OnSubmit = f.DriverKKTFormOnSubmit
-	f.DriverSetting.DriverApiForm.SubmitText = "Подтвердить"
-	f.DriverSetting.DriverApiForm.OnSubmit = f.DriverApiFormOnSubmit
+	f.DriverSetting.DriverSettingForm.SubmitText = "Подтвердить"
+	f.DriverSetting.DriverSettingForm.OnSubmit = f.DriverSettingFormOnSubmit
+
 	box := container.NewVBox(
 		widget.NewLabel("Настройки принтера"),
 		container.NewHBox(f.DriverSetting.DriverSettingButton, f.DriverSetting.DriverPrintHistoryButton),
 		f.DriverSetting.DriverSettingLabel,
-		f.DriverSetting.DriverKKTForm,
-		widget.NewLabel(""),
-		f.DriverSetting.DriverApiForm,
+		f.DriverSetting.DriverSettingForm,
 	)
 	f.DriverSetting.DriverSettingAccordion = widget.NewAccordionItem("Настройки драйвера", box)
 }
@@ -300,11 +348,15 @@ func (f *FyneApp) DriverPrintHistoryButtonPressed() {
 
 }
 
-func (f *FyneApp) DriverKKTFormOnSubmit() {
+func (f *FyneApp) DriverSettingFormOnSubmit() {
 
 }
 
 func (f *FyneApp) DriverApiFormOnSubmit() {
+
+}
+
+func (f *FyneApp) DriverPollingPeriodSelected(selected string) {
 
 }
 
@@ -344,8 +396,4 @@ func (f *FyneApp) ShowWarning(err string) {
 	f.Warning.WarningText.Text = err
 	f.Warning.WarningText.Refresh()
 	f.Warning.WarningWindow.Show()
-}
-
-func (f *FyneApp) Listen() {
-	f.service.Listener.Listen()
 }

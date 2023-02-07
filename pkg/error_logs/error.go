@@ -1,11 +1,19 @@
 package error_logs
 
-const (
-	EmptyURLDataError       = "поле URL пустое"
-	IncorrectURLDataError   = "некорректный адрес URL"
-	DataNilError            = "для данного запроса необходимы параметры"
-	LoginOrPasswordNilError = "не заполнены данные по логину и паролю в структуре"
-	AuthorizationError      = "во время выполнения авторизации произошла ошибка: %s"
-	JsonUnmarshalError      = "во время десериализации произошла ошибка: %s"
-	ResponseCodeError       = "ответ от сервера по адресу: %s. статус код: %d"
-)
+import "errors"
+
+var (
+	ResponseError           = errors.New("error response from the server")
+	RequestCreatingError    = errors.New("error during creating a request")
+	JsonUnmarshalError      = errors.New("an error occurred during unmarshalling")
+	AuthorizationError      = errors.New("an error occurred during authorization")
+	LoginOrPasswordNilError = errors.New("login and password data in the structure are not filled in")
+	DataNilError            = errors.New("there is no data for the request that needs an additional parameter")
+	IncorrectURLDataError   = errors.New("unhandled URL-endpoint")
+	EmptyURLDataError       = errors.New("empty URL field")
+) // + Ошибки, связанные с работой модуля клиента
+
+var (
+	DecodingTomlError = errors.New("error during decoding data from toml file")
+	EncodingTomlError = errors.New("error during encoding data into toml file")
+) // + Ошибки, связанные с работой модуля TOML-кодирования

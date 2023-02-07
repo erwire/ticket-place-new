@@ -9,6 +9,6 @@ type Auth interface {
 }
 
 type Listener interface {
-	Listen()
+	Listen() error
 	MakeRequest(url string, method string, structure interface{}, data ...interface{}) error
 }

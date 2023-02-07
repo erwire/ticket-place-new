@@ -1,36 +1,49 @@
 package toml
 
 import (
-	"fptr/internal/entities"
+	"fmt"
+	"fptr/pkg/error_logs"
 	"github.com/BurntSushi/toml"
-	"log"
 	"os"
+	"reflect"
 )
 
 const (
-	tomlPath = "./toml/.toml"
+	DriverInfoPath = "./cookie/appconfig/.toml"
+	SessionPath    = "./cookie/session/.toml"
+	UserInfoPath   = "./cookie/userdata/.toml"
 )
 
-func InitializeToml() (entities.Info, error) {
-	if _, err := os.Stat(tomlPath); err != nil {
-		os.Create(tomlPath)
+func ReadToml(path string, structure interface{}) error {
+	if _, err := os.Stat(path); err != nil {
+		os.Create(path)
 	}
-	var info entities.Info
 
-	_, err := toml.DecodeFile(tomlPath, &info)
+	_, err := toml.DecodeFile(path, structure)
 
 	if err != nil {
-		log.Println("Ошибка при декодировании конфигурации: " + err.Error())
-		return info, err
+		return fmt.Errorf("%w, data type: %v, path: %s, error_description: %s", error_logs.DecodingTomlError, reflect.TypeOf(structure).String(), path, err.Error())
 	}
 
-	return info, nil
+	return nil
 }
 
-func GetDataFromToml() {
-	
-}
+func WriteToml(path string, structure interface{}) error {
+	if _, err := os.Stat(path); err != nil {
+		os.Create(path)
+	}
 
-func PutDataIntoToml() {
+	file, err := os.OpenFile(path, os.O_WRONLY, 0777)
+	defer file.Close()
+	if err != nil {
+		return fmt.Errorf("%w, data type: %v, path: %s, error_description: %s", error_logs.EncodingTomlError, reflect.TypeOf(structure).String(), path, err.Error())
+	}
 
+	err = toml.NewEncoder(file).Encode(structure)
+
+	if err != nil {
+		return fmt.Errorf("ERROR: [error type: \"%w\", data type: \"%v\", path: \"%s\", error_description: \"%s\"]\n", error_logs.EncodingTomlError, reflect.TypeOf(structure).String(), path, err.Error())
+	}
+
+	return nil
 }

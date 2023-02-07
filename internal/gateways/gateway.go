@@ -1,7 +1,13 @@
 package gateways
 
-import "fptr/internal/gateways/db"
+import "fptr/internal/entities"
 
 type Gateway struct {
-	db.SQLite
+	Listener
+}
+
+type Listener interface {
+	Listen() error
+	MakeRequest(url string, method string, structure interface{}, data ...interface{}) error
+	Authorization(config entities.AppConfig) error
 }
