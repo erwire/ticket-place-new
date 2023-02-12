@@ -1,6 +1,9 @@
 package entities
 
-import "time"
+import (
+	"net/mail"
+	"time"
+)
 
 type Info struct {
 	AppConfig AppConfig   `toml:"app_config"`
@@ -26,11 +29,9 @@ type DriverInfo struct {
 }
 
 type SessionInfo struct {
-	Token struct {
-		AccessToken string    `json:"accessToken" toml:"access_token"`
-		TokenType   string    `json:"token_type" toml:"token_type"`
-		CreatedAt   time.Time `toml:"created_at"`
-	} `toml:"token"`
+	AccessToken string    `json:"accessToken" toml:"access_token"`
+	TokenType   string    `json:"token_type" toml:"token_type"`
+	CreatedAt   time.Time `toml:"created_at"`
 
 	UserData struct {
 		ID       int    `json:"id" toml:"id"`
@@ -39,9 +40,18 @@ type SessionInfo struct {
 		Avatar   string `json:"avatar" toml:"avatar"`
 		Email    string `json:"email" toml:"email"`
 		Role     string `json:"role" toml:"role"`
-		Ability  []struct {
-			Subject string `json:"subject" toml:"subject"`
-			Action  string `json:"action" toml:"action"`
-		} `json:"ability" toml:"ability"`
+		//Ability  []struct {
+		//	Subject string `json:"subject" toml:"subject"`
+		//	Action  string `json:"action" toml:"action"`
+		//} `json:"ability" toml:"ability"`
 	} `json:"userData" toml:"user_data"`
+}
+
+func (u *UserInfo) ValidateUser() bool {
+	_, err := mail.ParseAddress(u.Login)
+	return err == nil && u.Password != ""
+}
+
+func (s *SessionInfo) IsDead() bool {
+	return time.Since(s.CreatedAt).Hours() > 24
 }

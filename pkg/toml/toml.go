@@ -35,10 +35,12 @@ func WriteToml(path string, structure interface{}) error {
 
 	file, err := os.OpenFile(path, os.O_WRONLY, 0777)
 	defer file.Close()
+
 	if err != nil {
 		return fmt.Errorf("%w, data type: %v, path: %s, error_description: %s", error_logs.EncodingTomlError, reflect.TypeOf(structure).String(), path, err.Error())
 	}
 
+	file.Truncate(0)
 	err = toml.NewEncoder(file).Encode(structure)
 
 	if err != nil {

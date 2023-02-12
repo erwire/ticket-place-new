@@ -1,8 +1,11 @@
 package view
 
 import (
-	"fmt"
+	"context"
+	"fptr/internal/entities"
 	"fptr/pkg/toml"
+	"log"
+	"time"
 )
 
 func (f *FyneApp) DriverSettingButtonPressed() {
@@ -46,7 +49,10 @@ func (f *FyneApp) printLastCheckPressed() {
 }
 
 func (f *FyneApp) exitPressed() {
-	//Механизм разлогинивания
+	f.UpdateSession(entities.SessionInfo{})
+	f.header.usernameLabel.Text = ""
+	f.authForm.form.Show()
+	f.context.cancel()
 }
 
 func (f *FyneApp) printXReportPressed() {
@@ -59,9 +65,31 @@ func (f *FyneApp) WarningPressed() {
 
 func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик действий
 	if choice {
-		//f.header.usernameLabel.Text = f.authForm.loginEntry.Text
-		//f.header.usernameLabel.Refresh()
-		//f.ShowWarning("Ошибка доступа")
+		appConfig := f.formAppConfig()
+		session, message := f.service.Login(appConfig)
+		if len(message) != 0 {
+			f.authForm.form.Show()
+			f.ShowWarning(message)
+		} else {
+			session.CreatedAt = time.Now()
+			err := f.UpdateUserInfo(appConfig.User)
+			if err != nil {
+				log.Println(err.Error())
+			}
+			err = f.UpdateDriverInfo(appConfig.Driver)
+			if err != nil {
+				log.Println(err.Error())
+			}
+			err = f.UpdateSession(*session)
+			if err != nil {
+				log.Println(err.Error())
+			}
+			f.header.usernameLabel.Text = f.info.Session.UserData.Username
+			f.header.usernameLabel.Refresh()
+			f.context.ctx, f.context.cancel = context.WithCancel(context.Background())
+			go f.Listen(f.context.ctx)
+		}
+
 	} else {
 		f.mainWindow.Close()
 	}
@@ -70,6 +98,23 @@ func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик �
 func (f *FyneApp) SettingWindowPressed(choice bool) {
 	settings := f.formDriverData()
 	if choice {
-		fmt.Println(toml.WriteToml(toml.DriverInfoPath, settings))
+		err := toml.WriteToml(toml.DriverInfoPath, settings)
+		if err != nil {
+			//заполнить
+		}
+
 	}
+}
+
+func (f *FyneApp) Listen(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			log.Println("Context Closed")
+			return
+		default:
+
+		}
+	}
+
 }

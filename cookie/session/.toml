@@ -1,7 +1,6 @@
-[token]
-  access_token = ""
-  token_type = ""
-  created_at = 0001-01-01T00:00:00Z
+access_token = ""
+token_type = ""
+created_at = 0001-01-01T00:00:00Z
 
 [user_data]
   id = 0

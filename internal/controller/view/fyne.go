@@ -1,6 +1,8 @@
 package view
 
 import (
+	"context"
+	"fptr/internal/entities"
 	"fptr/internal/services"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -16,8 +18,13 @@ type Selected struct {
 }
 
 type FyneApp struct {
+	info    *entities.Info
+	context struct {
+		ctx    context.Context
+		cancel context.CancelFunc
+	}
 	//приложение
-	service     *services.Service
+	service     *services.Services
 	application fyne.App
 	//! главное окно
 	mainWindow fyne.Window
@@ -86,10 +93,11 @@ type FyneApp struct {
 	flag Flags
 }
 
-func NewFyneApp(a fyne.App) *FyneApp { //, service *services.Service
+func NewFyneApp(a fyne.App, view *services.Services, inf *entities.Info) *FyneApp { //, service *services.Service
 	return &FyneApp{
 		application: a,
-		//service:     service,
+		service:     view,
+		info:        inf,
 	}
 }
 
@@ -98,7 +106,21 @@ func (f *FyneApp) StartApp() {
 	f.ConfigureAuthDialogForm()
 	f.ConfigureWarningAlert()
 	f.ConfigureSettingWindow()
-	f.SetupCookie()
+	err := f.InitializeCookie()
+	if err != nil {
+		f.ShowWarning("Данные по прошлой сессии повреждены или отсутствуют")
+	}
+
+	if f.info.Session.IsDead() {
+		f.UpdateSession(entities.SessionInfo{})
+	} else {
+		f.header.usernameLabel.Text = f.info.Session.UserData.Username
+		f.authForm.form.Hide()
+		f.context.ctx, f.context.cancel = context.WithCancel(context.Background())
+		go f.Listen(f.context.ctx)
+	}
+
+	f.setupCookieIntoEntry()
 	f.mainWindow.ShowAndRun()
 }
 

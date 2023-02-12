@@ -46,8 +46,8 @@ func (f *FyneApp) NewMainWindowHeader() {
 	f.header.usernameLabel = canvas.NewText("", color.White)
 	f.header.localTimeLabel = canvas.NewText(time.Now().Format("2.01.2006 15:04:05"), color.White)
 	f.header.printLastСheckButton = widget.NewButton("Напечатать последний чек", f.printLastCheckPressed)
-	f.header.printXReportButton = widget.NewButton("Напечатать X-отчет", f.exitPressed)
-	f.header.exitButton = widget.NewButton("Выйти", f.printXReportPressed)
+	f.header.printXReportButton = widget.NewButton("Напечатать X-отчет", f.printXReportPressed)
+	f.header.exitButton = widget.NewButton("Выйти", f.exitPressed)
 }
 
 func (f *FyneApp) NewPrintSettingsAccordionItem() {

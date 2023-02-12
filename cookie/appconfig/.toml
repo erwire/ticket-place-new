@@ -1,5 +1,5 @@
-path = "./path/to/string"
+path = "path"
 com = "3"
 time = ""
 baseurl = "ticket-place.ru"
-polling_period = 10000000000
+polling_period = 1000000000

@@ -89,8 +89,8 @@ func (f *FyneApp) ConfigureDriverSettingAccordionItem() {
 	box := container.NewVBox(
 		widget.NewLabel("Настройки принтера"),
 		container.NewHBox(f.DriverSetting.DriverSettingButton, f.DriverSetting.DriverPrintHistoryButton),
-		f.DriverSetting.DriverSettingLabel,
-		f.DriverSetting.DriverSettingForm,
+		//f.DriverSetting.DriverSettingLabel,
+		//f.DriverSetting.DriverSettingForm,
 	)
 	f.DriverSetting.DriverSettingAccordion = widget.NewAccordionItem("Настройки драйвера", box)
 }

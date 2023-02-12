@@ -1,14 +1,21 @@
 package services
 
-type Service struct {
-	Auth
+import (
+	"fptr/internal/entities"
+	"fptr/internal/gateways"
+)
+
+type Services struct {
 	Listener
 }
 
-type Auth interface {
+func NewServices(g *gateways.Gateway) *Services {
+	return &Services{
+		Listener: NewClientService(g),
+	}
 }
 
 type Listener interface {
 	Listen() error
-	MakeRequest(url string, method string, structure interface{}, data ...interface{}) error
+	Login(config entities.AppConfig) (*entities.SessionInfo, string)
 }
