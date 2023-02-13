@@ -78,11 +78,13 @@ func (l *ClientGateway) GetLastReceipt(connectionURL string, session entities.Se
 
 	requestURI := fmt.Sprintf("https://%s", connectionURL+fmt.Sprintf(LastConditionURL, session.UserData.ID))
 
-	request, err := http.NewRequest(http.MethodPost, requestURI, nil)
+	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 
 	if err != nil {
 		return nil, errorlog.RequestCreatingError
 	}
+
+	request.Header.Add("Authorization", fmt.Sprintf("%s %s", session.TokenType, session.AccessToken))
 
 	response, err := l.client.Do(request)
 
@@ -119,7 +121,7 @@ func (l *ClientGateway) GetSell(connectionURL string, sellID string) (*entities.
 
 	requestURI := fmt.Sprintf("https://%s", connectionURL+fmt.Sprintf(OrderURL, sellID))
 
-	request, err := http.NewRequest(http.MethodPost, requestURI, nil)
+	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 
 	if err != nil {
 		return nil, errorlog.RequestCreatingError
@@ -160,7 +162,7 @@ func (l *ClientGateway) GetRefound(connectionURL string, refoundID string) (*ent
 
 	requestURI := fmt.Sprintf("https://%s", connectionURL+fmt.Sprintf(RefoundURL, refoundID))
 
-	request, err := http.NewRequest(http.MethodPost, requestURI, nil)
+	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 
 	if err != nil {
 		return nil, errorlog.RequestCreatingError

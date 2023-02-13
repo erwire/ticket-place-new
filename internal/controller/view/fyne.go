@@ -4,14 +4,19 @@ import (
 	"context"
 	"fptr/internal/entities"
 	"fptr/internal/services"
+	"fptr/pkg/toml"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	"log"
+	"time"
 )
 
 type Flags struct {
 	PrintOnKKTTicketCheckBox, PrintCheckBox, PrintOnPrinterTicketBox bool
+	StopListen                                                       bool
+	DebugOn                                                          bool
 }
 
 type Selected struct {
@@ -41,6 +46,10 @@ type FyneApp struct {
 		printLastСheckButton *widget.Button
 		exitButton           *widget.Button
 		printXReportButton   *widget.Button
+		listenerStatus       struct {
+			listenerToolbar     *widget.Toolbar
+			listenerToolbarItem *widget.ToolbarAction
+		}
 	}
 	PrintSettingsItem struct {
 		PrintSettingsAccordionItem *widget.AccordionItem
@@ -117,11 +126,30 @@ func (f *FyneApp) StartApp() {
 		f.header.usernameLabel.Text = f.info.Session.UserData.Username
 		f.authForm.form.Hide()
 		f.context.ctx, f.context.cancel = context.WithCancel(context.Background())
-		go f.Listen(f.context.ctx)
+		click, message := f.service.GetLastReceipt(f.info.AppConfig.Driver.Connection, f.info.Session)
+		if message != "" {
+			f.ShowWarning("Внимание, возможно задвоение чека!")
+			log.Println(err.Error()) //обработку сделать нормальную
+		}
+		err = toml.WriteToml(toml.ClickPath, click)
+		if err != nil {
+			log.Println(err.Error())
+		}
+		go f.Listen(f.context.ctx, *f.info)
 	}
 
 	f.setupCookieIntoEntry()
+	go f.ClockUpdater()
+	f.flag.DebugOn = true
 	f.mainWindow.ShowAndRun()
+}
+
+func (f *FyneApp) ClockUpdater() {
+	for {
+		time.Sleep(time.Second)
+		f.header.localTimeLabel.Text = time.Now().Format("02.01.2006 15:04:05")
+		f.header.localTimeLabel.Refresh()
+	}
 }
 
 // + Главное окно

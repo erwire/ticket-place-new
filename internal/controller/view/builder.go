@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"image/color"
 	"time"
@@ -48,6 +49,11 @@ func (f *FyneApp) NewMainWindowHeader() {
 	f.header.printLastСheckButton = widget.NewButton("Напечатать последний чек", f.printLastCheckPressed)
 	f.header.printXReportButton = widget.NewButton("Напечатать X-отчет", f.printXReportPressed)
 	f.header.exitButton = widget.NewButton("Выйти", f.exitPressed)
+	f.header.listenerStatus.listenerToolbarItem = widget.NewToolbarAction(theme.CancelIcon(), f.listenerStatusAction)
+	f.header.listenerStatus.listenerToolbar = widget.NewToolbar(
+		f.header.listenerStatus.listenerToolbarItem,
+	)
+
 }
 
 func (f *FyneApp) NewPrintSettingsAccordionItem() {

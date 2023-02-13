@@ -16,6 +16,6 @@ func NewServices(g *gateways.Gateway) *Services {
 }
 
 type Listener interface {
-	Listen() error
+	GetLastReceipt(connectionURL string, session entities.SessionInfo) (*entities.Click, string)
 	Login(config entities.AppConfig) (*entities.SessionInfo, string)
 }

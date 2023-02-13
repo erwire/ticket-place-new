@@ -12,6 +12,7 @@ const (
 	DriverInfoPath = "./cookie/appconfig/.toml"
 	SessionPath    = "./cookie/session/.toml"
 	UserInfoPath   = "./cookie/userdata/.toml"
+	ClickPath      = "./cookie/click/.toml"
 )
 
 func ReadToml(path string, structure interface{}) error {

@@ -9,11 +9,13 @@ import (
 	fptr10 "github.com/EuginKostomarov/ftpr10"
 	"log"
 	"net/http"
+	"runtime"
 	"time"
 )
 
 func main() {
 	info := &entities.Info{}
+	log.Printf("Количество горутин в начале запуска: %d", runtime.NumGoroutine())
 
 	fptrDriver, err := fptr10.NewSafe()
 

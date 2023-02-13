@@ -16,8 +16,17 @@ func NewClientService(gw *gateways.Gateway) *ClientService {
 	return &ClientService{gw: gw}
 }
 
-func (s *ClientService) Listen() error {
-	return nil
+func (s *ClientService) GetLastReceipt(connectionURL string, session entities.SessionInfo) (*entities.Click, string) {
+	click, err := s.gw.GetLastReceipt(connectionURL, session)
+	if err != nil {
+		log.Println(err.Error())
+		switch errors.Unwrap(err) {
+		default:
+			return nil, "Произошла ошибка получения последнего запроса на печать"
+		}
+	}
+
+	return click, ""
 }
 
 func (s *ClientService) Login(config entities.AppConfig) (*entities.SessionInfo, string) {

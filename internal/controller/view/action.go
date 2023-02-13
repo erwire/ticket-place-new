@@ -4,6 +4,7 @@ import (
 	"context"
 	"fptr/internal/entities"
 	"fptr/pkg/toml"
+	"fyne.io/fyne/v2/theme"
 	"log"
 	"time"
 )
@@ -86,8 +87,19 @@ func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик �
 			}
 			f.header.usernameLabel.Text = f.info.Session.UserData.Username
 			f.header.usernameLabel.Refresh()
+
+			click, message := f.service.GetLastReceipt(f.info.AppConfig.Driver.Connection, f.info.Session)
+			if message != "" {
+				f.ShowWarning("Внимание, возможно задвоение чека!")
+				log.Println(err.Error()) //обработку сделать нормальную
+			}
+			err = toml.WriteToml(toml.ClickPath, click)
+			if err != nil {
+				log.Println(err.Error())
+			}
+
 			f.context.ctx, f.context.cancel = context.WithCancel(context.Background())
-			go f.Listen(f.context.ctx)
+			go f.Listen(f.context.ctx, *f.info)
 		}
 
 	} else {
@@ -106,13 +118,70 @@ func (f *FyneApp) SettingWindowPressed(choice bool) {
 	}
 }
 
-func (f *FyneApp) Listen(ctx context.Context) {
+func (f *FyneApp) listenerStatusAction() {
+	switch f.header.listenerStatus.listenerToolbarItem.Icon {
+	case theme.CancelIcon():
+		f.header.listenerStatus.listenerToolbarItem.Icon = theme.ConfirmIcon()
+		f.flag.StopListen = true
+	case theme.ConfirmIcon():
+		f.header.listenerStatus.listenerToolbarItem.Icon = theme.CancelIcon()
+		f.flag.StopListen = false
+	}
+
+	f.header.listenerStatus.listenerToolbar.Refresh()
+}
+
+func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
+
 	for {
 		select {
 		case <-ctx.Done():
+			log.Println(ctx.Err())
 			log.Println("Context Closed")
 			return
 		default:
+			if f.flag.StopListen {
+				continue
+			}
+			time.Sleep(info.AppConfig.Driver.PollingPeriod * time.Nanosecond)
+			clickCache := &entities.Click{}
+			err := toml.ReadToml(toml.ClickPath, clickCache)
+
+			if err != nil {
+				log.Println(err.Error())
+				continue
+			}
+
+			click, message := f.service.GetLastReceipt(info.AppConfig.Driver.Connection, info.Session)
+
+			if message != "" {
+				//обработка ошибки (аля потеряно соединение с сервером)
+			}
+
+			if clickCache.Data.Id == click.Data.Id {
+				log.Println("Билеты одинаковы!")
+				//continue
+			}
+
+			if f.flag.DebugOn {
+				logMes := ""
+
+				if f.flag.PrintOnPrinterTicketBox {
+					logMes += "Печать билета на принтере/"
+				}
+
+				if f.flag.PrintOnKKTTicketCheckBox {
+					logMes += "Печать билета на ККТ/"
+				}
+
+				if f.flag.PrintCheckBox {
+					logMes += "Печать чека/"
+				}
+
+				log.Println(logMes)
+
+				toml.WriteToml(toml.ClickPath, click)
+			}
 
 		}
 	}

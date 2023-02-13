@@ -43,6 +43,7 @@ func (f *FyneApp) ConfigureMainWindowHeader() *fyne.Container {
 		f.header.printLastСheckButton,
 		f.header.exitButton,
 		f.header.printXReportButton,
+		f.header.listenerStatus.listenerToolbar,
 	)
 	return box
 }
