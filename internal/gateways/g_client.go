@@ -35,7 +35,7 @@ func (l *ClientGateway) Login(config entities.AppConfig) (*entities.SessionInfo,
 		return nil, errorlog.InvalidLoginOrPassword
 	}
 
-	requestURI := fmt.Sprintf("https://%s", config.Driver.Connection+fmt.Sprintf(AuthorizationURL, config.User.Login, config.User.Password))
+	requestURI := config.Driver.Connection + fmt.Sprintf(AuthorizationURL, config.User.Login, config.User.Password)
 
 	request, err := http.NewRequest(http.MethodPost, requestURI, nil)
 
@@ -76,7 +76,7 @@ func (l *ClientGateway) GetLastReceipt(connectionURL string, session entities.Se
 		return nil, errorlog.EmptyURLDataError
 	}
 
-	requestURI := fmt.Sprintf("https://%s", connectionURL+fmt.Sprintf(LastConditionURL, session.UserData.ID))
+	requestURI := connectionURL + fmt.Sprintf(LastConditionURL, session.UserData.ID)
 
 	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 
@@ -112,20 +112,22 @@ func (l *ClientGateway) GetLastReceipt(connectionURL string, session entities.Se
 	return &click, nil
 }
 
-func (l *ClientGateway) GetSell(connectionURL string, sellID string) (*entities.Sell, error) {
+func (l *ClientGateway) GetSell(info entities.Info, sellID string) (*entities.Sell, error) {
 	var sell entities.Sell
 
-	if len(connectionURL) == 0 || len(sellID) == 0 {
+	if len(info.AppConfig.Driver.Connection) == 0 || len(sellID) == 0 {
 		return nil, errorlog.EmptyURLDataError
 	}
 
-	requestURI := fmt.Sprintf("https://%s", connectionURL+fmt.Sprintf(OrderURL, sellID))
+	requestURI := info.AppConfig.Driver.Connection + fmt.Sprintf(OrderURL, sellID)
 
 	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 
 	if err != nil {
 		return nil, errorlog.RequestCreatingError
 	}
+
+	request.Header.Add("Authorization", fmt.Sprintf("%s %s", info.Session.TokenType, info.Session.AccessToken))
 
 	response, err := l.client.Do(request)
 
@@ -153,20 +155,21 @@ func (l *ClientGateway) GetSell(connectionURL string, sellID string) (*entities.
 	return &sell, nil
 }
 
-func (l *ClientGateway) GetRefound(connectionURL string, refoundID string) (*entities.Refound, error) {
+func (l *ClientGateway) GetRefound(info entities.Info, refoundID string) (*entities.Refound, error) {
 	var refound entities.Refound
 
-	if len(connectionURL) == 0 || len(refoundID) == 0 {
+	if len(info.AppConfig.Driver.Connection) == 0 || len(refoundID) == 0 {
 		return nil, errorlog.EmptyURLDataError
 	}
 
-	requestURI := fmt.Sprintf("https://%s", connectionURL+fmt.Sprintf(RefoundURL, refoundID))
+	requestURI := info.AppConfig.Driver.Connection + fmt.Sprintf(RefoundURL, refoundID)
 
 	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 
 	if err != nil {
 		return nil, errorlog.RequestCreatingError
 	}
+	request.Header.Add("Authorization", fmt.Sprintf("%s %s", info.Session.TokenType, info.Session.AccessToken))
 
 	response, err := l.client.Do(request)
 

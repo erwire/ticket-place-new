@@ -49,6 +49,7 @@ func (f *FyneApp) NewMainWindowHeader() {
 	f.header.printLastСheckButton = widget.NewButton("Напечатать последний чек", f.printLastCheckPressed)
 	f.header.printXReportButton = widget.NewButton("Напечатать X-отчет", f.printXReportPressed)
 	f.header.exitButton = widget.NewButton("Выйти", f.exitPressed)
+	f.header.exitAndCloseShiftButton = widget.NewButton("Выйти и закрыть смену", f.exitAndCloseShiftButtonPressed)
 	f.header.listenerStatus.listenerToolbarItem = widget.NewToolbarAction(theme.CancelIcon(), f.listenerStatusAction)
 	f.header.listenerStatus.listenerToolbar = widget.NewToolbar(
 		f.header.listenerStatus.listenerToolbarItem,

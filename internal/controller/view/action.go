@@ -2,6 +2,7 @@ package view
 
 import (
 	"context"
+	"fmt"
 	"fptr/internal/entities"
 	"fptr/pkg/toml"
 	"fyne.io/fyne/v2/theme"
@@ -84,6 +85,7 @@ func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик �
 			err = f.UpdateSession(*session)
 			if err != nil {
 				log.Println(err.Error())
+				return
 			}
 			f.header.usernameLabel.Text = f.info.Session.UserData.Username
 			f.header.usernameLabel.Refresh()
@@ -96,6 +98,13 @@ func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик �
 			err = toml.WriteToml(toml.ClickPath, click)
 			if err != nil {
 				log.Println(err.Error())
+				return
+			}
+
+			message = f.service.MakeSession(*f.info)
+			if message != "" {
+				f.ShowWarning(message)
+				return
 			}
 
 			f.context.ctx, f.context.cancel = context.WithCancel(context.Background())
@@ -131,6 +140,14 @@ func (f *FyneApp) listenerStatusAction() {
 	f.header.listenerStatus.listenerToolbar.Refresh()
 }
 
+func (f *FyneApp) exitAndCloseShiftButtonPressed() {
+	message := f.service.KKT.CloseShift()
+	if message != "" {
+		f.ShowWarning(message)
+	}
+	f.exitPressed()
+}
+
 func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 
 	for {
@@ -162,25 +179,36 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 				log.Println("Билеты одинаковы!")
 				//continue
 			}
+			toml.WriteToml(toml.ClickPath, click)
 
 			if f.flag.DebugOn {
-				logMes := ""
+				// отладка
+			} else {
+				if f.flag.PrintCheckBox {
+					switch click.Data.Type {
+					case "order":
+						message = f.service.PrintSell(*f.info, fmt.Sprint(click.Data.Id))
+						if message != "" {
+							f.ShowWarning(message)
+							continue
+						}
+					default:
+						message = f.service.PrintRefound(*f.info, fmt.Sprint(click.Data.Id))
+						if message != "" {
+							f.ShowWarning(message)
+							continue
+						}
+					}
+
+				}
 
 				if f.flag.PrintOnPrinterTicketBox {
-					logMes += "Печать билета на принтере/"
+
 				}
 
 				if f.flag.PrintOnKKTTicketCheckBox {
-					logMes += "Печать билета на ККТ/"
+
 				}
-
-				if f.flag.PrintCheckBox {
-					logMes += "Печать чека/"
-				}
-
-				log.Println(logMes)
-
-				toml.WriteToml(toml.ClickPath, click)
 			}
 
 		}

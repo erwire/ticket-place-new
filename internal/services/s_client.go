@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"fptr/internal/entities"
 	"fptr/internal/gateways"
 	errorlog "fptr/pkg/error_logs"
@@ -27,6 +28,34 @@ func (s *ClientService) GetLastReceipt(connectionURL string, session entities.Se
 	}
 
 	return click, ""
+}
+
+func (s *ClientService) PrintSell(info entities.Info, id string) string {
+	sell, err := s.gw.Listener.GetSell(info, id)
+	if err != nil {
+		log.Println(err.Error())
+		return "Ошибка во время выполнения запроса"
+	}
+	err = s.gw.KKT.PrintSell(*sell)
+	if err != nil {
+		log.Println(err.Error())
+		return fmt.Sprintf("Ошибка во время печати заказа с номером %s", id)
+	}
+	return ""
+}
+
+func (s *ClientService) PrintRefound(info entities.Info, id string) string {
+	refound, err := s.gw.Listener.GetRefound(info, id)
+	if err != nil {
+		log.Println(err.Error())
+		return "Ошибка во время выполнения запроса"
+	}
+	err = s.gw.KKT.PrintRefound(*refound)
+	if err != nil {
+		log.Println(err.Error())
+		return fmt.Sprintf("Ошибка во время печати возврата заказа с номером %s", id)
+	}
+	return ""
 }
 
 func (s *ClientService) Login(config entities.AppConfig) (*entities.SessionInfo, string) {

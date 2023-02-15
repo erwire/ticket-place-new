@@ -5,4 +5,3 @@
         go get fyne.io/fyne/v2/widget@v2.3.0
         go get fyne.io/fyne/v2/internal/painter@v2.3.0
         go get fyne.io/fyne/v2/app@v2.3.0
-

@@ -42,6 +42,7 @@ func (f *FyneApp) ConfigureMainWindowHeader() *fyne.Container {
 		f.header.localTimeLabel,
 		f.header.printLastСheckButton,
 		f.header.exitButton,
+		f.header.exitAndCloseShiftButton,
 		f.header.printXReportButton,
 		f.header.listenerStatus.listenerToolbar,
 	)

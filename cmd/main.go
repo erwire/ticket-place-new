@@ -5,19 +5,19 @@ import (
 	"fptr/internal/entities"
 	"fptr/internal/gateways"
 	"fptr/internal/services"
+	"fptr/pkg/fptr10"
 	"fyne.io/fyne/v2/app"
-	fptr10 "github.com/EuginKostomarov/ftpr10"
 	"log"
 	"net/http"
-	"runtime"
 	"time"
 )
 
 func main() {
 	info := &entities.Info{}
-	log.Printf("Количество горутин в начале запуска: %d", runtime.NumGoroutine())
+	//log.Printf("Количество горутин в начале запуска: %d", runtime.NumGoroutine())
 
 	fptrDriver, err := fptr10.NewSafe()
+	defer fptrDriver.Destroy()
 
 	if err != nil {
 		log.Println(err.Error())
@@ -27,6 +27,7 @@ func main() {
 	gateway := gateways.NewGateway(client, fptrDriver)
 	service := services.NewServices(gateway)
 	view := view.NewFyneApp(app.New(), service, info)
+
 	view.StartApp()
 
 }

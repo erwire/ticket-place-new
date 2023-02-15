@@ -41,12 +41,14 @@ type FyneApp struct {
 	}
 
 	header struct {
-		usernameLabel        *canvas.Text
-		localTimeLabel       *canvas.Text
-		printLastСheckButton *widget.Button
-		exitButton           *widget.Button
-		printXReportButton   *widget.Button
-		listenerStatus       struct {
+		usernameLabel           *canvas.Text
+		localTimeLabel          *canvas.Text
+		printLastСheckButton    *widget.Button
+		exitButton              *widget.Button
+		exitAndCloseShiftButton *widget.Button
+		printXReportButton      *widget.Button
+
+		listenerStatus struct {
 			listenerToolbar     *widget.Toolbar
 			listenerToolbarItem *widget.ToolbarAction
 		}
@@ -135,6 +137,7 @@ func (f *FyneApp) StartApp() {
 		if err != nil {
 			log.Println(err.Error())
 		}
+		f.service.MakeSession(*f.info)
 		go f.Listen(f.context.ctx, *f.info)
 	}
 

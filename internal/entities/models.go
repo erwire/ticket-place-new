@@ -199,52 +199,8 @@ type Refound struct {
 					CreatedAt  string `json:"created_at"`
 				} `json:"seat"`
 			} `json:"event_seats"`
-			EventSeatsCount int `json:"event_seats_count"`
-			Tickets         []struct {
-				Id          int    `json:"id"`
-				Number      string `json:"number"`
-				Status      string `json:"status"`
-				StatusName  string `json:"status_name"`
-				Amount      int    `json:"amount"`
-				OrderId     int    `json:"order_id"`
-				ShowId      int    `json:"show_id"`
-				Show        string `json:"show"`
-				CashboxId   int    `json:"cashbox_id"`
-				CashboxName string `json:"cashbox_name"`
-				EventSeatId int    `json:"event_seat_id"`
-				SeatNumber  int    `json:"seat_number"`
-				RowSector   int    `json:"row_sector"`
-				Zona        string `json:"zona"`
-				Event       struct {
-					Id             int       `json:"id"`
-					HallId         int       `json:"hall_id"`
-					ShowId         int       `json:"show_id"`
-					DateTime       string    `json:"date_time"`
-					CreatedAt      time.Time `json:"created_at"`
-					UpdatedAt      time.Time `json:"updated_at"`
-					Status         string    `json:"status"`
-					RentalPeriodId int       `json:"rental_period_id"`
-					Show           struct {
-						Id           int         `json:"id"`
-						Type         string      `json:"type"`
-						Name         string      `json:"name"`
-						Description  string      `json:"description"`
-						Duration     string      `json:"duration"`
-						Intermission bool        `json:"intermission"`
-						AgeLimit     string      `json:"age_limit"`
-						CreatedAt    time.Time   `json:"created_at"`
-						UpdatedAt    time.Time   `json:"updated_at"`
-						ShowOnIndex  bool        `json:"show_on_index"`
-						Poster       interface{} `json:"poster"`
-						ProgramId    interface{} `json:"program_id"`
-					} `json:"show"`
-				} `json:"event"`
-				ScannedAt    interface{} `json:"scanned_at"`
-				ScanCount    int         `json:"scan_count"`
-				UserId       int         `json:"user_id"`
-				UserFullname string      `json:"user_fullname"`
-				Date         interface{} `json:"date"`
-			} `json:"tickets"`
+			EventSeatsCount int          `json:"event_seats_count"`
+			Tickets         []TicketData `json:"tickets"`
 		} `json:"order"`
 		Seller struct {
 			Id          int    `json:"id"`
@@ -257,55 +213,11 @@ type Refound struct {
 			ContactName string `json:"contact_name"`
 			ParentName  string `json:"parent_name"`
 		} `json:"seller"`
-		Client  interface{} `json:"client"`
-		Contact interface{} `json:"contact"`
-		Event   interface{} `json:"event"`
-		Tickets []struct {
-			Id          int    `json:"id"`
-			Number      string `json:"number"`
-			Status      string `json:"status"`
-			StatusName  string `json:"status_name"`
-			Amount      int    `json:"amount"`
-			OrderId     int    `json:"order_id"`
-			ShowId      int    `json:"show_id"`
-			Show        string `json:"show"`
-			CashboxId   int    `json:"cashbox_id"`
-			CashboxName string `json:"cashbox_name"`
-			EventSeatId int    `json:"event_seat_id"`
-			SeatNumber  int    `json:"seat_number"`
-			RowSector   int    `json:"row_sector"`
-			Zona        string `json:"zona"`
-			Event       struct {
-				Id             int       `json:"id"`
-				HallId         int       `json:"hall_id"`
-				ShowId         int       `json:"show_id"`
-				DateTime       string    `json:"date_time"`
-				CreatedAt      time.Time `json:"created_at"`
-				UpdatedAt      time.Time `json:"updated_at"`
-				Status         string    `json:"status"`
-				RentalPeriodId int       `json:"rental_period_id"`
-				Show           struct {
-					Id           int         `json:"id"`
-					Type         string      `json:"type"`
-					Name         string      `json:"name"`
-					Description  string      `json:"description"`
-					Duration     string      `json:"duration"`
-					Intermission bool        `json:"intermission"`
-					AgeLimit     string      `json:"age_limit"`
-					CreatedAt    time.Time   `json:"created_at"`
-					UpdatedAt    time.Time   `json:"updated_at"`
-					ShowOnIndex  bool        `json:"show_on_index"`
-					Poster       interface{} `json:"poster"`
-					ProgramId    interface{} `json:"program_id"`
-				} `json:"show"`
-			} `json:"event"`
-			ScannedAt    interface{} `json:"scanned_at"`
-			ScanCount    int         `json:"scan_count"`
-			UserId       int         `json:"user_id"`
-			UserFullname string      `json:"user_fullname"`
-			Date         interface{} `json:"date"`
-		} `json:"tickets"`
-		Show string `json:"show"`
+		Client  interface{}  `json:"client"`
+		Contact interface{}  `json:"contact"`
+		Event   interface{}  `json:"event"`
+		Tickets []TicketData `json:"tickets"`
+		Show    string       `json:"show"`
 	} `json:"data"`
 }
 
@@ -469,51 +381,53 @@ type Sell struct {
 				CreatedAt  string `json:"created_at"`
 			} `json:"seat"`
 		} `json:"event_seats"`
-		EventSeatsCount int `json:"event_seats_count"`
-		Tickets         []struct {
-			Id          int         `json:"id"`
-			Number      string      `json:"number"`
-			Status      string      `json:"status"`
-			StatusName  string      `json:"status_name"`
-			Amount      int         `json:"amount"`
-			OrderId     int         `json:"order_id"`
-			ShowId      int         `json:"show_id"`
-			Show        string      `json:"show"`
-			CashboxId   interface{} `json:"cashbox_id"`
-			CashboxName string      `json:"cashbox_name"`
-			EventSeatId int         `json:"event_seat_id"`
-			SeatNumber  int         `json:"seat_number"`
-			RowSector   int         `json:"row_sector"`
-			Zona        string      `json:"zona"`
-			Event       struct {
-				Id             int       `json:"id"`
-				HallId         int       `json:"hall_id"`
-				ShowId         int       `json:"show_id"`
-				DateTime       string    `json:"date_time"`
-				CreatedAt      time.Time `json:"created_at"`
-				UpdatedAt      time.Time `json:"updated_at"`
-				Status         string    `json:"status"`
-				RentalPeriodId int       `json:"rental_period_id"`
-				Show           struct {
-					Id           int       `json:"id"`
-					Type         string    `json:"type"`
-					Name         string    `json:"name"`
-					Description  string    `json:"description"`
-					Duration     string    `json:"duration"`
-					Intermission bool      `json:"intermission"`
-					AgeLimit     string    `json:"age_limit"`
-					CreatedAt    time.Time `json:"created_at"`
-					UpdatedAt    time.Time `json:"updated_at"`
-					ShowOnIndex  bool      `json:"show_on_index"`
-					Poster       string    `json:"poster"`
-					ProgramId    int       `json:"program_id"`
-				} `json:"show"`
-			} `json:"event"`
-			ScannedAt    interface{} `json:"scanned_at"`
-			ScanCount    int         `json:"scan_count"`
-			UserId       int         `json:"user_id"`
-			UserFullname string      `json:"user_fullname"`
-			Date         interface{} `json:"date"`
-		} `json:"tickets"`
+		EventSeatsCount int          `json:"event_seats_count"`
+		Tickets         []TicketData `json:"tickets"`
 	} `json:"data"`
+}
+
+type TicketData struct {
+	Id          int         `json:"id"`
+	Number      string      `json:"number"`
+	Status      string      `json:"status"`
+	StatusName  string      `json:"status_name"`
+	Amount      int         `json:"amount"`
+	OrderId     int         `json:"order_id"`
+	ShowId      int         `json:"show_id"`
+	Show        string      `json:"show"`
+	CashboxId   interface{} `json:"cashbox_id"`
+	CashboxName string      `json:"cashbox_name"`
+	EventSeatId int         `json:"event_seat_id"`
+	SeatNumber  int         `json:"seat_number"`
+	RowSector   int         `json:"row_sector"`
+	Zona        string      `json:"zona"`
+	Event       struct {
+		Id             int       `json:"id"`
+		HallId         int       `json:"hall_id"`
+		ShowId         int       `json:"show_id"`
+		DateTime       string    `json:"date_time"`
+		CreatedAt      time.Time `json:"created_at"`
+		UpdatedAt      time.Time `json:"updated_at"`
+		Status         string    `json:"status"`
+		RentalPeriodId int       `json:"rental_period_id"`
+		Show           struct {
+			Id           int       `json:"id"`
+			Type         string    `json:"type"`
+			Name         string    `json:"name"`
+			Description  string    `json:"description"`
+			Duration     string    `json:"duration"`
+			Intermission bool      `json:"intermission"`
+			AgeLimit     string    `json:"age_limit"`
+			CreatedAt    time.Time `json:"created_at"`
+			UpdatedAt    time.Time `json:"updated_at"`
+			ShowOnIndex  bool      `json:"show_on_index"`
+			Poster       string    `json:"poster"`
+			ProgramId    int       `json:"program_id"`
+		} `json:"show"`
+	} `json:"event"`
+	ScannedAt    interface{} `json:"scanned_at"`
+	ScanCount    int         `json:"scan_count"`
+	UserId       int         `json:"user_id"`
+	UserFullname string      `json:"user_fullname"`
+	Date         interface{} `json:"date"`
 }

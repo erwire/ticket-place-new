@@ -2,9 +2,11 @@ package gateways
 
 import (
 	"fptr/internal/entities"
-	fptr10 "github.com/EuginKostomarov/ftpr10"
+	"fptr/pkg/fptr10"
 	"net/http"
 )
+
+type PrintType string
 
 type Gateway struct {
 	Listener
@@ -21,10 +23,18 @@ func NewGateway(client *http.Client, iFptr *fptr10.IFptr) *Gateway {
 type Listener interface {
 	Login(config entities.AppConfig) (*entities.SessionInfo, error)
 	GetLastReceipt(connectionURL string, session entities.SessionInfo) (*entities.Click, error)
-	GetSell(connectionURL string, sellID string) (*entities.Sell, error)
-	GetRefound(connectionURL string, refoundID string) (*entities.Refound, error)
+	GetSell(info entities.Info, sellID string) (*entities.Sell, error)
+	GetRefound(info entities.Info, refoundID string) (*entities.Refound, error)
 }
 
 type KKT interface {
 	Open() error
+	Close() error
+	Configurate() error
+	OpenShift() error
+	CloseShift() error
+	PrintSell(sell entities.Sell) error
+	PrintRefound(refound entities.Refound) error
+	NewCashierRegister(info entities.SessionInfo) error
+	ShiftIsExpired() bool
 }

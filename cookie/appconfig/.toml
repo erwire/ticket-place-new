@@ -1,5 +1,5 @@
 path = "path"
 com = "3"
 time = ""
-baseurl = "ticket-place.ru"
+baseurl = "https://ticket-place.ru"
 polling_period = 1000000000

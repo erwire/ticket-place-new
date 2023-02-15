@@ -21,3 +21,13 @@ var (
 	DecodingTomlError = errors.New("error during decoding data from toml file")
 	EncodingTomlError = errors.New("error during encoding data into toml file")
 ) // + Ошибки, связанные с работой модуля TOML-кодирования
+
+var (
+	ShiftIsNotOpenedError   = errors.New("shift is not opened")
+	ShiftIsOpenError        = errors.New("shift is opened")
+	BoxOfficeIsOpenError    = errors.New("box office is open")
+	BoxOfficeIsNotOpenError = errors.New("box office is not opened")
+	OpenReceiptError        = errors.New("error during open receipt")
+	DocumentNotClosed       = errors.New("error during process of closing document")
+	CantCancelReceipt       = errors.New("error during closing receipt")
+)

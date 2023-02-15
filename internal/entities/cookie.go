@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const INN = "7702060003"
+
 type Info struct {
 	AppConfig AppConfig   `toml:"app_config"`
 	Session   SessionInfo `toml:"session_info"`
@@ -40,6 +42,7 @@ type SessionInfo struct {
 		Avatar   string `json:"avatar" toml:"avatar"`
 		Email    string `json:"email" toml:"email"`
 		Role     string `json:"role" toml:"role"`
+
 		//Ability  []struct {
 		//	Subject string `json:"subject" toml:"subject"`
 		//	Action  string `json:"action" toml:"action"`
