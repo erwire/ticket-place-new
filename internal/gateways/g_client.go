@@ -6,7 +6,9 @@ import (
 	"fptr/internal/entities"
 	errorlog "fptr/pkg/error_logs"
 	"io"
+	"log"
 	"net/http"
+	"os"
 )
 
 const (
@@ -187,12 +189,23 @@ func (l *ClientGateway) GetRefound(info entities.Info, refoundID string) (*entit
 
 	body, err := io.ReadAll(response.Body)
 
+	file, err := os.OpenFile("./cookie/refound/.json", os.O_WRONLY, 0660)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	if _, err = file.Write(body); err != nil {
+		log.Println(err.Error())
+	}
+
+	file.Close()
+
 	if err != nil {
 		return nil, errorlog.ReadingBodyError
 	}
 	err = json.Unmarshal(body, &refound)
 	if err != nil {
-		return nil, errorlog.JsonUnmarshalError
+		return nil, fmt.Errorf("%w %v", errorlog.JsonUnmarshalError, err)
 	}
 	return &refound, nil
 }

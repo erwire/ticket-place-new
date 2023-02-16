@@ -73,18 +73,36 @@ func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик �
 			f.authForm.form.Show()
 			f.ShowWarning(message)
 		} else {
+			userPrev := &entities.UserInfo{}
+			if err := toml.ReadToml(toml.UserInfoPath, userPrev); err != nil {
+				log.Println(err)
+				return
+			}
+			if userPrev.ValidateUser() {
+				if userPrev.Login != appConfig.User.Login {
+					if f.service.ShiftIsOpened() || f.service.ShiftIsExpired() {
+						if message := f.service.CloseShift(); message != "" {
+							f.service.LoggerService.Errorf(message)
+							f.ShowWarning("Проблемы соединения с ККТ")
+							f.authForm.form.Show()
+							return
+						}
+					}
+				}
+			}
+
 			session.CreatedAt = time.Now()
 			err := f.UpdateUserInfo(appConfig.User)
 			if err != nil {
-				log.Println(err.Error())
+				f.service.Errorf("%v\n", err.Error())
 			}
 			err = f.UpdateDriverInfo(appConfig.Driver)
 			if err != nil {
-				log.Println(err.Error())
+				f.service.Errorf("%v\n", err.Error())
 			}
 			err = f.UpdateSession(*session)
 			if err != nil {
-				log.Println(err.Error())
+				f.service.Errorf("%v\n", err.Error())
 				return
 			}
 			f.header.usernameLabel.Text = f.info.Session.UserData.Username
@@ -93,21 +111,24 @@ func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик �
 			click, message := f.service.GetLastReceipt(f.info.AppConfig.Driver.Connection, f.info.Session)
 			if message != "" {
 				f.ShowWarning("Внимание, возможно задвоение чека!")
-				log.Println(err.Error()) //обработку сделать нормальную
 			}
 			err = toml.WriteToml(toml.ClickPath, click)
 			if err != nil {
-				log.Println(err.Error())
+				f.authForm.form.Show()
+				f.service.Errorf("%v\n", err.Error())
 				return
 			}
 
 			message = f.service.MakeSession(*f.info)
 			if message != "" {
+				f.authForm.form.Show()
 				f.ShowWarning(message)
 				return
 			}
 
 			f.context.ctx, f.context.cancel = context.WithCancel(context.Background())
+			f.service.Infof("Успешная авторизация под пользователем %s\n", f.info.Session.UserData.FullName)
+			f.service.Infoln("Горутина прослушивания запущена")
 			go f.Listen(f.context.ctx, *f.info)
 		}
 
@@ -149,23 +170,25 @@ func (f *FyneApp) exitAndCloseShiftButtonPressed() {
 }
 
 func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
-
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println(ctx.Err())
-			log.Println("Context Closed")
+			f.service.Info("Горутина прослушивания закрыта")
 			return
 		default:
+			if f.info.Session.IsDead() {
+				f.UpdateSession(entities.SessionInfo{})
+				f.ShowWarning("Ваша сессия устарела. Пожалуйста, пройдите повторную авторизацию.")
+				f.context.cancel()
+			}
 			if f.flag.StopListen {
 				continue
 			}
 			time.Sleep(info.AppConfig.Driver.PollingPeriod * time.Nanosecond)
 			clickCache := &entities.Click{}
-			err := toml.ReadToml(toml.ClickPath, clickCache)
 
-			if err != nil {
-				log.Println(err.Error())
+			if err := toml.ReadToml(toml.ClickPath, clickCache); err != nil {
+				f.service.Infoln(err)
 				continue
 			}
 
@@ -176,24 +199,26 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 			}
 
 			if clickCache.Data.Id == click.Data.Id {
-				log.Println("Билеты одинаковы!")
-				//continue
+				continue
 			}
-			toml.WriteToml(toml.ClickPath, click)
 
+			if err := toml.WriteToml(toml.ClickPath, click); err != nil {
+				f.service.Infoln(err)
+				continue
+			}
 			if f.flag.DebugOn {
 				// отладка
 			} else {
 				if f.flag.PrintCheckBox {
 					switch click.Data.Type {
 					case "order":
-						message = f.service.PrintSell(*f.info, fmt.Sprint(click.Data.Id))
+						message = f.service.PrintSell(*f.info, fmt.Sprint(click.Data.OrderId))
 						if message != "" {
 							f.ShowWarning(message)
 							continue
 						}
 					default:
-						message = f.service.PrintRefound(*f.info, fmt.Sprint(click.Data.Id))
+						message = f.service.PrintRefound(*f.info, fmt.Sprint(click.Data.OrderId))
 						if message != "" {
 							f.ShowWarning(message)
 							continue

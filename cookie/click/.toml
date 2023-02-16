@@ -1,7 +1,0 @@
-[Data]
-  Id = 8123
-  UserId = 1
-  OrderId = 1108
-  Type = "refund"
-  Check = "0"
-  CreatedAt = 2023-02-12T07:36:31Z

@@ -8,12 +8,14 @@ import (
 type Services struct {
 	Listener
 	KKT
+	*LoggerService
 }
 
-func NewServices(g *gateways.Gateway) *Services {
+func NewServices(g *gateways.Gateway, logger *LoggerService) *Services {
 	return &Services{
-		Listener: NewClientService(g),
-		KKT:      NewKKTService(g),
+		Listener:      NewClientService(g, logger.Logger),
+		KKT:           NewKKTService(g, logger.Logger),
+		LoggerService: logger,
 	}
 }
 
@@ -27,4 +29,8 @@ type Listener interface {
 type KKT interface {
 	MakeSession(info entities.Info) string
 	CloseShift() string
+	ShiftIsOpened() bool
+	ShiftIsClosed() bool
+	ShiftIsExpired() bool
+	CurrentShiftStatus() uint
 }

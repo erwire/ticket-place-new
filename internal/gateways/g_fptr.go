@@ -244,16 +244,35 @@ func (g *KKTGateway) NewCashierRegister(info entities.SessionInfo) error {
 	if !g.IsOpened() {
 		return errorlog.BoxOfficeIsNotOpenError
 	}
-	log.Println(info.UserData.FullName)
+
 	g.IFptr.SetParam(1021, info.UserData.FullName)
 	g.IFptr.SetParam(1203, "500100732259")
 	if err := g.IFptr.OperatorLogin(); err != nil {
-		log.Println(g.IFptr.ErrorDescription())
 		return err
 	}
 	return nil
 }
 
 func (g *KKTGateway) ShiftIsExpired() bool {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
+	g.IFptr.QueryData()
 	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE) == fptr10.LIBFPTR_SS_EXPIRED
+}
+
+func (g *KKTGateway) ShiftIsOpened() bool {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
+	g.IFptr.QueryData()
+	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE) == fptr10.LIBFPTR_SS_OPENED
+}
+
+func (g *KKTGateway) ShiftIsClosed() bool {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
+	g.IFptr.QueryData()
+	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE) == fptr10.LIBFPTR_SS_CLOSED
+}
+
+func (g *KKTGateway) CurrentShiftStatus() uint {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
+	g.IFptr.QueryData()
+	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE)
 }

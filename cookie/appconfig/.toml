@@ -1,5 +1,0 @@
-path = "path"
-com = "3"
-time = ""
-baseurl = "https://ticket-place.ru"
-polling_period = 1000000000

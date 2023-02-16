@@ -57,11 +57,11 @@ func (f *FyneApp) NewMainWindowHeader() {
 
 }
 
-func (f *FyneApp) NewPrintSettingsAccordionItem() {
+func (f *FyneApp) NewPrintSettingsContainer() {
 	f.PrintSettingsItem.PrintCheck = widget.NewCheckWithData("Печатать чек", binding.BindBool(&f.flag.PrintCheckBox))
 	f.PrintSettingsItem.PrintOnKKT = widget.NewCheckWithData("Печатать билет на кассе", binding.BindBool(&f.flag.PrintOnKKTTicketCheckBox))
 	f.PrintSettingsItem.PrintOnPrinter = widget.NewCheckWithData("Печатать билет на принтере", binding.BindBool(&f.flag.PrintOnPrinterTicketBox))
-	f.PrintSettingsItem.AdditionalText = widget.NewEntry()
+	f.PrintSettingsItem.AdditionalText = widget.NewEntry() //widget.NewEntry()
 	f.PrintSettingsItem.SetAdditionalText = widget.NewButton("Записать", f.SetAdditionalTextPressed)
 }
 
@@ -105,11 +105,11 @@ func (f *FyneApp) NewDriverSettingAccordionItem() {
 }
 
 func (f *FyneApp) NewMainWindowAccordion() {
-	f.ConfigurePrintSettingsAccordionItem()
+	f.ConfigurePrintSettingsContainer()
 	f.ConfigurePrintsRefoundAndDepositsAccordionItem()
 	f.ConfigureDriverSettingAccordionItem()
 	f.MainWindowAccordion = widget.NewAccordion(
-		f.PrintSettingsItem.PrintSettingsAccordionItem, f.PrintsRefoundAndDeposits.RefoundAndDepositsAccordionItem, f.DriverSetting.DriverSettingAccordion,
+		f.PrintsRefoundAndDeposits.RefoundAndDepositsAccordionItem, f.DriverSetting.DriverSettingAccordion,
 	)
 }
 

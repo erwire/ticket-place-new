@@ -167,13 +167,13 @@ type Refound struct {
 			CountTickets interface{} `json:"count_tickets"`
 			CashboxId    int         `json:"cashbox_id"`
 			Cashboxes    []struct {
-				Id          int    `json:"id"`
-				Name        string `json:"name"`
-				SellerId    int    `json:"seller_id"`
-				Address     string `json:"address"`
-				SellerName  string `json:"seller_name"`
-				CompanyId   int    `json:"company_id"`
-				CompanyName string `json:"company_name"`
+				Id          int         `json:"id"`
+				Name        string      `json:"name"`
+				SellerId    int         `json:"seller_id"`
+				Address     string      `json:"address"`
+				SellerName  string      `json:"seller_name"`
+				CompanyId   interface{} `json:"company_id"`
+				CompanyName string      `json:"company_name"`
 			} `json:"cashboxes"`
 			EventSeats []struct {
 				Id         int         `json:"id"`
@@ -217,7 +217,7 @@ type Refound struct {
 		Contact interface{}  `json:"contact"`
 		Event   interface{}  `json:"event"`
 		Tickets []TicketData `json:"tickets"`
-		Show    string       `json:"show"`
+		Show    interface{}  `json:"show"`
 	} `json:"data"`
 }
 

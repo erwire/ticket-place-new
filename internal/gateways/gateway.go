@@ -37,4 +37,7 @@ type KKT interface {
 	PrintRefound(refound entities.Refound) error
 	NewCashierRegister(info entities.SessionInfo) error
 	ShiftIsExpired() bool
+	ShiftIsOpened() bool
+	ShiftIsClosed() bool
+	CurrentShiftStatus() uint
 }

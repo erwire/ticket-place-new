@@ -20,10 +20,12 @@ type Flags struct {
 }
 
 type Selected struct {
+	Additional *string
 }
 
 type FyneApp struct {
-	info    *entities.Info
+	info *entities.Info
+
 	context struct {
 		ctx    context.Context
 		cancel context.CancelFunc
@@ -54,12 +56,13 @@ type FyneApp struct {
 		}
 	}
 	PrintSettingsItem struct {
-		PrintSettingsAccordionItem *widget.AccordionItem
-		PrintCheck                 *widget.Check
-		PrintOnKKT                 *widget.Check
-		PrintOnPrinter             *widget.Check
-		AdditionalText             *widget.Entry
-		SetAdditionalText          *widget.Button
+		//PrintSettingsAccordionItem *widget.AccordionItem
+		PrintSettingsContainer *fyne.Container
+		PrintCheck             *widget.Check
+		PrintOnKKT             *widget.Check
+		PrintOnPrinter         *widget.Check
+		AdditionalText         *widget.Entry
+		SetAdditionalText      *widget.Button
 	}
 
 	PrintsRefoundAndDeposits struct {
@@ -101,7 +104,8 @@ type FyneApp struct {
 	AlertWindow   dialog.Dialog
 	SettingWindow dialog.Dialog
 	//Флаги
-	flag Flags
+	flag     Flags
+	selected Selected
 }
 
 func NewFyneApp(a fyne.App, view *services.Services, inf *entities.Info) *FyneApp { //, service *services.Service
@@ -123,6 +127,7 @@ func (f *FyneApp) StartApp() {
 	}
 
 	if f.info.Session.IsDead() {
+		f.ShowWarning("Ваша сессия устарела. Пожалуйста, авторизуйтесь снова!")
 		f.UpdateSession(entities.SessionInfo{})
 	} else {
 		f.header.usernameLabel.Text = f.info.Session.UserData.Username
@@ -137,19 +142,33 @@ func (f *FyneApp) StartApp() {
 		if err != nil {
 			log.Println(err.Error())
 		}
-		f.service.MakeSession(*f.info)
+		message = f.service.MakeSession(*f.info)
+		if message != "" {
+			f.UpdateSession(entities.SessionInfo{})
+			f.authForm.form.Show()
+		}
+		f.service.Infof("Данные из сессии подгрузились. Успешная авторизация под пользователем %s", f.info.Session.UserData.FullName)
 		go f.Listen(f.context.ctx, *f.info)
 	}
 
 	f.setupCookieIntoEntry()
 	go f.ClockUpdater()
-	f.flag.DebugOn = true
+	f.flag.DebugOn = false
 	f.mainWindow.ShowAndRun()
 }
 
 func (f *FyneApp) ClockUpdater() {
 	for {
 		time.Sleep(time.Second)
+		timeLog, err := f.service.LoggerService.CurrentTime()
+		if err != nil {
+			f.service.Warning(err)
+		}
+		if time.Now().Format("02-01-2006") != timeLog.Format("02-01-2006") {
+			if err := f.service.LoggerService.Reinit(); err != nil {
+				f.service.Warning(err)
+			}
+		}
 		f.header.localTimeLabel.Text = time.Now().Format("02.01.2006 15:04:05")
 		f.header.localTimeLabel.Refresh()
 	}

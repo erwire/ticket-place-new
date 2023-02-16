@@ -6,6 +6,8 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+const iconPath = "./content/system/icon/main.png"
+
 func (f *FyneApp) ConfigureSettingWindow() {
 	f.NewSettingWindow()
 	f.SettingWindow.Resize(fyne.NewSize(500, 500))
@@ -14,10 +16,18 @@ func (f *FyneApp) ConfigureSettingWindow() {
 func (f *FyneApp) ConfigureMainWindows() {
 	f.NewMainWindow()
 	f.ConfigureMainWindowAccordion()
-	f.mainWindow.Resize(fyne.NewSize(500, 500))
+	f.mainWindow.Resize(fyne.NewSize(600, 600))
+	icoResource, err := fyne.LoadResourceFromPath(iconPath)
+	if err != nil {
+		f.service.Errorf("Ошибка установки иконки: %v", err)
+	} else {
+		f.mainWindow.SetIcon(icoResource)
+	}
+
 	f.mainWindow.SetContent(
 		container.NewVBox(
 			f.ConfigureMainWindowHeader(),
+			f.PrintSettingsItem.PrintSettingsContainer,
 			f.MainWindowAccordion,
 		),
 	)
@@ -49,22 +59,25 @@ func (f *FyneApp) ConfigureMainWindowHeader() *fyne.Container {
 	return box
 }
 
-func (f *FyneApp) ConfigurePrintSettingsAccordionItem() {
-	f.NewPrintSettingsAccordionItem()
-	f.PrintSettingsItem.AdditionalText.MultiLine = true
-	f.PrintSettingsItem.AdditionalText.Resize(fyne.NewSize(200, 600))
-	f.PrintSettingsItem.AdditionalText.Refresh()
-
-	f.PrintSettingsItem.PrintSettingsAccordionItem = widget.NewAccordionItem("Параметры печати", container.NewVBox(
+func (f *FyneApp) ConfigurePrintSettingsContainer() {
+	f.NewPrintSettingsContainer()
+	//f.PrintSettingsItem.AdditionalText.Wrapping = fyne.TextWrapBreak
+	//f.PrintSettingsItem.AdditionalText.MultiLine = true
+	//f.PrintSettingsItem.AdditionalText.Resize(fyne.NewSize(300, 300))
+	//f.PrintSettingsItem.AdditionalText.SetPlaceHolder("Сообщение")
+	//f.PrintSettingsItem.AdditionalText.Refresh()
+	textCont := container.NewMax(f.PrintSettingsItem.AdditionalText)
+	textCont.Resize(fyne.NewSize(600, 600))
+	f.PrintSettingsItem.PrintCheck.SetChecked(true)
+	f.PrintSettingsItem.PrintSettingsContainer = container.NewVBox(
+		//textCont,
 		container.NewHBox(
 			f.PrintSettingsItem.PrintCheck,
 			f.PrintSettingsItem.PrintOnKKT,
 			f.PrintSettingsItem.PrintOnPrinter,
-		), container.NewVBox(
-			f.PrintSettingsItem.AdditionalText,
-			f.PrintSettingsItem.SetAdditionalText,
+			//f.PrintSettingsItem.SetAdditionalText,
 		),
-	))
+	)
 }
 
 func (f *FyneApp) ConfigurePrintsRefoundAndDepositsAccordionItem() {
