@@ -40,4 +40,7 @@ type KKT interface {
 	ShiftIsOpened() bool
 	ShiftIsClosed() bool
 	CurrentShiftStatus() uint
+	PrintXReport() error
+	CashIncome(income float64) error
+	CurrentErrorStatusCode() error
 }

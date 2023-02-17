@@ -24,6 +24,7 @@ var (
 
 var (
 	ShiftIsNotOpenedError   = errors.New("shift is not opened")
+	ShiftIsExpired          = errors.New("shift is expired")
 	ShiftIsOpenError        = errors.New("shift is opened")
 	BoxOfficeIsOpenError    = errors.New("box office is open")
 	BoxOfficeIsNotOpenError = errors.New("box office is not opened")

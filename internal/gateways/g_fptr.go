@@ -1,6 +1,7 @@
 package gateways
 
 import (
+	"errors"
 	"fmt"
 	"fptr/internal/entities"
 	errorlog "fptr/pkg/error_logs"
@@ -41,6 +42,9 @@ func (g *KKTGateway) OpenShift() error {
 }
 
 func (g *KKTGateway) CloseShift() error {
+	if !g.IsOpened() {
+		return errorlog.BoxOfficeIsNotOpenError
+	}
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_REPORT_TYPE, fptr10.LIBFPTR_RT_CLOSE_SHIFT)
 	return g.IFptr.Report()
 }
@@ -56,11 +60,23 @@ func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 	if !g.IsOpened() {
 		return errorlog.BoxOfficeIsNotOpenError
 	}
+
+	if g.ShiftIsExpired() {
+		return errorlog.ShiftIsExpired
+	}
+
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL)
 
 	if err := g.IFptr.OpenReceipt(); err != nil {
 		if g.IFptr.ErrorCode() == fptr10.LIBFPTR_ERROR_DENIED_IN_OPENED_RECEIPT {
-			g.IFptr.CancelReceipt()
+			err = g.IFptr.CancelReceipt()
+			if err != nil {
+				return fmt.Errorf("%w: %s", errorlog.CantCancelReceipt, err.Error())
+			}
+			err = g.IFptr.OpenReceipt()
+			if err != nil {
+				return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
+			}
 		}
 
 		return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
@@ -71,6 +87,7 @@ func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 	for _, ticket := range sell.Data.Tickets {
 		if ticket.Amount != 0 && ticket.Status == "payed" {
 			if err := g.PositionRegister(ticket); err != nil {
+				g.IFptr.CancelReceipt()
 				return err
 			}
 			sum += ticket.Amount
@@ -79,6 +96,7 @@ func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
 	if err := g.IFptr.ReceiptTotal(); err != nil {
+		g.IFptr.CancelReceipt()
 		return err
 	}
 
@@ -96,8 +114,8 @@ func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 
 	if err := g.IFptr.CloseReceipt(); err != nil {
 		if g.ShiftIsExpired() {
-			g.CloseShift() //-
-			g.OpenShift()  //-
+			g.CloseShift()
+			g.OpenShift()
 		}
 	}
 
@@ -136,7 +154,25 @@ func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 	return nil
 }
 
+func (g *KKTGateway) PrintXReport() error {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_REPORT_TYPE, fptr10.LIBFPTR_RT_X)
+	return g.IFptr.Report()
+}
+
+func (g *KKTGateway) CashIncome(income float64) error {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, income)
+	return g.IFptr.CashIncome()
+}
+
 func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
+	if !g.IsOpened() {
+		return errorlog.BoxOfficeIsNotOpenError
+	}
+
+	if g.ShiftIsExpired() {
+		return errorlog.ShiftIsExpired
+	}
+
 	ZeroAmountStatus := true
 	for _, ticket := range refound.Data.Tickets {
 		if ticket.Amount != 0 {
@@ -149,11 +185,17 @@ func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL_RETURN)
 		if err := g.IFptr.OpenReceipt(); err != nil {
 			if g.IFptr.ErrorCode() == fptr10.LIBFPTR_ERROR_DENIED_IN_OPENED_RECEIPT {
-				g.IFptr.CancelReceipt()
-				g.IFptr.OpenReceipt()
-			} else {
-				return errorlog.OpenReceiptError
+				err = g.IFptr.CancelReceipt()
+				if err != nil {
+					return fmt.Errorf("%w: %s", errorlog.CantCancelReceipt, err.Error())
+				}
+				err = g.IFptr.OpenReceipt()
+				if err != nil {
+					return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
+				}
 			}
+
+			return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
 		}
 		g.IFptr.SetParam(1212, 4)
 		g.IFptr.SetParam(1214, 4)
@@ -170,7 +212,11 @@ func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
 		}
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
 		if err := g.IFptr.ReceiptTotal(); err != nil { //!
-
+			err = g.IFptr.CancelReceipt()
+			if err != nil {
+				return fmt.Errorf("%w: %s", errorlog.CantCancelReceipt, err.Error())
+			}
+			return fmt.Errorf("чек закрыт из-за проблем с расчетом итога: %w", err)
 		}
 		if refound.Data.PaymentType != "cash" && refound.Data.Order.PaymentType != "cash" {
 			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_ELECTRONICALLY)
@@ -179,8 +225,13 @@ func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
 		}
 
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_SUM, sum)
-		g.IFptr.Payment() //! err
-
+		err := g.IFptr.Payment() //! err
+		if err != nil {
+			err = g.IFptr.CancelReceipt()
+			if err != nil {
+				return fmt.Errorf("чек закрыт из-за проблем с расчетом полученной суммы: %w", err)
+			}
+		}
 		if err := g.IFptr.CloseReceipt(); err != nil {
 			if g.ShiftIsExpired() {
 				g.CloseShift()
@@ -275,4 +326,12 @@ func (g *KKTGateway) CurrentShiftStatus() uint {
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
 	g.IFptr.QueryData()
 	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE)
+}
+
+func (g *KKTGateway) CurrentErrorStatusCode() error {
+	status := g.IFptr.ErrorDescription()
+	if status != "" {
+		return errors.New(status)
+	}
+	return nil
 }

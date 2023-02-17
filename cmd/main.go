@@ -45,6 +45,7 @@ func main() {
 
 	defer service.Logger.Close()
 	defer service.Logger.Infoln("Завершение работы приложения")
+
 	view.StartApp()
 
 }

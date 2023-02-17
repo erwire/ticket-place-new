@@ -93,6 +93,11 @@ type FyneApp struct {
 		DriverPollingPeriodFormItem                             *widget.FormItem
 	}
 
+	PopUp struct {
+		PopUp *widget.PopUp
+		Text  *widget.Label
+	}
+
 	MainWindowAccordion *widget.Accordion
 
 	//! Окно ошибок
@@ -117,6 +122,7 @@ func NewFyneApp(a fyne.App, view *services.Services, inf *entities.Info) *FyneAp
 }
 
 func (f *FyneApp) StartApp() {
+
 	f.ConfigureMainWindows()
 	f.ConfigureAuthDialogForm()
 	f.ConfigureWarningAlert()
@@ -124,6 +130,7 @@ func (f *FyneApp) StartApp() {
 	err := f.InitializeCookie()
 	if err != nil {
 		f.ShowWarning("Данные по прошлой сессии повреждены или отсутствуют")
+		f.UpdateSession(entities.SessionInfo{})
 	}
 
 	if f.info.Session.IsDead() {
@@ -154,6 +161,10 @@ func (f *FyneApp) StartApp() {
 	f.setupCookieIntoEntry()
 	go f.ClockUpdater()
 	f.flag.DebugOn = false
+
+	//f.PopUp.Text = widget.NewLabel("")
+	//f.PopUp.PopUp = widget.NewPopUp(f.PopUp.Text, f.mainWindow.Canvas())
+
 	f.mainWindow.ShowAndRun()
 }
 
