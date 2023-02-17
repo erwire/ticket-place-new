@@ -27,10 +27,13 @@ type Listener interface {
 }
 
 type KKT interface {
+	PrintXReport() string
 	MakeSession(info entities.Info) string
 	CloseShift() string
 	ShiftIsOpened() bool
 	ShiftIsClosed() bool
 	ShiftIsExpired() bool
 	CurrentShiftStatus() uint
+	CashIncome(income float64) string
+	CurrentError() string
 }

@@ -43,8 +43,15 @@ func (s *ClientService) PrintSell(info entities.Info, id string) string {
 	}
 	err = s.gw.KKT.PrintSell(*sell)
 	if err != nil {
+		switch errors.Unwrap(err) {
+		case errorlog.ShiftIsExpired:
+			s.gw.CloseShift()
+			return "Смена истекла. Пожалуйста, переавторизуйтесь."
+		}
+
 		errorMessage := fmt.Sprintf("Ошибка во время печати заказа с номером %s", id)
 		s.Errorf("%s: %v\n", errorMessage, err)
+
 		return errorMessage
 	}
 	s.Infof("Выполнена печать чека заказа с номером: %s\n", id)
@@ -59,6 +66,11 @@ func (s *ClientService) PrintRefound(info entities.Info, id string) string {
 	}
 	err = s.gw.KKT.PrintRefound(*refound)
 	if err != nil {
+		switch errors.Unwrap(err) {
+		case errorlog.ShiftIsExpired:
+			s.gw.CloseShift()
+			return "Смена истекла. Пожалуйста, переавторизуйтесь."
+		}
 		errorMessage := fmt.Sprintf("Ошибка во время печати заказа с номером %s", id)
 		s.Errorf("%s: %v\n", errorMessage, err)
 		return errorMessage

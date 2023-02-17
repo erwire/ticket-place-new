@@ -7,6 +7,7 @@ import (
 	"fptr/pkg/toml"
 	"fyne.io/fyne/v2/theme"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -31,14 +32,61 @@ func (f *FyneApp) DriverPollingPeriodSelected(selected string) {
 }
 
 func (f *FyneApp) CashIncomeOnSubmit() {
-
+	incomeStr := f.PrintsRefoundAndDeposits.CashIncomeEntry.Text
+	income, err := strconv.ParseFloat(incomeStr, 32)
+	if err != nil {
+		f.ShowWarning("Некорректные данные в поле ввода суммы")
+		return
+	}
+	message := f.service.CashIncome(income)
+	switch message {
+	case "":
+		break
+	default:
+		f.ShowWarning("Во время внесения произошла ошибка")
+		return
+	}
 }
 
 func (f *FyneApp) PrintCheckOnSubmit() {
-
+	id := f.PrintsRefoundAndDeposits.PrintCheckEntry.Text
+	f.service.Infof("Запрос на печать заказа с номером %s", id)
+	if id == "" {
+		f.ShowWarning("Пожалуйста, вставьте значение в поле возврата")
+		return
+	}
+	message := f.service.PrintSell(*f.info, id)
+	if message != "" {
+		switch message {
+		case "Смена истекла. Пожалуйста, переавторизуйтесь.":
+			f.exitPressed()
+			f.ShowWarning(message)
+			return
+		default:
+			f.ShowWarning(message)
+			return
+		}
+	}
 }
 
 func (f *FyneApp) RefoundOnSubmit() {
+	id := f.PrintsRefoundAndDeposits.RefoundEntry.Text
+	if id == "" {
+		f.ShowWarning("Пожалуйста, вставьте значение в поле возврата")
+		return
+	}
+	message := f.service.PrintRefound(*f.info, id)
+	if message != "" {
+		switch message {
+		case "Смена истекла. Пожалуйста, переавторизуйтесь.":
+			f.exitPressed()
+			f.ShowWarning(message)
+			return
+		default:
+			f.ShowWarning(message)
+			return
+		}
+	}
 
 }
 
@@ -47,7 +95,35 @@ func (f *FyneApp) SetAdditionalTextPressed() {
 }
 
 func (f *FyneApp) printLastCheckPressed() {
-	//Напечатать последний чек
+	click := &entities.Click{}
+	err := toml.ReadToml(toml.ClickPath, click)
+	if err != nil {
+		message := "Ошибка при прочтении истории печати"
+		f.service.Errorf("%s: %v", message, err)
+		f.ShowWarning(message)
+		return
+	}
+
+	id := fmt.Sprint(click.Data.OrderId)
+	message := ""
+	switch click.Data.Type {
+	case "order":
+		message = f.service.PrintSell(*f.info, id)
+	default:
+		message = f.service.PrintRefound(*f.info, id)
+	}
+
+	if message != "" {
+		switch message {
+		case "Смена истекла. Пожалуйста, переавторизуйтесь.":
+			f.exitPressed()
+			f.ShowWarning(message)
+			return
+		default:
+			f.ShowWarning(message)
+			return
+		}
+	}
 }
 
 func (f *FyneApp) exitPressed() {
@@ -58,7 +134,13 @@ func (f *FyneApp) exitPressed() {
 }
 
 func (f *FyneApp) printXReportPressed() {
-	//Механизм напечатания X-отчета
+	message := f.service.PrintXReport()
+	if message != "" {
+		switch message {
+		default:
+			f.ShowWarning(message)
+		}
+	}
 }
 
 func (f *FyneApp) WarningPressed() {
@@ -171,11 +253,16 @@ func (f *FyneApp) exitAndCloseShiftButtonPressed() {
 
 func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 	for {
+
 		select {
 		case <-ctx.Done():
 			f.service.Info("Горутина прослушивания закрыта")
 			return
 		default:
+			if status := f.service.CurrentError(); status == "Нет связи" || status == "Порт недоступен" {
+				f.exitPressed()
+				f.ShowWarning("Нет доступа к ККТ. Проверьте соединение с кассой!")
+			}
 			if f.info.Session.IsDead() {
 				f.UpdateSession(entities.SessionInfo{})
 				f.ShowWarning("Ваша сессия устарела. Пожалуйста, пройдите повторную авторизацию.")
@@ -213,18 +300,20 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 					switch click.Data.Type {
 					case "order":
 						message = f.service.PrintSell(*f.info, fmt.Sprint(click.Data.OrderId))
-						if message != "" {
-							f.ShowWarning(message)
-							continue
-						}
 					default:
 						message = f.service.PrintRefound(*f.info, fmt.Sprint(click.Data.OrderId))
-						if message != "" {
+					}
+					if message != "" {
+						switch message {
+						case "Смена истекла. Пожалуйста, переавторизуйтесь.":
+							f.exitPressed()
+							f.ShowWarning(message)
+							return
+						default:
 							f.ShowWarning(message)
 							continue
 						}
 					}
-
 				}
 
 				if f.flag.PrintOnPrinterTicketBox {
@@ -234,6 +323,7 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 				if f.flag.PrintOnKKTTicketCheckBox {
 
 				}
+
 			}
 
 		}

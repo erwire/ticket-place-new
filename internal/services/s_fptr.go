@@ -18,6 +18,16 @@ func NewKKTService(gw *gateways.Gateway, logg *logger.Logger) *KKTService {
 	}
 }
 
+func (s *KKTService) PrintXReport() string {
+	err := s.gw.PrintXReport()
+	if err != nil {
+		message := "Ошибка при печати X-отчета"
+		s.Errorf("%s: %v", message, err)
+		return message
+	}
+	return ""
+}
+
 func (s *KKTService) MakeSession(info entities.Info) string {
 	if err := s.gw.Open(); err != nil {
 		s.Errorf("Ошибка при установлении связи с кассой: %v\n", err)
@@ -67,4 +77,22 @@ func (s *KKTService) ShiftIsExpired() bool {
 
 func (s *KKTService) CurrentShiftStatus() uint {
 	return s.gw.KKT.CurrentShiftStatus()
+}
+
+func (s *KKTService) CashIncome(income float64) string {
+	err := s.gw.CashIncome(income)
+	message := ""
+	if err != nil {
+		message = "Ошибка при попытке внесения"
+		s.Errorf("%s %v", message, err)
+	}
+	return message
+}
+
+func (s *KKTService) CurrentError() string {
+	err := s.gw.CurrentErrorStatusCode()
+	if err != nil {
+		return err.Error()
+	}
+	return ""
 }
