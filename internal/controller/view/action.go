@@ -52,7 +52,7 @@ func (f *FyneApp) PrintCheckOnSubmit() {
 	id := f.PrintsRefoundAndDeposits.PrintCheckEntry.Text
 	f.service.Infof("Запрос на печать заказа с номером %s", id)
 	if id == "" {
-		f.ShowWarning("Пожалуйста, вставьте значение в поле возврата")
+		f.ShowWarning("Пожалуйста, вставьте значение в поле номера чека")
 		return
 	}
 	message := f.service.PrintSell(*f.info, id)
@@ -75,7 +75,7 @@ func (f *FyneApp) RefoundOnSubmit() {
 		f.ShowWarning("Пожалуйста, вставьте значение в поле возврата")
 		return
 	}
-	message := f.service.PrintRefound(*f.info, id)
+	message := f.service.PrintRefoundFromSell(*f.info, id)
 	if message != "" {
 		switch message {
 		case "Смена истекла. Пожалуйста, переавторизуйтесь.":

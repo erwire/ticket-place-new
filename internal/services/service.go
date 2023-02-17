@@ -24,6 +24,7 @@ type Listener interface {
 	PrintSell(info entities.Info, id string) string
 	PrintRefound(info entities.Info, id string) string
 	Login(config entities.AppConfig) (*entities.SessionInfo, string)
+	PrintRefoundFromSell(info entities.Info, id string) string
 }
 
 type KKT interface {

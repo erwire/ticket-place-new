@@ -58,6 +58,29 @@ func (s *ClientService) PrintSell(info entities.Info, id string) string {
 	return ""
 }
 
+func (s *ClientService) PrintRefoundFromSell(info entities.Info, id string) string {
+	sell, err := s.gw.Listener.GetSell(info, id)
+	if err != nil {
+		s.Errorf("Ошибка во время выполнения запроса: %v\n", err)
+		return "Ошибка во время выполнения запроса"
+	}
+	err = s.gw.KKT.PrintRefoundFromCheck(*sell)
+	if err != nil {
+		switch errors.Unwrap(err) {
+		case errorlog.ShiftIsExpired:
+			s.gw.CloseShift()
+			return "Смена истекла. Пожалуйста, переавторизуйтесь."
+		}
+
+		errorMessage := fmt.Sprintf("Ошибка во время печати возврата с номером %s", id)
+		s.Errorf("%s: %v\n", errorMessage, err)
+
+		return errorMessage
+	}
+	s.Infof("Выполнена печать чека возврата заказа с номером: %s\n", id)
+	return ""
+}
+
 func (s *ClientService) PrintRefound(info entities.Info, id string) string {
 	refound, err := s.gw.Listener.GetRefound(info, id)
 	if err != nil {

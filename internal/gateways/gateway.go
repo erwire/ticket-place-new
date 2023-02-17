@@ -43,4 +43,5 @@ type KKT interface {
 	PrintXReport() error
 	CashIncome(income float64) error
 	CurrentErrorStatusCode() error
+	PrintRefoundFromCheck(sell entities.Sell) error
 }
