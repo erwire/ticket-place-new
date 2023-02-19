@@ -56,102 +56,108 @@ func (g *KKTGateway) PrintTicket() error {
 	return nil
 }
 
+func (g *KKTGateway) TicketStatus(ticket entities.TicketData) bool {
+	return ticket.Status == "created" || ticket.Status == "payed" //дописать в случае, если добавится новый параметр для печати. Если на возврат разные правила - добавить флаг с ключом (возврат или продажа)
+}
+
 func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 	if !g.IsOpened() {
 		return errorlog.BoxOfficeIsNotOpenError
 	}
 
 	if g.ShiftIsExpired() {
-		return errorlog.ShiftIsExpired
+		return errorlog.ShiftIsExpired // ! не обязательна обработка, если смена истекла - выйдет ошибка FPTR.ERROR
 	}
+	if !g.ZeroAmountStatus(sell) && g.AcceptedForPrint(sell) {
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL)
 
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL)
-
-	if err := g.IFptr.OpenReceipt(); err != nil {
-		if g.IFptr.ErrorCode() == fptr10.LIBFPTR_ERROR_DENIED_IN_OPENED_RECEIPT {
-			err = g.IFptr.CancelReceipt()
-			if err != nil {
-				return fmt.Errorf("%w: %s", errorlog.CantCancelReceipt, err.Error())
+		if err := g.IFptr.OpenReceipt(); err != nil {
+			if g.IFptr.ErrorCode() == fptr10.LIBFPTR_ERROR_DENIED_IN_OPENED_RECEIPT {
+				err = g.IFptr.CancelReceipt()
+				if err != nil {
+					return fmt.Errorf("%w: %s", errorlog.CantCancelReceipt, err.Error())
+				}
+				err = g.IFptr.OpenReceipt()
+				if err != nil {
+					return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
+				}
 			}
-			err = g.IFptr.OpenReceipt()
-			if err != nil {
-				return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
+
+			return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
+		}
+
+		var sum int
+
+		for _, ticket := range sell.Data.Tickets {
+			if ticket.Amount != 0 && g.TicketStatus(ticket) {
+				if err := g.PositionRegister(ticket); err != nil {
+					g.IFptr.CancelReceipt()
+					return err
+				}
+				sum += ticket.Amount
 			}
 		}
 
-		return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
-	}
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
+		if err := g.IFptr.ReceiptTotal(); err != nil {
+			g.IFptr.CancelReceipt()
+			return err
+		}
 
-	var sum int
+		switch sell.Data.PaymentType {
+		case "cash":
+			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_CASH)
+		default:
+			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_ELECTRONICALLY)
+		}
 
-	for _, ticket := range sell.Data.Tickets {
-		if ticket.Amount != 0 && ticket.Status == "payed" {
-			if err := g.PositionRegister(ticket); err != nil {
-				g.IFptr.CancelReceipt()
-				return err
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_SUM, sum)
+		if err := g.IFptr.Payment(); err != nil {
+			return err
+		}
+
+		if err := g.IFptr.CloseReceipt(); err != nil {
+			if g.ShiftIsExpired() {
+				g.CloseShift()
+				g.OpenShift()
 			}
-			sum += ticket.Amount
 		}
-	}
 
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
-	if err := g.IFptr.ReceiptTotal(); err != nil {
-		g.IFptr.CancelReceipt()
-		return err
-	}
-
-	switch sell.Data.PaymentType {
-	case "cash":
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_CASH)
-	default:
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_ELECTRONICALLY)
-	}
-
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_SUM, sum)
-	if err := g.IFptr.Payment(); err != nil {
-		return err
-	}
-
-	if err := g.IFptr.CloseReceipt(); err != nil {
-		if g.ShiftIsExpired() {
-			g.CloseShift()
-			g.OpenShift()
-		}
-	}
-
-	for {
-		if err := g.IFptr.CheckDocumentClosed(); err != nil {
-			log.Println(g.IFptr.ErrorDescription()) //позднее добавить механизм по таймеру для избежания циклов
-			continue
-		} else {
-			break
-		}
-	}
-
-	if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_CLOSED) {
-		if err := g.IFptr.CancelReceipt(); err != nil {
-			return errorlog.CantCancelReceipt
-		}
-		return errorlog.DocumentNotClosed
-	}
-
-	if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_PRINTED) {
-		// Можно сразу вызвать метод допечатывания документа, он завершится с ошибкой, если это невозможно
 		for {
-			if err := g.IFptr.ContinuePrint(); err != nil {
-				log.Printf("Не удалось напечатать документ (Ошибка \"%v\"). Устраните неполадку и повторите.", g.IFptr.ErrorDescription()) //исправить использование бесконечного цикла
+			if err := g.IFptr.CheckDocumentClosed(); err != nil {
+				log.Println(g.IFptr.ErrorDescription()) //позднее добавить механизм по таймеру для избежания циклов
 				continue
+			} else {
+				break
 			}
 		}
-	}
 
-	// Запрос информации о закрытом чеке
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_FN_DATA_TYPE, fptr10.LIBFPTR_FNDT_LAST_DOCUMENT)
-	if err := g.IFptr.FnQueryData(); err != nil {
-		return err
-	}
+		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_CLOSED) {
+			if err := g.IFptr.CancelReceipt(); err != nil {
+				return errorlog.CantCancelReceipt
+			}
+			return errorlog.DocumentNotClosed
+		}
 
-	return nil
+		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_PRINTED) {
+			// Можно сразу вызвать метод допечатывания документа, он завершится с ошибкой, если это невозможно
+			for {
+				if err := g.IFptr.ContinuePrint(); err != nil {
+					log.Printf("Не удалось напечатать документ (Ошибка \"%v\"). Устраните неполадку и повторите.", g.IFptr.ErrorDescription()) //исправить использование бесконечного цикла
+					continue
+				}
+			}
+		}
+
+		// Запрос информации о закрытом чеке
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_FN_DATA_TYPE, fptr10.LIBFPTR_FNDT_LAST_DOCUMENT)
+		if err := g.IFptr.FnQueryData(); err != nil {
+			return err
+		}
+
+		return nil
+	}
+	return nil // обработка нулевых заказов
 }
 
 func (g *KKTGateway) PrintXReport() error {
@@ -164,6 +170,71 @@ func (g *KKTGateway) CashIncome(income float64) error {
 	return g.IFptr.CashIncome()
 }
 
+func (g *KKTGateway) ZeroAmountStatus(data interface{}) bool {
+	ZeroAmountStatus := true
+	switch data.(type) {
+	case entities.Sell:
+		sell := data.(entities.Sell)
+		for _, ticket := range sell.Data.Tickets {
+			if ticket.Amount != 0 {
+				ZeroAmountStatus = false
+				break
+			}
+		}
+		return ZeroAmountStatus
+	case *entities.Sell:
+		sell := data.(*entities.Sell)
+		for _, ticket := range sell.Data.Tickets {
+			if ticket.Amount != 0 {
+				ZeroAmountStatus = false
+				break
+			}
+		}
+		return ZeroAmountStatus
+	case entities.Refound:
+		refound := data.(entities.Refound)
+		for _, ticket := range refound.Data.Tickets {
+			if ticket.Amount != 0 {
+				ZeroAmountStatus = false
+				break
+			}
+		}
+		return ZeroAmountStatus
+	case *entities.Refound:
+		refound := data.(*entities.Refound)
+		for _, ticket := range refound.Data.Tickets {
+			if ticket.Amount != 0 {
+				ZeroAmountStatus = false
+				break
+			}
+		}
+		return ZeroAmountStatus
+	default:
+		return true
+	}
+
+	return ZeroAmountStatus
+}
+
+func (g *KKTGateway) AcceptedForPrint(data interface{}) bool {
+	switch data.(type) {
+	case entities.Sell:
+		sell := data.(entities.Sell)
+		return sell.Data.PaymentType == "cash" || sell.Data.PaymentType == "card"
+	case *entities.Sell:
+		sell := data.(*entities.Sell)
+		return sell.Data.PaymentType == "cash" || sell.Data.PaymentType == "card"
+	case entities.Refound:
+		refound := data.(entities.Refound)
+		return refound.Data.Order.PaymentType == "cash" || refound.Data.Order.PaymentType == "card" || refound.Data.PaymentType == "cash" || refound.Data.PaymentType == "card"
+	case *entities.Refound:
+		refound := data.(*entities.Refound)
+		return refound.Data.Order.PaymentType == "cash" || refound.Data.Order.PaymentType == "card" || refound.Data.PaymentType == "cash" || refound.Data.PaymentType == "card"
+	default:
+		return false
+	}
+}
+
 func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
 	if !g.IsOpened() {
 		return errorlog.BoxOfficeIsNotOpenError
@@ -173,15 +244,7 @@ func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
 		return errorlog.ShiftIsExpired
 	}
 
-	ZeroAmountStatus := true
-	for _, ticket := range sell.Data.Tickets {
-		if ticket.Amount != 0 {
-			ZeroAmountStatus = false
-			break
-		}
-	}
-
-	if !ZeroAmountStatus {
+	if !g.ZeroAmountStatus(sell) && g.AcceptedForPrint(sell) {
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL_RETURN)
 		if err := g.IFptr.OpenReceipt(); err != nil {
 			if g.IFptr.ErrorCode() == fptr10.LIBFPTR_ERROR_DENIED_IN_OPENED_RECEIPT {
@@ -204,10 +267,10 @@ func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
 		g.IFptr.PrintText()
 
 		var sum int
-		for _, value := range sell.Data.Tickets {
-			if value.Amount != 0 {
-				g.PositionRegister(value)
-				sum += value.Amount
+		for _, ticket := range sell.Data.Tickets {
+			if ticket.Amount != 0 && g.TicketStatus(ticket) {
+				g.PositionRegister(ticket)
+				sum += ticket.Amount
 			}
 		}
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
@@ -218,10 +281,12 @@ func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
 			}
 			return fmt.Errorf("чек закрыт из-за проблем с расчетом итога: %w", err)
 		}
-		if sell.Data.PaymentType != "cash" {
-			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_ELECTRONICALLY)
-		} else {
+
+		switch sell.Data.PaymentType {
+		case "cash":
 			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_CASH)
+		case "card":
+			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_ELECTRONICALLY)
 		}
 
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_SUM, sum)
@@ -286,15 +351,7 @@ func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
 		return errorlog.ShiftIsExpired
 	}
 
-	ZeroAmountStatus := true
-	for _, ticket := range refound.Data.Tickets {
-		if ticket.Amount != 0 {
-			ZeroAmountStatus = false
-			break
-		}
-	}
-
-	if !ZeroAmountStatus {
+	if !g.ZeroAmountStatus(refound) && g.AcceptedForPrint(refound) {
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL_RETURN)
 		if err := g.IFptr.OpenReceipt(); err != nil {
 			if g.IFptr.ErrorCode() == fptr10.LIBFPTR_ERROR_DENIED_IN_OPENED_RECEIPT {
@@ -317,10 +374,10 @@ func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
 		g.IFptr.PrintText()
 
 		var sum int
-		for _, value := range refound.Data.Tickets {
-			if value.Amount != 0 {
-				g.PositionRegister(value)
-				sum += value.Amount
+		for _, ticket := range refound.Data.Tickets {
+			if ticket.Amount != 0 && g.TicketStatus(ticket) {
+				g.PositionRegister(ticket)
+				sum += ticket.Amount
 			}
 		}
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
