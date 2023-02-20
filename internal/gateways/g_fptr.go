@@ -10,6 +10,11 @@ import (
 	"strconv"
 )
 
+var (
+	CheckType  = "check"
+	TicketType = "ticket"
+)
+
 type KKTGateway struct {
 	IFptr *fptr10.IFptr
 }
@@ -56,8 +61,15 @@ func (g *KKTGateway) PrintTicket() error {
 	return nil
 }
 
-func (g *KKTGateway) TicketStatus(ticket entities.TicketData) bool {
-	return ticket.Status == "created" || ticket.Status == "payed" //дописать в случае, если добавится новый параметр для печати. Если на возврат разные правила - добавить флаг с ключом (возврат или продажа)
+func (g *KKTGateway) TicketStatus(ticket entities.TicketData, ticketType string) bool {
+	switch ticketType {
+	case CheckType:
+		return ticket.Status == "returned" || ticket.Status == "payed"
+	case TicketType:
+		return ticket.Status == "created" || ticket.Status == "payed"
+	default:
+		return false
+	}
 }
 
 func (g *KKTGateway) PrintSell(sell entities.Sell) error {
@@ -89,7 +101,7 @@ func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 		var sum int
 
 		for _, ticket := range sell.Data.Tickets {
-			if ticket.Amount != 0 && g.TicketStatus(ticket) {
+			if ticket.Amount != 0 && g.TicketStatus(ticket, CheckType) {
 				if err := g.PositionRegister(ticket); err != nil {
 					g.IFptr.CancelReceipt()
 					return err
@@ -268,7 +280,7 @@ func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
 
 		var sum int
 		for _, ticket := range sell.Data.Tickets {
-			if ticket.Amount != 0 && g.TicketStatus(ticket) {
+			if ticket.Amount != 0 && g.TicketStatus(ticket, CheckType) {
 				g.PositionRegister(ticket)
 				sum += ticket.Amount
 			}
@@ -375,7 +387,7 @@ func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
 
 		var sum int
 		for _, ticket := range refound.Data.Tickets {
-			if ticket.Amount != 0 && g.TicketStatus(ticket) {
+			if ticket.Amount != 0 && g.TicketStatus(ticket, CheckType) {
 				g.PositionRegister(ticket)
 				sum += ticket.Amount
 			}

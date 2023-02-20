@@ -18,6 +18,11 @@ var (
 ) // + Ошибки, связанные с работой модуля клиента
 
 var (
+	DefaultHttpError    = errors.New("default http response status code error")
+	InternalServerError = errors.New("internal server error")
+)
+
+var (
 	DecodingTomlError = errors.New("error during decoding data from toml file")
 	EncodingTomlError = errors.New("error during encoding data into toml file")
 ) // + Ошибки, связанные с работой модуля TOML-кодирования

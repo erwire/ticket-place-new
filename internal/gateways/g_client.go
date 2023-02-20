@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"fptr/internal/entities"
+	apperr "fptr/internal/error_list"
 	errorlog "fptr/pkg/error_logs"
 	"io"
 	"log"
@@ -31,10 +32,10 @@ func NewClientGateway(client *http.Client) *ClientGateway {
 func (l *ClientGateway) Login(config entities.AppConfig) (*entities.SessionInfo, error) {
 	var session entities.SessionInfo
 	if len(config.Driver.Connection) == 0 {
-		return nil, errorlog.EmptyURLDataError
+		return nil, apperr.NewClientError(errorlog.EmptyURLErrorMessage, errorlog.EmptyURLDataError)
 	}
 	if !config.User.ValidateUser() {
-		return nil, errorlog.InvalidLoginOrPassword
+		return nil, apperr.NewClientError(errorlog.IncorrectLoginOrPasswordErrorMessage, errorlog.InvalidLoginOrPassword)
 	}
 
 	requestURI := config.Driver.Connection + fmt.Sprintf(AuthorizationURL, config.User.Login, config.User.Password)
@@ -42,19 +43,22 @@ func (l *ClientGateway) Login(config entities.AppConfig) (*entities.SessionInfo,
 	request, err := http.NewRequest(http.MethodPost, requestURI, nil)
 
 	if err != nil {
-		return nil, errorlog.RequestCreatingError
+		return nil, apperr.NewClientError(errorlog.CreateRequestErrorMessage, err)
 	}
 
 	response, err := l.client.Do(request)
 
 	if err != nil {
-		return nil, errorlog.ResponseError
+		return nil, apperr.NewClientError(errorlog.ProcessingRequestErrorMessage, err)
 	}
 
 	switch response.StatusCode {
+
 	case http.StatusOK, http.StatusCreated, http.StatusAccepted:
+	case http.StatusInternalServerError:
+		return nil, apperr.NewClientError(errorlog.StatusCodeErrorMessage, errorlog.InternalServerError, response.StatusCode)
 	default:
-		return nil, fmt.Errorf("%w, status code: %d", errorlog.ResponseError, response.StatusCode)
+		return nil, apperr.NewClientError(errorlog.StatusCodeErrorMessage, errorlog.DefaultHttpError, response.StatusCode)
 	}
 
 	defer response.Body.Close()
@@ -62,11 +66,11 @@ func (l *ClientGateway) Login(config entities.AppConfig) (*entities.SessionInfo,
 	body, err := io.ReadAll(response.Body)
 
 	if err != nil {
-		return nil, errorlog.ReadingBodyError
+		return nil, apperr.NewClientError(errorlog.ReadBodyErrorMessage, err)
 	}
 	err = json.Unmarshal(body, &session)
 	if err != nil {
-		return nil, errorlog.JsonUnmarshalError
+		return nil, apperr.NewClientError(errorlog.JsonUnmarshallingErrorMessage, err, http.StatusUnprocessableEntity)
 	}
 	return &session, nil
 }
