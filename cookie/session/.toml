@@ -1,0 +1,11 @@
+access_token = ""
+token_type = ""
+created_at = 0001-01-01T00:00:00Z
+
+[user_data]
+  id = 0
+  full_name = ""
+  user_name = ""
+  avatar = ""
+  email = ""
+  role = ""

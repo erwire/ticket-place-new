@@ -1,9 +1,9 @@
 package gateways
 
 import (
-	"errors"
 	"fmt"
 	"fptr/internal/entities"
+	apperr "fptr/internal/error_list"
 	errorlog "fptr/pkg/error_logs"
 	"fptr/pkg/fptr10"
 	"log"
@@ -47,17 +47,11 @@ func (g *KKTGateway) OpenShift() error {
 }
 
 func (g *KKTGateway) CloseShift() error {
-	if !g.IsOpened() {
-		return errorlog.BoxOfficeIsNotOpenError
-	}
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_REPORT_TYPE, fptr10.LIBFPTR_RT_CLOSE_SHIFT)
 	return g.IFptr.Report()
 }
 
 func (g *KKTGateway) PrintTicket() error {
-	if !g.IsOpened() {
-		return errorlog.BoxOfficeIsNotOpenError
-	}
 	return nil
 }
 
@@ -73,29 +67,12 @@ func (g *KKTGateway) TicketStatus(ticket entities.TicketData, ticketType string)
 }
 
 func (g *KKTGateway) PrintSell(sell entities.Sell) error {
-	if !g.IsOpened() {
-		return errorlog.BoxOfficeIsNotOpenError
-	}
-
-	if g.ShiftIsExpired() {
-		return errorlog.ShiftIsExpired // ! не обязательна обработка, если смена истекла - выйдет ошибка FPTR.ERROR
-	}
 	if !g.ZeroAmountStatus(sell) && g.AcceptedForPrint(sell) {
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL)
 
 		if err := g.IFptr.OpenReceipt(); err != nil {
-			if g.IFptr.ErrorCode() == fptr10.LIBFPTR_ERROR_DENIED_IN_OPENED_RECEIPT {
-				err = g.IFptr.CancelReceipt()
-				if err != nil {
-					return fmt.Errorf("%w: %s", errorlog.CantCancelReceipt, err.Error())
-				}
-				err = g.IFptr.OpenReceipt()
-				if err != nil {
-					return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
-				}
-			}
-
-			return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
+			g.IFptr.CancelReceipt()
+			return err
 		}
 
 		var sum int
@@ -125,14 +102,164 @@ func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_SUM, sum)
 		if err := g.IFptr.Payment(); err != nil {
+			g.IFptr.CancelReceipt()
 			return err
 		}
 
 		if err := g.IFptr.CloseReceipt(); err != nil {
-			if g.ShiftIsExpired() {
-				g.CloseShift()
-				g.OpenShift()
+			g.IFptr.CancelReceipt()
+			return err
+		}
+
+		for {
+			if err := g.IFptr.CheckDocumentClosed(); err != nil {
+				continue
+			} else {
+				break
 			}
+		}
+
+		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_CLOSED) {
+			g.IFptr.CancelReceipt()
+			return apperr.NewFPTRError(fptr10.LIBFPTR_ERROR_NEED_CANCEL_DOCUMENT, apperr.LibfptrErrorNeedCancelDocument)
+		}
+
+		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_PRINTED) {
+			// Можно сразу вызвать метод допечатывания документа, он завершится с ошибкой, если это невозможно
+			for {
+				if err := g.IFptr.ContinuePrint(); err != nil {
+					continue
+				}
+			}
+		}
+
+		// Запрос информации о закрытом чеке
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_FN_DATA_TYPE, fptr10.LIBFPTR_FNDT_LAST_DOCUMENT)
+		if err := g.IFptr.FnQueryData(); err != nil {
+			g.IFptr.CancelReceipt()
+			return err
+		}
+
+		return nil
+	}
+	return nil // обработка нулевых заказов
+}
+func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
+	if !g.ZeroAmountStatus(sell) && g.AcceptedForPrint(sell) {
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL_RETURN)
+		if err := g.IFptr.OpenReceipt(); err != nil {
+			g.IFptr.CancelReceipt()
+			return err
+		}
+		g.IFptr.SetParam(1212, 4)
+		g.IFptr.SetParam(1214, 4)
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_TEXT, "Возврат")
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_ALIGNMENT, fptr10.LIBFPTR_ALIGNMENT_CENTER)
+		g.IFptr.PrintText()
+
+		var sum int
+		for _, ticket := range sell.Data.Tickets {
+			if ticket.Amount != 0 && g.TicketStatus(ticket, CheckType) {
+				g.PositionRegister(ticket)
+				sum += ticket.Amount
+			}
+		}
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
+		if err := g.IFptr.ReceiptTotal(); err != nil {
+			g.IFptr.CancelReceipt()
+			return err
+		}
+
+		switch sell.Data.PaymentType {
+		case "cash":
+			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_CASH)
+		case "card":
+			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_ELECTRONICALLY)
+		}
+
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_SUM, sum)
+
+		if err := g.IFptr.Payment(); err != nil {
+			g.IFptr.CancelReceipt()
+			return err
+		}
+
+		if err := g.IFptr.CloseReceipt(); err != nil {
+			g.IFptr.CancelReceipt()
+			return err
+		}
+
+		for {
+			if err := g.IFptr.CheckDocumentClosed(); err != nil {
+				continue
+			} else {
+				break
+			}
+		}
+
+		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_CLOSED) {
+			return apperr.NewFPTRError(fptr10.LIBFPTR_ERROR_NEED_CANCEL_DOCUMENT, apperr.LibfptrErrorNeedCancelDocument)
+		}
+
+		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_PRINTED) {
+			for {
+				if err := g.IFptr.ContinuePrint(); err != nil {
+					continue
+				}
+			}
+		}
+
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_FN_DATA_TYPE, fptr10.LIBFPTR_FNDT_LAST_DOCUMENT)
+		if err := g.IFptr.FnQueryData(); err != nil {
+			g.IFptr.CancelReceipt()
+			return err
+		}
+		return nil
+	} else {
+		return nil // ? можно обработать варнинг с нуль-возвратом
+	}
+}
+func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
+	if !g.ZeroAmountStatus(refound) && g.AcceptedForPrint(refound) {
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL_RETURN)
+		if err := g.IFptr.OpenReceipt(); err != nil {
+			g.IFptr.CancelReceipt()
+			return err
+		}
+		g.IFptr.SetParam(1212, 4)
+		g.IFptr.SetParam(1214, 4)
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_TEXT, "Возврат")
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_ALIGNMENT, fptr10.LIBFPTR_ALIGNMENT_CENTER)
+		g.IFptr.PrintText()
+
+		var sum int
+		for _, ticket := range refound.Data.Tickets {
+			if ticket.Amount != 0 && g.TicketStatus(ticket, CheckType) {
+				g.PositionRegister(ticket) //добавить обработку ошибки
+				sum += ticket.Amount
+			}
+		}
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
+		if err := g.IFptr.ReceiptTotal(); err != nil {
+			g.IFptr.CancelReceipt()
+			return err
+		}
+
+		if refound.Data.PaymentType != "cash" && refound.Data.Order.PaymentType != "cash" {
+			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_ELECTRONICALLY)
+		} else {
+			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_CASH)
+		}
+
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_SUM, sum)
+		err := g.IFptr.Payment()
+		if err != nil {
+			g.IFptr.CancelReceipt()
+			return err
+		}
+		if err := g.IFptr.CloseReceipt(); err != nil {
+			g.IFptr.CancelReceipt()
+			return err
 		}
 
 		for {
@@ -145,38 +272,70 @@ func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 		}
 
 		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_CLOSED) {
-			if err := g.IFptr.CancelReceipt(); err != nil {
-				return errorlog.CantCancelReceipt
-			}
-			return errorlog.DocumentNotClosed
+			g.IFptr.CancelReceipt()
+			return apperr.NewFPTRError(fptr10.LIBFPTR_ERROR_NEED_CANCEL_DOCUMENT, apperr.LibfptrErrorNeedCancelDocument)
 		}
 
 		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_PRINTED) {
-			// Можно сразу вызвать метод допечатывания документа, он завершится с ошибкой, если это невозможно
 			for {
 				if err := g.IFptr.ContinuePrint(); err != nil {
-					log.Printf("Не удалось напечатать документ (Ошибка \"%v\"). Устраните неполадку и повторите.", g.IFptr.ErrorDescription()) //исправить использование бесконечного цикла
 					continue
 				}
 			}
 		}
 
-		// Запрос информации о закрытом чеке
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_FN_DATA_TYPE, fptr10.LIBFPTR_FNDT_LAST_DOCUMENT)
 		if err := g.IFptr.FnQueryData(); err != nil {
+			g.IFptr.CancelReceipt()
 			return err
 		}
 
 		return nil
+	} else {
+		return nil // ? можно обработать варнинг с нуль-возвратом
 	}
-	return nil // обработка нулевых заказов
+}
+
+func (g *KKTGateway) NewCashierRegister(info entities.SessionInfo) error {
+	if !g.IsOpened() {
+		return errorlog.BoxOfficeIsNotOpenError
+	}
+
+	g.IFptr.SetParam(1021, info.UserData.FullName)
+	g.IFptr.SetParam(1203, "500100732259")
+	if err := g.IFptr.OperatorLogin(); err != nil {
+		return err
+	}
+	return nil
+}
+func (g *KKTGateway) IsOpened() bool {
+	return g.IFptr.IsOpened()
+}
+func (g *KKTGateway) ShiftIsExpired() bool {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
+	g.IFptr.QueryData()
+	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE) == fptr10.LIBFPTR_SS_EXPIRED
+}
+func (g *KKTGateway) ShiftIsOpened() bool {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
+	g.IFptr.QueryData()
+	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE) == fptr10.LIBFPTR_SS_OPENED
+}
+func (g *KKTGateway) ShiftIsClosed() bool {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
+	g.IFptr.QueryData()
+	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE) == fptr10.LIBFPTR_SS_CLOSED
+}
+func (g *KKTGateway) CurrentShiftStatus() uint {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
+	g.IFptr.QueryData()
+	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE)
 }
 
 func (g *KKTGateway) PrintXReport() error {
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_REPORT_TYPE, fptr10.LIBFPTR_RT_X)
 	return g.IFptr.Report()
 }
-
 func (g *KKTGateway) CashIncome(income float64) error {
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, income)
 	return g.IFptr.CashIncome()
@@ -226,8 +385,7 @@ func (g *KKTGateway) ZeroAmountStatus(data interface{}) bool {
 	}
 
 	return ZeroAmountStatus
-}
-
+} //# Проверка на нулевые заказы
 func (g *KKTGateway) AcceptedForPrint(data interface{}) bool {
 	switch data.(type) {
 	case entities.Sell:
@@ -245,219 +403,7 @@ func (g *KKTGateway) AcceptedForPrint(data interface{}) bool {
 	default:
 		return false
 	}
-}
-
-func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
-	if !g.IsOpened() {
-		return errorlog.BoxOfficeIsNotOpenError
-	}
-
-	if g.ShiftIsExpired() {
-		return errorlog.ShiftIsExpired
-	}
-
-	if !g.ZeroAmountStatus(sell) && g.AcceptedForPrint(sell) {
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL_RETURN)
-		if err := g.IFptr.OpenReceipt(); err != nil {
-			if g.IFptr.ErrorCode() == fptr10.LIBFPTR_ERROR_DENIED_IN_OPENED_RECEIPT {
-				err = g.IFptr.CancelReceipt()
-				if err != nil {
-					return fmt.Errorf("%w: %s", errorlog.CantCancelReceipt, err.Error())
-				}
-				err = g.IFptr.OpenReceipt()
-				if err != nil {
-					return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
-				}
-			}
-
-			return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
-		}
-		g.IFptr.SetParam(1212, 4)
-		g.IFptr.SetParam(1214, 4)
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_TEXT, "Возврат")
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_ALIGNMENT, fptr10.LIBFPTR_ALIGNMENT_CENTER)
-		g.IFptr.PrintText()
-
-		var sum int
-		for _, ticket := range sell.Data.Tickets {
-			if ticket.Amount != 0 && g.TicketStatus(ticket, CheckType) {
-				g.PositionRegister(ticket)
-				sum += ticket.Amount
-			}
-		}
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
-		if err := g.IFptr.ReceiptTotal(); err != nil { //!
-			err = g.IFptr.CancelReceipt()
-			if err != nil {
-				return fmt.Errorf("%w: %s", errorlog.CantCancelReceipt, err.Error())
-			}
-			return fmt.Errorf("чек закрыт из-за проблем с расчетом итога: %w", err)
-		}
-
-		switch sell.Data.PaymentType {
-		case "cash":
-			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_CASH)
-		case "card":
-			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_ELECTRONICALLY)
-		}
-
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_SUM, sum)
-		err := g.IFptr.Payment() //! err
-		if err != nil {
-			err = g.IFptr.CancelReceipt()
-			if err != nil {
-				return fmt.Errorf("чек закрыт из-за проблем с расчетом полученной суммы: %w", err)
-			}
-		}
-		if err := g.IFptr.CloseReceipt(); err != nil {
-			if g.ShiftIsExpired() {
-				g.CloseShift()
-				g.OpenShift()
-			}
-		}
-
-		for {
-			if err := g.IFptr.CheckDocumentClosed(); err != nil {
-				log.Println(g.IFptr.ErrorDescription()) //позднее добавить механизм по таймеру для избежания циклов
-				continue
-			} else {
-				break
-			}
-		}
-
-		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_CLOSED) {
-			if err := g.IFptr.CancelReceipt(); err != nil {
-				return errorlog.CantCancelReceipt
-			}
-			return errorlog.DocumentNotClosed
-		}
-
-		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_PRINTED) {
-			// Можно сразу вызвать метод допечатывания документа, он завершится с ошибкой, если это невозможно
-			for {
-				if err := g.IFptr.ContinuePrint(); err != nil {
-					log.Printf("Не удалось напечатать документ (Ошибка \"%v\"). Устраните неполадку и повторите.", g.IFptr.ErrorDescription()) //исправить использование бесконечного цикла
-					continue
-				}
-			}
-		}
-
-		// Запрос информации о закрытом чеке
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_FN_DATA_TYPE, fptr10.LIBFPTR_FNDT_LAST_DOCUMENT)
-		if err := g.IFptr.FnQueryData(); err != nil {
-			return err
-		}
-
-		return nil
-	} else {
-		return nil // ? можно обработать варнинг с нуль-возвратом
-	}
-}
-
-func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
-	if !g.IsOpened() {
-		return errorlog.BoxOfficeIsNotOpenError
-	}
-
-	if g.ShiftIsExpired() {
-		return errorlog.ShiftIsExpired
-	}
-
-	if !g.ZeroAmountStatus(refound) && g.AcceptedForPrint(refound) {
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL_RETURN)
-		if err := g.IFptr.OpenReceipt(); err != nil {
-			if g.IFptr.ErrorCode() == fptr10.LIBFPTR_ERROR_DENIED_IN_OPENED_RECEIPT {
-				err = g.IFptr.CancelReceipt()
-				if err != nil {
-					return fmt.Errorf("%w: %s", errorlog.CantCancelReceipt, err.Error())
-				}
-				err = g.IFptr.OpenReceipt()
-				if err != nil {
-					return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
-				}
-			}
-
-			return fmt.Errorf("%w: %s", errorlog.OpenReceiptError, err.Error())
-		}
-		g.IFptr.SetParam(1212, 4)
-		g.IFptr.SetParam(1214, 4)
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_TEXT, "Возврат")
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_ALIGNMENT, fptr10.LIBFPTR_ALIGNMENT_CENTER)
-		g.IFptr.PrintText()
-
-		var sum int
-		for _, ticket := range refound.Data.Tickets {
-			if ticket.Amount != 0 && g.TicketStatus(ticket, CheckType) {
-				g.PositionRegister(ticket)
-				sum += ticket.Amount
-			}
-		}
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
-		if err := g.IFptr.ReceiptTotal(); err != nil { //!
-			err = g.IFptr.CancelReceipt()
-			if err != nil {
-				return fmt.Errorf("%w: %s", errorlog.CantCancelReceipt, err.Error())
-			}
-			return fmt.Errorf("чек закрыт из-за проблем с расчетом итога: %w", err)
-		}
-		if refound.Data.PaymentType != "cash" && refound.Data.Order.PaymentType != "cash" {
-			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_ELECTRONICALLY)
-		} else {
-			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_CASH)
-		}
-
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_SUM, sum)
-		err := g.IFptr.Payment() //! err
-		if err != nil {
-			err = g.IFptr.CancelReceipt()
-			if err != nil {
-				return fmt.Errorf("чек закрыт из-за проблем с расчетом полученной суммы: %w", err)
-			}
-		}
-		if err := g.IFptr.CloseReceipt(); err != nil {
-			if g.ShiftIsExpired() {
-				g.CloseShift()
-				g.OpenShift()
-			}
-		}
-
-		for {
-			if err := g.IFptr.CheckDocumentClosed(); err != nil {
-				log.Println(g.IFptr.ErrorDescription()) //позднее добавить механизм по таймеру для избежания циклов
-				continue
-			} else {
-				break
-			}
-		}
-
-		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_CLOSED) {
-			if err := g.IFptr.CancelReceipt(); err != nil {
-				return errorlog.CantCancelReceipt
-			}
-			return errorlog.DocumentNotClosed
-		}
-
-		if !g.IFptr.GetParamBool(fptr10.LIBFPTR_PARAM_DOCUMENT_PRINTED) {
-			// Можно сразу вызвать метод допечатывания документа, он завершится с ошибкой, если это невозможно
-			for {
-				if err := g.IFptr.ContinuePrint(); err != nil {
-					log.Printf("Не удалось напечатать документ (Ошибка \"%v\"). Устраните неполадку и повторите.", g.IFptr.ErrorDescription()) //исправить использование бесконечного цикла
-					continue
-				}
-			}
-		}
-
-		// Запрос информации о закрытом чеке
-		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_FN_DATA_TYPE, fptr10.LIBFPTR_FNDT_LAST_DOCUMENT)
-		if err := g.IFptr.FnQueryData(); err != nil {
-			return err
-		}
-
-		return nil
-	} else {
-		return nil // ? можно обработать варнинг с нуль-возвратом
-	}
-}
+} //# Доступ к печати по оплате
 
 func (g *KKTGateway) PositionRegister(data entities.TicketData) error {
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_COMMODITY_NAME, fmt.Sprint(data.Number, ",", data.Event.Show.Name, ",", data.Event.Show.AgeLimit, ",", data.Event.DateTime, ",", data.Zona, ", Ряд:", data.RowSector, ", Место:", data.SeatNumber))
@@ -469,51 +415,11 @@ func (g *KKTGateway) PositionRegister(data entities.TicketData) error {
 	return g.IFptr.Registration()
 }
 
-func (g *KKTGateway) IsOpened() bool {
-	return g.IFptr.IsOpened()
-}
-
-func (g *KKTGateway) NewCashierRegister(info entities.SessionInfo) error {
-	if !g.IsOpened() {
-		return errorlog.BoxOfficeIsNotOpenError
-	}
-
-	g.IFptr.SetParam(1021, info.UserData.FullName)
-	g.IFptr.SetParam(1203, "500100732259")
-	if err := g.IFptr.OperatorLogin(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (g *KKTGateway) ShiftIsExpired() bool {
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
-	g.IFptr.QueryData()
-	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE) == fptr10.LIBFPTR_SS_EXPIRED
-}
-
-func (g *KKTGateway) ShiftIsOpened() bool {
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
-	g.IFptr.QueryData()
-	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE) == fptr10.LIBFPTR_SS_OPENED
-}
-
-func (g *KKTGateway) ShiftIsClosed() bool {
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
-	g.IFptr.QueryData()
-	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE) == fptr10.LIBFPTR_SS_CLOSED
-}
-
-func (g *KKTGateway) CurrentShiftStatus() uint {
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DATA_TYPE, fptr10.LIBFPTR_DT_STATUS)
-	g.IFptr.QueryData()
-	return g.IFptr.GetParamInt(fptr10.LIBFPTR_PARAM_SHIFT_STATE)
-}
-
 func (g *KKTGateway) CurrentErrorStatusCode() error {
 	status := g.IFptr.ErrorDescription()
-	if status != "" {
-		return errors.New(status)
+	code := g.IFptr.ErrorCode()
+	if status != "" || status != apperr.LibfptrErrLibfptrStatusOk {
+		return apperr.NewFPTRError(code, status)
 	}
 	return nil
 }

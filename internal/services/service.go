@@ -20,21 +20,21 @@ func NewServices(g *gateways.Gateway, logger *LoggerService) *Services {
 }
 
 type Listener interface {
-	GetLastReceipt(connectionURL string, session entities.SessionInfo) (*entities.Click, string)
-	PrintSell(info entities.Info, id string) string
-	PrintRefound(info entities.Info, id string) string
-	Login(config entities.AppConfig) (*entities.SessionInfo, string)
-	PrintRefoundFromSell(info entities.Info, id string) string
+	GetLastReceipt(connectionURL string, session entities.SessionInfo) (*entities.Click, error)
+	PrintSell(info entities.Info, id string) error
+	PrintRefound(info entities.Info, id string) error
+	Login(config entities.AppConfig) (*entities.SessionInfo, error)
+	PrintRefoundFromSell(info entities.Info, id string) error
 }
 
 type KKT interface {
-	PrintXReport() string
-	MakeSession(info entities.Info) string
-	CloseShift() string
+	PrintXReport() error
+	MakeSession(info entities.Info) error
+	CloseShift() error
 	ShiftIsOpened() bool
 	ShiftIsClosed() bool
 	ShiftIsExpired() bool
 	CurrentShiftStatus() uint
-	CashIncome(income float64) string
-	CurrentError() string
+	CashIncome(income float64) error
+	CurrentError() error
 }

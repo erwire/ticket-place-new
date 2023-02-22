@@ -2,9 +2,12 @@ package error_logs
 
 import "errors"
 
+//# Классификаторы ошибок
+//! Требует переработки
+
 var (
 	AuthorizationError = errors.New("an error occurred during authorization")
-) //+ Ошибки по модулям
+) //# Ошибки по модулям
 
 var (
 	ReadingBodyError       = errors.New("error during body reading")
@@ -15,7 +18,7 @@ var (
 	DataNilError           = errors.New("there is no data for the request that needs an additional parameter")
 	IncorrectURLDataError  = errors.New("unhandled URL-endpoint")
 	EmptyURLDataError      = errors.New("empty URL field")
-) // + Ошибки, связанные с работой модуля клиента
+) //# Ошибки, связанные с работой модуля клиента
 
 var (
 	DefaultHttpError    = errors.New("default http response status code error")
@@ -25,7 +28,7 @@ var (
 var (
 	DecodingTomlError = errors.New("error during decoding data from toml file")
 	EncodingTomlError = errors.New("error during encoding data into toml file")
-) // + Ошибки, связанные с работой модуля TOML-кодирования
+) //# Ошибки, связанные с работой модуля TOML-кодирования
 
 var (
 	ShiftIsNotOpenedError   = errors.New("shift is not opened")
@@ -36,4 +39,4 @@ var (
 	OpenReceiptError        = errors.New("error during open receipt")
 	DocumentNotClosed       = errors.New("error during process of closing document")
 	CantCancelReceipt       = errors.New("error during closing receipt")
-)
+) //# Ошибки ККТ

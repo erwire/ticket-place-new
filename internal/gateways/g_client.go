@@ -70,7 +70,7 @@ func (l *ClientGateway) Login(config entities.AppConfig) (*entities.SessionInfo,
 	}
 	err = json.Unmarshal(body, &session)
 	if err != nil {
-		return nil, apperr.NewClientError(errorlog.JsonUnmarshallingErrorMessage, err, http.StatusUnprocessableEntity)
+		return nil, apperr.NewClientError(errorlog.JsonUnmarshallingErrorMessage, err)
 	}
 	return &session, nil
 }
@@ -79,7 +79,7 @@ func (l *ClientGateway) GetLastReceipt(connectionURL string, session entities.Se
 	var click entities.Click
 
 	if len(connectionURL) == 0 || session.UserData.ID == 0 {
-		return nil, errorlog.EmptyURLDataError
+		return nil, apperr.NewClientError(errorlog.EmptyURLErrorMessage, errorlog.EmptyURLDataError)
 	}
 
 	requestURI := connectionURL + fmt.Sprintf(LastConditionURL, session.UserData.ID)
@@ -87,7 +87,7 @@ func (l *ClientGateway) GetLastReceipt(connectionURL string, session entities.Se
 	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 
 	if err != nil {
-		return nil, errorlog.RequestCreatingError
+		return nil, apperr.NewClientError(errorlog.CreateRequestErrorMessage, err)
 	}
 
 	request.Header.Add("Authorization", fmt.Sprintf("%s %s", session.TokenType, session.AccessToken))
@@ -95,13 +95,15 @@ func (l *ClientGateway) GetLastReceipt(connectionURL string, session entities.Se
 	response, err := l.client.Do(request)
 
 	if err != nil {
-		return nil, errorlog.ResponseError
+		return nil, apperr.NewClientError(errorlog.ProcessingRequestErrorMessage, err)
 	}
 
 	switch response.StatusCode {
 	case http.StatusOK, http.StatusCreated, http.StatusAccepted:
+	case http.StatusInternalServerError:
+		return nil, apperr.NewClientError(errorlog.StatusCodeErrorMessage, errorlog.InternalServerError, response.StatusCode)
 	default:
-		return nil, fmt.Errorf("%w, status code: %d", errorlog.ResponseError, response.StatusCode)
+		return nil, apperr.NewClientError(errorlog.StatusCodeErrorMessage, errorlog.DefaultHttpError, response.StatusCode)
 	}
 
 	defer response.Body.Close()
@@ -109,11 +111,11 @@ func (l *ClientGateway) GetLastReceipt(connectionURL string, session entities.Se
 	body, err := io.ReadAll(response.Body)
 
 	if err != nil {
-		return nil, errorlog.ReadingBodyError
+		return nil, apperr.NewClientError(errorlog.ReadBodyErrorMessage, err)
 	}
 	err = json.Unmarshal(body, &click)
 	if err != nil {
-		return nil, errorlog.JsonUnmarshalError
+		return nil, apperr.NewClientError(errorlog.JsonUnmarshallingErrorMessage, err)
 	}
 	return &click, nil
 }
@@ -122,7 +124,7 @@ func (l *ClientGateway) GetSell(info entities.Info, sellID string) (*entities.Se
 	var sell entities.Sell
 
 	if len(info.AppConfig.Driver.Connection) == 0 || len(sellID) == 0 {
-		return nil, errorlog.EmptyURLDataError
+		return nil, apperr.NewClientError(errorlog.EmptyURLErrorMessage, errorlog.EmptyURLDataError)
 	}
 
 	requestURI := info.AppConfig.Driver.Connection + fmt.Sprintf(OrderURL, sellID)
@@ -130,7 +132,7 @@ func (l *ClientGateway) GetSell(info entities.Info, sellID string) (*entities.Se
 	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 
 	if err != nil {
-		return nil, errorlog.RequestCreatingError
+		return nil, apperr.NewClientError(errorlog.CreateRequestErrorMessage, err)
 	}
 
 	request.Header.Add("Authorization", fmt.Sprintf("%s %s", info.Session.TokenType, info.Session.AccessToken))
@@ -138,13 +140,15 @@ func (l *ClientGateway) GetSell(info entities.Info, sellID string) (*entities.Se
 	response, err := l.client.Do(request)
 
 	if err != nil {
-		return nil, errorlog.ResponseError
+		return nil, apperr.NewClientError(errorlog.ProcessingRequestErrorMessage, err)
 	}
 
 	switch response.StatusCode {
 	case http.StatusOK, http.StatusCreated, http.StatusAccepted:
+	case http.StatusInternalServerError:
+		return nil, apperr.NewClientError(errorlog.StatusCodeErrorMessage, errorlog.InternalServerError, response.StatusCode)
 	default:
-		return nil, fmt.Errorf("%w, status code: %d", errorlog.ResponseError, response.StatusCode)
+		return nil, apperr.NewClientError(errorlog.StatusCodeErrorMessage, errorlog.DefaultHttpError, response.StatusCode)
 	}
 
 	defer response.Body.Close()
@@ -152,11 +156,11 @@ func (l *ClientGateway) GetSell(info entities.Info, sellID string) (*entities.Se
 	body, err := io.ReadAll(response.Body)
 
 	if err != nil {
-		return nil, errorlog.ReadingBodyError
+		return nil, apperr.NewClientError(errorlog.ReadBodyErrorMessage, err)
 	}
 	err = json.Unmarshal(body, &sell)
 	if err != nil {
-		return nil, errorlog.JsonUnmarshalError
+		return nil, apperr.NewClientError(errorlog.JsonUnmarshallingErrorMessage, err)
 	}
 	return &sell, nil
 }
@@ -165,7 +169,7 @@ func (l *ClientGateway) GetRefound(info entities.Info, refoundID string) (*entit
 	var refound entities.Refound
 
 	if len(info.AppConfig.Driver.Connection) == 0 || len(refoundID) == 0 {
-		return nil, errorlog.EmptyURLDataError
+		return nil, apperr.NewClientError(errorlog.EmptyURLErrorMessage, errorlog.EmptyURLDataError)
 	}
 
 	requestURI := info.AppConfig.Driver.Connection + fmt.Sprintf(RefoundURL, refoundID)
@@ -173,20 +177,22 @@ func (l *ClientGateway) GetRefound(info entities.Info, refoundID string) (*entit
 	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 
 	if err != nil {
-		return nil, errorlog.RequestCreatingError
+		return nil, apperr.NewClientError(errorlog.CreateRequestErrorMessage, err)
 	}
 	request.Header.Add("Authorization", fmt.Sprintf("%s %s", info.Session.TokenType, info.Session.AccessToken))
 
 	response, err := l.client.Do(request)
 
 	if err != nil {
-		return nil, errorlog.ResponseError
+		return nil, apperr.NewClientError(errorlog.ProcessingRequestErrorMessage, err)
 	}
 
 	switch response.StatusCode {
 	case http.StatusOK, http.StatusCreated, http.StatusAccepted:
+	case http.StatusInternalServerError:
+		return nil, apperr.NewClientError(errorlog.StatusCodeErrorMessage, errorlog.InternalServerError, response.StatusCode)
 	default:
-		return nil, fmt.Errorf("%w, status code: %d", errorlog.ResponseError, response.StatusCode)
+		return nil, apperr.NewClientError(errorlog.StatusCodeErrorMessage, errorlog.DefaultHttpError, response.StatusCode)
 	}
 
 	defer response.Body.Close()
@@ -205,11 +211,11 @@ func (l *ClientGateway) GetRefound(info entities.Info, refoundID string) (*entit
 	file.Close()
 
 	if err != nil {
-		return nil, errorlog.ReadingBodyError
+		return nil, apperr.NewClientError(errorlog.ReadBodyErrorMessage, err)
 	}
 	err = json.Unmarshal(body, &refound)
 	if err != nil {
-		return nil, fmt.Errorf("%w %v", errorlog.JsonUnmarshalError, err)
+		return nil, apperr.NewClientError(errorlog.JsonUnmarshallingErrorMessage, err)
 	}
 	return &refound, nil
 }

@@ -1,8 +1,7 @@
 package error_logs
 
-//client
-
-var ( //! error
+// # client error message
+var (
 	StatusCodeErrorMessage               = "Некорректный код статуса ответа"
 	JsonUnmarshallingErrorMessage        = "Ошибка во время десериализации"
 	ReadBodyErrorMessage                 = "Ошибка при чтении тела ответа"
@@ -11,3 +10,6 @@ var ( //! error
 	IncorrectLoginOrPasswordErrorMessage = "Введены некорректные логин или пароль"
 	ProcessingRequestErrorMessage        = "Ошибка при выполнении запроса"
 )
+
+//@ Error Handling: Message -> Err -> Status Code (IE) -> Dependency (EXT)
+//@ Формирование сообщения: Во время работы с Dependence произошла ошибка: \nMessage

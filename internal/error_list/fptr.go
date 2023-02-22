@@ -1,12 +1,18 @@
 package apperr
 
+import "fptr/pkg/fptr10"
+
+func NewFPTRError(code int, description string) error {
+	return &fptr10.Error{ErrorCode: code, ErrorDescription: description}
+}
+
 // + Ошибки, связанные с модулем FPTR
 var (
-	LibfptrErrLibfptrStatusOk                      = "Ошибок нет"
-	LibfptrErrorConnectionDisabled                 = "Соединение не установлено"
-	LibfptrErrorNoConnection                       = "Нет связи"
-	LibfptrErrorPortBusy                           = "Порт занят"
-	LibfptrErrorPortNotAvailable                   = "Порт недоступен"
+	LibfptrErrLibfptrStatusOk                      = "Ошибок нет"                //? внедрить в обработчик ошибок
+	LibfptrErrorConnectionDisabled                 = "Соединение не установлено" //? внедрить в обработчик ошибок
+	LibfptrErrorNoConnection                       = "Нет связи"                 //? внедрить в обработчик ошибок
+	LibfptrErrorPortBusy                           = "Порт занят"                //? внедрить в обработчик ошибок
+	LibfptrErrorPortNotAvailable                   = "Порт недоступен"           //? внедрить в обработчик ошибок
 	LibfptrErrorIncorrectData                      = "Некорректные данные от устройства"
 	LibfptrErrorInternal                           = "Внутренняя ошибка библиотеки"
 	LibfptrErrorUnsupportedCast                    = "Неподдерживаемое преобразование типа параметра"
@@ -17,7 +23,7 @@ var (
 	LibfptrErrorInvalidMode                        = "Не поддерживается в данном режиме"
 	LibfptrErrorInvalidParam                       = "Нeкорректное значение параметра"
 	LibfptrErrorNotLoaded                          = "Не удалось загрузить библиотеку"
-	LibfptrErrorUnknown                            = "Неизвестная ошибка"
+	LibfptrErrorUnknown                            = "Неизвестная ошибка" //? внедрить в обработчик ошибок
 	LibfptrErrorInvalidSum                         = "Неверная цена (сумма)"
 	LibfptrErrorInvalidQuantity                    = "Неверное количество"
 	LibfptrErrorCashCounterOverflow                = "Переполнение счетчика наличности"
@@ -46,9 +52,9 @@ var (
 	LibfptrErrorQuantityTooFew                     = "Недостаточное количество товара"
 	LibfptrErrorStornoTooMuch                      = "Сторнируемое количество больше проданного"
 	LibfptrErrorBlockedCommodityNotFound           = "Товар не найден"
-	LibfptrErrorNoPaper                            = "Нет бумаги"
-	LibfptrErrorCoverOpened                        = "Открыта крышка"
-	LibfptrErrorPrinterFault                       = "Нет связи с принтером чеков"
+	LibfptrErrorNoPaper                            = "Нет бумаги"                  //? внедрить в обработчик ошибок
+	LibfptrErrorCoverOpened                        = "Открыта крышка"              //? внедрить в обработчик ошибок
+	LibfptrErrorPrinterFault                       = "Нет связи с принтером чеков" //? внедрить в обработчик ошибок
 	LibfptrErrorMechanicalFault                    = "Механическая ошибка печатающего устройства"
 	LibfptrErrorInvalidReceiptType                 = "Неверный тип чека"
 	LibfptrErrorInvalidUnitType                    = "Недопустимое целевое устройство"
@@ -66,16 +72,16 @@ var (
 	LibfptrErrorMultiplicationOverflow             = "Переполнение при умножении"
 	LibfptrErrorDeniedBySettings                   = "Операция запрещена в таблице настроек"
 	LibfptrErrorTotalOverflow                      = "Переполнение итога чека"
-	LibfptrErrorDeniedInAnnulationReceipt          = "Открыт чек аннулирования - операция невозможна"
+	LibfptrErrorDeniedInAnnulationReceipt          = "Открыт чек аннулирования - операция невозможна" //? внедрить в обработчик ошибок
 	LibfptrErrorJournalOverflow                    = "Переполнение буфера ЭЖ"
 	LibfptrErrorNotFullyPaid                       = "Чек оплачен не полностью"
-	LibfptrErrorDeniedInReturnReceipt              = "Открыт чек возврата - операция невозможна"
-	LibfptrErrorShiftExpired                       = "Смена превысила 24 часа"
-	LibfptrErrorDeniedInSellReceipt                = "Открыт чек продажи - операция невозможна"
+	LibfptrErrorDeniedInReturnReceipt              = "Открыт чек возврата - операция невозможна" //? внедрить в обработчик ошибок
+	LibfptrErrorShiftExpired                       = "Смена превысила 24 часа"                   //? внедрить в обработчик ошибок
+	LibfptrErrorDeniedInSellReceipt                = "Открыт чек продажи - операция невозможна"  //? внедрить в обработчик ошибок
 	LibfptrErrorFiscalMemoryOverflow               = "Переполнение ФП"
 	LibfptrErrorInvalidPassword                    = "Неверный пароль"
 	LibfptrErrorJournalBusy                        = "Идет обработка ЭЖ"
-	LibfptrErrorDeniedInClosedShift                = "Смена закрыта - операция невозможна"
+	LibfptrErrorDeniedInClosedShift                = "Смена закрыта - операция невозможна" //? внедрить в обработчик ошибок
 	LibfptrErrorInvalidTableNumber                 = "Неверный номер таблицы"
 	LibfptrErrorInvalidRowNumber                   = "Неверный номер ряда"
 	LibfptrErrorInvalidFieldNumber                 = "Неверный номер поля"
@@ -83,9 +89,9 @@ var (
 	LibfptrErrorInvalidStornoSum                   = "Неверная сумма сторно"
 	LibfptrErrorChangeCalculation                  = "Подсчет суммы сдачи невозможен"
 	LibfptrErrorNoCash                             = "В ККТ нет денег для выплаты"
-	LibfptrErrorDeniedInClosedReceipt              = "Чек закрыт - операция невозможна"
-	LibfptrErrorDeniedInOpenedReceipt              = "Чек открыт - операция невозможна"
-	LibfptrErrorDeniedInOpenedShift                = "Смена открыта, операция невозможна"
+	LibfptrErrorDeniedInClosedReceipt              = "Чек закрыт - операция невозможна"   //? внедрить в обработчик ошибок
+	LibfptrErrorDeniedInOpenedReceipt              = "Чек открыт - операция невозможна"   //? внедрить в обработчик ошибок
+	LibfptrErrorDeniedInOpenedShift                = "Смена открыта, операция невозможна" //? внедрить в обработчик ошибок
 	LibfptrErrorSerialNumberAlreadyEntered         = "Серийный номер / MAC-адрес уже задан"
 	LibfptrErrorTooMuchReregistrations             = "Исчерпан лимит перерегистраций"
 	LibfptrErrorInvalidShiftNumber                 = "Неверный номер смены"
@@ -110,7 +116,7 @@ var (
 	LibfptrErrorNeedTechnicalSupport               = "Необходимо провести профилактические работы"
 	LibfptrErrorShiftNumbersDidNotMatch            = "Неверные номера смен в ККТ и ФН"
 	LibfptrErrorDeviceNotFound                     = "Нет устройства, обрабатывающего данную команду"
-	LibfptrErrorExternalDeviceConnection           = "Нет связи с внешним устройством"
+	LibfptrErrorExternalDeviceConnection           = "Нет связи с внешним устройством" //? внедрить в обработчик ошибок
 	LibfptrErrorDispenserInvalidState              = "Ошибочное состояние ТРК"
 	LibfptrErrorInvalidPositionsCount              = "Недопустимое кол-во позиций в чеке"
 	LibfptrErrorDispenserInvalidNumber             = "Ошибочный номер ТРК"
@@ -143,7 +149,7 @@ var (
 	LibfptrErrorInvalidMessageFromOfd              = "Сообщение от ОФД не может быть принято ФН"
 	LibfptrErrorFnHasNotSendDocuments              = "В ФН есть неотправленные ФД"
 	LibfptrErrorFnTimeout                          = "Исчерпан ресурс ожидания передачи сообщения в ФН"
-	LibfptrErrorFnShiftExpired                     = "Продолжительность смены ФН более 24 часов"
+	LibfptrErrorFnShiftExpired                     = "Продолжительность смены ФН более 24 часов" //? внедрить в обработчик ошибок
 	LibfptrErrorFnInvalidTimeDifference            = "Неверная разница во времени между двумя операциями ФН"
 	LibfptrErrorInvalidTaxationType                = "Некорректная СНО"
 	LibfptrErrorInvalidTaxType                     = "Недопустимый номер ставки налога"
@@ -167,14 +173,14 @@ var (
 	LibfptrErrorFnReadDocument                     = "Ошибка чтения документа из ФН"
 	LibfptrErrorFloatOverflow                      = "Переполнение чисел с плавающей точкой"
 	LibfptrErrorInvalidSettingValue                = "Неверное значение параметра ККТ"
-	LibfptrErrorHardFault                          = "Внутренняя ошибка ККТ"
-	LibfptrErrorFnNotFound                         = "ФН не найден"
+	LibfptrErrorHardFault                          = "Внутренняя ошибка ККТ" //? внедрить в обработчик ошибок
+	LibfptrErrorFnNotFound                         = "ФН не найден"          //? внедрить в обработчик ошибок
 	LibfptrErrorInvalidAgentFiscalProperty         = "Невозможно записать реквизит агента"
 	LibfptrErrorInvalidFiscalPropertyValue10021056 = "Недопустимое сочетание реквизитов 1002 и 1056"
 	LibfptrErrorInvalidFiscalPropertyValue10021017 = "Недопустимое сочетание реквизитов 1002 и 1017"
 	LibfptrErrorScript                             = "Ошибка скриптового движка ККТ"
 	LibfptrErrorInvalidUserMemoryIndex             = "Неверный номер пользовательской ячейки памяти"
-	LibfptrErrorNoActiveOperator                   = "Кассир не зарегистрирован"
+	LibfptrErrorNoActiveOperator                   = "Кассир не зарегистрирован" //? внедрить в обработчик ошибок
 	LibfptrErrorRegistrationReportInterrupted      = "Отчет о регистрации ККТ прерван"
 	LibfptrErrorCloseFnReportInterrupted           = "Отчет о закрытии ФН прерван"
 	LibfptrErrorOpenShiftReportInterrupted         = "Отчет об открытии смены прерван"
@@ -202,10 +208,10 @@ var (
 	LibfptrErrorInvalidInternetChannel             = "Данный канал Интернет отсутствует в ККТ"
 	LibfptrErrorDatetimeNotSyncronized             = "Дата и время не синхронизированы"
 	LibfptrErrorJournal                            = "Ошибка электронного журнала"
-	LibfptrErrorDeniedInOpenedDoc                  = "Документ открыт - операция невозможна"
-	LibfptrErrorDeniedInClosedDoc                  = "Документ закрыт - операция невозможна"
+	LibfptrErrorDeniedInOpenedDoc                  = "Документ открыт - операция невозможна" //? внедрить в обработчик ошибок
+	LibfptrErrorDeniedInClosedDoc                  = "Документ закрыт - операция невозможна" //? внедрить в обработчик ошибок
 	LibfptrErrorLicenseMemoryOverflow              = "Нет места для сохранения лицензий"
-	LibfptrErrorNeedCancelDocument                 = "Произошла критичная ошибка, документ необходимо отменить"
+	LibfptrErrorNeedCancelDocument                 = "Произошла критичная ошибка, документ необходимо отменить" //? внедрить в обработчик ошибок
 	LibfptrErrorRegistersNotInitialized            = "Регистры ККТ еще не инициализированы"
 	LibfptrErrorTotalRequired                      = "Требуется регистрация итога"
 	LibfptrErrorSettingsFault                      = "Сбой таблицы настроек"

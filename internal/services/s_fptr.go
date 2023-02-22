@@ -18,50 +18,53 @@ func NewKKTService(gw *gateways.Gateway, logg *logger.Logger) *KKTService {
 	}
 }
 
-func (s *KKTService) PrintXReport() string {
+func (s *KKTService) PrintXReport() error {
 	err := s.gw.PrintXReport()
 	if err != nil {
-		message := "Ошибка при печати X-отчета"
-		s.Errorf("%s: %v", message, err)
-		return message
+		s.Errorf("%s: %v", "Ошибка при печати X-отчета", err)
+		return err
 	}
-	return ""
+	return nil
 }
 
-func (s *KKTService) MakeSession(info entities.Info) string {
+func (s *KKTService) MakeSession(info entities.Info) error {
 	if err := s.gw.Open(); err != nil {
 		s.Errorf("Ошибка при установлении связи с кассой: %v\n", err)
-		return "Ошибка при установлении связи с кассой"
+		return err
 	}
 
 	if err := s.gw.NewCashierRegister(info.Session); err != nil {
 		s.Errorf("Ошибка при регистрации кассира: %v\n", err)
-		return "Ошибка при регистрации кассира"
+		return err
 	}
 
 	if err := s.gw.OpenShift(); err != nil {
 		if s.gw.ShiftIsExpired() {
+			s.Warningf("Не можем открыть смену: %v\n", err)
 			err = s.gw.CloseShift()
 			if err != nil {
-				s.Errorf("Критическая ошибка работы приложения: %v\n", err)
-				return "Критическая ошибка работы приложения"
+				s.Errorf("Попытка закрытия смены закончилось неудачей: %v\n", err)
+				return err
 			}
 			err = s.gw.OpenShift()
 			if err != nil {
-				s.Errorf("Критическая ошибка работы приложения: %v\n", err)
-				return "Критическая ошибка работы приложения"
+				s.Errorf("Попытка открытия смены закончилось неудачей: %v\n", err)
+				return err
 			}
 		}
+		s.Errorf("Не можем открыть смену: %v\n", err)
+		return err
 	}
-	return ""
+	return nil
 }
 
-func (s *KKTService) CloseShift() string {
+func (s *KKTService) CloseShift() error {
 	if err := s.gw.KKT.CloseShift(); err != nil {
 		s.Errorf("Ошибка закрытия смены: %v\n", err)
-		return "Ошибка закрытия смены"
+		return err
 	}
-	return ""
+	s.Infof("Успешное закрытие смены")
+	return nil
 }
 
 func (s *KKTService) ShiftIsOpened() bool {
@@ -79,20 +82,20 @@ func (s *KKTService) CurrentShiftStatus() uint {
 	return s.gw.KKT.CurrentShiftStatus()
 }
 
-func (s *KKTService) CashIncome(income float64) string {
+func (s *KKTService) CashIncome(income float64) error {
 	err := s.gw.CashIncome(income)
-	message := ""
 	if err != nil {
-		message = "Ошибка при попытке внесения"
-		s.Errorf("%s %v", message, err)
+		s.Errorf("%v", err)
+		return err
 	}
-	return message
+	s.Infof("Успешное внесение в кассу")
+	return nil
 }
 
-func (s *KKTService) CurrentError() string {
+func (s *KKTService) CurrentError() error {
 	err := s.gw.CurrentErrorStatusCode()
 	if err != nil {
-		return err.Error()
+		return err
 	}
-	return ""
+	return nil
 }

@@ -7,13 +7,6 @@ type ClientErrorType string
 var ResponseError ClientErrorType
 var RequestError ClientErrorType
 
-type ResponsibilityType string
-
-var SellResponsibility ResponsibilityType
-var RefoundResponsibility ResponsibilityType
-var LoginResponsibility ResponsibilityType
-var ClickResponsibility ResponsibilityType
-
 type ClientError struct {
 	*ClientErrorType
 	Message     string
