@@ -21,9 +21,22 @@ func NewClientError(message string, err error, code ...int) *ClientError {
 	return &ClientError{ClientErrorType: &ResponseError, Message: message, StatusCode: code[0], ClientError: err}
 }
 
-func (c *ClientError) Error() string {
-	if c.ClientErrorType == &ResponseError {
-		return fmt.Sprintf("Status Code: %d Message: %s Error: %s", c.StatusCode, c.Message, c.ClientError)
+func (e *ClientError) Error() string {
+	if e.ClientErrorType == &ResponseError {
+		return fmt.Sprintf("Status Code: %d Message: %s Error: %s", e.StatusCode, e.Message, e.ClientError)
 	}
-	return fmt.Sprintf("Message: %s Error: %s", c.Message, c.ClientError)
+	return fmt.Sprintf("Message: %s Error: %s", e.Message, e.ClientError)
+}
+
+type BusinessError struct {
+	Message     string
+	BusinessErr error
+}
+
+func NewBusinessError(message string, businessErr error) *BusinessError {
+	return &BusinessError{Message: message, BusinessErr: businessErr}
+}
+
+func (e *BusinessError) Error() string {
+	return fmt.Sprintf("Message: %s Error: %v", e.Message, e.BusinessErr)
 }

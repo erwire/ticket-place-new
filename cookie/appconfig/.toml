@@ -1,0 +1,5 @@
+path = ""
+com = ""
+time = ""
+baseurl = "http://188.225.26.201"
+polling_period = 3000000000

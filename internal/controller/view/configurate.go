@@ -3,7 +3,6 @@ package view
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -24,7 +23,7 @@ func (f *FyneApp) ConfigureMainWindows() {
 	} else {
 		f.mainWindow.SetIcon(icoResource)
 	}
-	f.application.Settings().SetTheme(theme.DarkTheme())
+	//f.application.Settings().SetTheme(theme.DarkTheme())
 	f.mainWindow.SetContent(
 		container.NewVBox(
 			f.ConfigureMainWindowHeader(),

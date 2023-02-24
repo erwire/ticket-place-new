@@ -2,6 +2,7 @@ package services
 
 import (
 	"fptr/internal/entities"
+	apperr "fptr/internal/error_list"
 	"fptr/internal/gateways"
 	"github.com/google/logger"
 )
@@ -35,7 +36,12 @@ func (s *ClientService) PrintSell(info entities.Info, id string) error {
 	}
 
 	if err = s.gw.KKT.PrintSell(*sell); err != nil {
-		s.Errorf("Ошибка во время печати заказа с номером %s, ККТ: %v", id, err)
+		switch err.(type) {
+		case *apperr.BusinessError:
+			s.Warningf("Ошибка во время печати чека продажи заказа с номером %s, ККТ: %v", id, err)
+		default:
+			s.Errorf("Ошибка во время печати чека продажи заказа с номером %s, ККТ: %v", id, err)
+		}
 		return err
 	}
 	s.Infof("Выполнена печать чека заказа с номером: %s\n", id)
@@ -50,7 +56,12 @@ func (s *ClientService) PrintRefoundFromSell(info entities.Info, id string) erro
 	}
 	err = s.gw.KKT.PrintRefoundFromCheck(*sell)
 	if err != nil {
-		s.Errorf("Ошибка во время печати возврата заказа с номером %s, ККТ: %v", id, err)
+		switch err.(type) {
+		case *apperr.BusinessError:
+			s.Warningf("Ошибка во время печати возврата заказа с номером %s, ККТ: %v", id, err)
+		default:
+			s.Errorf("Ошибка во время печати возврата заказа с номером %s, ККТ: %v", id, err)
+		}
 		return err
 	}
 	s.Infof("Выполнена печать чека возврата заказа с номером: %s\n", id)
@@ -63,9 +74,15 @@ func (s *ClientService) PrintRefound(info entities.Info, id string) error {
 		s.Errorf("Ошибка во время печати возврата заказа с номером %s, клиент: %v", id, err)
 		return err
 	}
+
 	err = s.gw.KKT.PrintRefound(*refound)
 	if err != nil {
-		s.Errorf("Ошибка во время печати возврата заказа с номером %s, ККТ: %v", id, err)
+		switch err.(type) {
+		case *apperr.BusinessError:
+			s.Warningf("Ошибка во время печати возврата заказа с номером %s, ККТ: %v", id, err)
+		default:
+			s.Errorf("Ошибка во время печати возврата заказа с номером %s, ККТ: %v", id, err)
+		}
 		return err
 	}
 

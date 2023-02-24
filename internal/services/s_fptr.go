@@ -46,14 +46,14 @@ func (s *KKTService) MakeSession(info entities.Info) error {
 				s.Errorf("Попытка закрытия смены закончилось неудачей: %v\n", err)
 				return err
 			}
+			s.Infof("Попытка закрытия смены закончилось удачно: %v\n", err)
 			err = s.gw.OpenShift()
 			if err != nil {
 				s.Errorf("Попытка открытия смены закончилось неудачей: %v\n", err)
 				return err
 			}
+			s.Infof("Попытка открытия смены закончилось удачно: %v\n", err)
 		}
-		s.Errorf("Не можем открыть смену: %v\n", err)
-		return err
 	}
 	return nil
 }

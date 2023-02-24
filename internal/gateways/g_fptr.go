@@ -55,19 +55,9 @@ func (g *KKTGateway) PrintTicket() error {
 	return nil
 }
 
-func (g *KKTGateway) TicketStatus(ticket entities.TicketData, ticketType string) bool {
-	switch ticketType {
-	case CheckType:
-		return ticket.Status == "returned" || ticket.Status == "payed"
-	case TicketType:
-		return ticket.Status == "created" || ticket.Status == "payed"
-	default:
-		return false
-	}
-}
-
 func (g *KKTGateway) PrintSell(sell entities.Sell) error {
-	if !g.ZeroAmountStatus(sell) && g.AcceptedForPrint(sell) {
+	zeroAmountFlag, acceptedFlag, checkStatus := g.ZeroAmountStatus(sell), g.AcceptedForPrint(sell), g.CheckStatus(sell, CheckType)
+	if !zeroAmountFlag && acceptedFlag && checkStatus {
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL)
 
 		if err := g.IFptr.OpenReceipt(); err != nil {
@@ -141,11 +131,14 @@ func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 		}
 
 		return nil
+	} else {
+		return g.NotPrintReason(zeroAmountFlag, acceptedFlag, checkStatus)
 	}
-	return nil // обработка нулевых заказов
+
 }
 func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
-	if !g.ZeroAmountStatus(sell) && g.AcceptedForPrint(sell) {
+	zeroAmountFlag, acceptedFlag, checkStatus := g.ZeroAmountStatus(sell), g.AcceptedForPrint(sell), g.CheckStatus(sell, CheckType)
+	if !zeroAmountFlag && acceptedFlag && checkStatus {
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL_RETURN)
 		if err := g.IFptr.OpenReceipt(); err != nil {
 			g.IFptr.CancelReceipt()
@@ -164,6 +157,7 @@ func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
 				sum += ticket.Amount
 			}
 		}
+
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
 		if err := g.IFptr.ReceiptTotal(); err != nil {
 			g.IFptr.CancelReceipt()
@@ -216,11 +210,12 @@ func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
 		}
 		return nil
 	} else {
-		return nil // ? можно обработать варнинг с нуль-возвратом
+		return g.NotPrintReason(zeroAmountFlag, acceptedFlag, checkStatus)
 	}
 }
 func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
-	if !g.ZeroAmountStatus(refound) && g.AcceptedForPrint(refound) {
+	zeroAmountFlag, acceptedFlag, checkStatus := g.ZeroAmountStatus(refound), g.AcceptedForPrint(refound), g.CheckStatus(refound, CheckType)
+	if !zeroAmountFlag && acceptedFlag && checkStatus {
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL_RETURN)
 		if err := g.IFptr.OpenReceipt(); err != nil {
 			g.IFptr.CancelReceipt()
@@ -239,6 +234,7 @@ func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
 				sum += ticket.Amount
 			}
 		}
+
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, sum)
 		if err := g.IFptr.ReceiptTotal(); err != nil {
 			g.IFptr.CancelReceipt()
@@ -292,10 +288,41 @@ func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
 
 		return nil
 	} else {
-		return nil // ? можно обработать варнинг с нуль-возвратом
+		return g.NotPrintReason(zeroAmountFlag, acceptedFlag, checkStatus)
 	}
 }
 
+func (g *KKTGateway) NotPrintReason(zeroAmountFlag, acceptedFlag, checkStatus bool) error {
+	reason := ""
+	switch true {
+	case zeroAmountFlag:
+		reason += "заказ с нулевыми позициями"
+	case !acceptedFlag:
+		if reason != "" {
+			reason += ", "
+		}
+		reason += "заказ с необрабатываемой формой оплаты"
+	case !checkStatus:
+		if reason != "" {
+			reason += ", "
+		}
+		reason += "в заказе не присутствует позиций с обрабатываемым статусом"
+	}
+
+	return apperr.NewBusinessError(fmt.Sprintf("Чек не печатается по причине: %s", reason), errorlog.ValidateError) // ? можно обработать варнинг с нуль-возвратом
+}
+
+//# Регистраторы
+
+func (g *KKTGateway) PositionRegister(data entities.TicketData) error {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_COMMODITY_NAME, fmt.Sprint(data.Number, ",", data.Event.Show.Name, ",", data.Event.Show.AgeLimit, ",", data.Event.DateTime, ",", data.Zona, ", Ряд:", data.RowSector, ", Место:", data.SeatNumber))
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PRICE, data.Amount)
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_QUANTITY, 1)
+	g.IFptr.SetParam(1212, 4)
+	g.IFptr.SetParam(1214, 4)
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_TAX_TYPE, fptr10.LIBFPTR_TAX_NO)
+	return g.IFptr.Registration()
+}
 func (g *KKTGateway) NewCashierRegister(info entities.SessionInfo) error {
 	if !g.IsOpened() {
 		return errorlog.BoxOfficeIsNotOpenError
@@ -308,6 +335,7 @@ func (g *KKTGateway) NewCashierRegister(info entities.SessionInfo) error {
 	}
 	return nil
 }
+
 func (g *KKTGateway) IsOpened() bool {
 	return g.IFptr.IsOpened()
 }
@@ -340,6 +368,8 @@ func (g *KKTGateway) CashIncome(income float64) error {
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_SUM, income)
 	return g.IFptr.CashIncome()
 }
+
+//# Доступ к печати чеков и билетов
 
 func (g *KKTGateway) ZeroAmountStatus(data interface{}) bool {
 	ZeroAmountStatus := true
@@ -404,15 +434,58 @@ func (g *KKTGateway) AcceptedForPrint(data interface{}) bool {
 		return false
 	}
 } //# Доступ к печати по оплате
-
-func (g *KKTGateway) PositionRegister(data entities.TicketData) error {
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_COMMODITY_NAME, fmt.Sprint(data.Number, ",", data.Event.Show.Name, ",", data.Event.Show.AgeLimit, ",", data.Event.DateTime, ",", data.Zona, ", Ряд:", data.RowSector, ", Место:", data.SeatNumber))
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PRICE, data.Amount)
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_QUANTITY, 1)
-	g.IFptr.SetParam(1212, 4)
-	g.IFptr.SetParam(1214, 4)
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_TAX_TYPE, fptr10.LIBFPTR_TAX_NO)
-	return g.IFptr.Registration()
+func (g *KKTGateway) TicketStatus(ticket entities.TicketData, ticketType string) bool {
+	switch ticketType {
+	case CheckType:
+		return ticket.Status == "returned" || ticket.Status == "payed"
+	case TicketType:
+		return ticket.Status == "created" || ticket.Status == "payed"
+	default:
+		return false
+	}
+}
+func (g *KKTGateway) CheckStatus(data interface{}, typeValue string) bool {
+	status := false
+	switch data.(type) {
+	case entities.Sell:
+		sell := data.(entities.Sell)
+		for _, ticket := range sell.Data.Tickets {
+			if g.TicketStatus(ticket, typeValue) {
+				status = true
+				break
+			}
+		}
+		return status
+	case *entities.Sell:
+		sell := data.(*entities.Sell)
+		for _, ticket := range sell.Data.Tickets {
+			if g.TicketStatus(ticket, typeValue) {
+				status = true
+				break
+			}
+		}
+		return status
+	case entities.Refound:
+		refound := data.(entities.Refound)
+		for _, ticket := range refound.Data.Tickets {
+			if g.TicketStatus(ticket, typeValue) {
+				status = true
+				break
+			}
+		}
+		return status
+	case *entities.Refound:
+		refound := data.(*entities.Refound)
+		for _, ticket := range refound.Data.Tickets {
+			if g.TicketStatus(ticket, typeValue) {
+				status = true
+				break
+			}
+		}
+		return status
+	default:
+		return false
+	}
 }
 
 func (g *KKTGateway) CurrentErrorStatusCode() error {

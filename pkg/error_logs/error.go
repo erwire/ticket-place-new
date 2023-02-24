@@ -40,3 +40,7 @@ var (
 	DocumentNotClosed       = errors.New("error during process of closing document")
 	CantCancelReceipt       = errors.New("error during closing receipt")
 ) //# Ошибки ККТ
+
+var (
+	ValidateError = errors.New("error of business validation")
+) //# Business ошибки

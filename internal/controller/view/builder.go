@@ -9,7 +9,6 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"image/color"
 	"time"
 )
 
@@ -44,8 +43,8 @@ func (f *FyneApp) NewAuthForm() {
 }
 
 func (f *FyneApp) NewMainWindowHeader() {
-	f.header.usernameLabel = canvas.NewText("", color.White)
-	f.header.localTimeLabel = canvas.NewText(time.Now().Format("2.01.2006 15:04:05"), color.White)
+	f.header.usernameLabel = canvas.NewText("", theme.ForegroundColor())
+	f.header.localTimeLabel = canvas.NewText(time.Now().Format("2.01.2006 15:04:05"), theme.ForegroundColor())
 	f.header.printLastСheckButton = widget.NewButton("Напечатать последний чек", f.printLastCheckPressed)
 	f.header.printXReportButton = widget.NewButton("Напечатать X-отчет", f.printXReportPressed)
 	f.header.exitButton = widget.NewButton("Выйти", f.exitPressed)
@@ -114,8 +113,8 @@ func (f *FyneApp) NewMainWindowAccordion() {
 }
 
 func (f *FyneApp) NewWarningAlert() {
-	f.Warning.WarningText = canvas.NewText("", color.White)
-	textError := canvas.NewText("Возникла ошибка во время выполнения: ", color.White)
+	f.Warning.WarningText = canvas.NewText("", theme.ForegroundColor())
+	textError := canvas.NewText("Возникла ошибка во время выполнения: ", theme.ForegroundColor())
 
 	box := container.NewVBox(container.NewHBox(textError), container.NewHBox(f.Warning.WarningText), container.NewHBox(widget.NewLabel("")))
 	f.Warning.WarningWindow = dialog.NewCustom("Ошибка", "Понятно", box, f.mainWindow)

@@ -4,12 +4,10 @@ import (
 	"context"
 	"fptr/internal/entities"
 	"fptr/internal/services"
-	"fptr/pkg/toml"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
-	"log"
 	"time"
 )
 
@@ -105,9 +103,10 @@ type FyneApp struct {
 		WarningWindow dialog.Dialog
 		WarningText   *canvas.Text
 	}
-
-	AlertWindow   dialog.Dialog
-	SettingWindow dialog.Dialog
+	InfoDialogWindow dialog.Dialog
+	InfoDialogText   canvas.Text
+	AlertWindow      dialog.Dialog
+	SettingWindow    dialog.Dialog
 	//Флаги
 	flag     Flags
 	selected Selected
@@ -134,25 +133,15 @@ func (f *FyneApp) StartApp() {
 	}
 
 	if f.info.Session.IsDead() {
-		f.ShowWarning("Ваша сессия устарела. Пожалуйста, авторизуйтесь снова!")
 		f.UpdateSession(entities.SessionInfo{})
 	} else {
 		f.header.usernameLabel.Text = f.info.Session.UserData.Username
 		f.authForm.form.Hide()
 		f.context.ctx, f.context.cancel = context.WithCancel(context.Background())
-		click, message := f.service.GetLastReceipt(f.info.AppConfig.Driver.Connection, f.info.Session)
-		if message != "" {
-			f.ShowWarning("Внимание, возможно задвоение чека!")
-			log.Println(err.Error()) //обработку сделать нормальную
-		}
-		err = toml.WriteToml(toml.ClickPath, click)
+		f.GetClickAndWriteIntoToml()
+		err = f.service.MakeSession(*f.info)
 		if err != nil {
-			log.Println(err.Error())
-		}
-		message = f.service.MakeSession(*f.info)
-		if message != "" {
-			f.UpdateSession(entities.SessionInfo{})
-			f.authForm.form.Show()
+			f.ErrorHandler(err, LoginResponsibility)
 		}
 		f.service.Infof("Данные из сессии подгрузились. Успешная авторизация под пользователем %s", f.info.Session.UserData.FullName)
 		go f.Listen(f.context.ctx, *f.info)
