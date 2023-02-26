@@ -110,6 +110,12 @@ type FyneApp struct {
 	//Флаги
 	flag     Flags
 	selected Selected
+
+	Error struct {
+		ErrorWindow        fyne.Window
+		ErrorConfirmButton *widget.Button
+		ErrorText          *canvas.Text
+	}
 }
 
 func NewFyneApp(a fyne.App, view *services.Services, inf *entities.Info) *FyneApp { //, service *services.Service
@@ -124,7 +130,8 @@ func (f *FyneApp) StartApp() {
 
 	f.ConfigureMainWindows()
 	f.ConfigureAuthDialogForm()
-	f.ConfigureWarningAlert()
+	f.ConfigureWarningAlert() //
+	f.ConfigurateErrorAlert()
 	f.ConfigureSettingWindow()
 	err := f.InitializeCookie()
 	if err != nil {

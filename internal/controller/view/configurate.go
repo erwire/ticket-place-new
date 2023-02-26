@@ -2,7 +2,10 @@ package view
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -118,4 +121,16 @@ func (f *FyneApp) ConfigureWarningAlert() {
 	f.NewWarningAlert()
 	f.Warning.WarningWindow.Resize(fyne.NewSize(300, 100))
 	f.Warning.WarningWindow.Hide()
+}
+
+func (f *FyneApp) ConfigurateErrorAlert() {
+	f.NewErrorAlert()
+	f.Error.ErrorWindow.Resize(fyne.NewSize(400, 100))
+
+	f.Warning.WarningWindow.Hide()
+	title := canvas.NewText("Во время исполнения произошла ошибка", theme.ForegroundColor())
+	title.TextSize = 20
+	title.Alignment = fyne.TextAlignCenter
+	box := container.NewBorder(title, container.NewCenter(f.Error.ErrorConfirmButton), container.New(layout.NewGridWrapLayout(fyne.NewSize(50, 50))), container.New(layout.NewGridWrapLayout(fyne.NewSize(50, 50))), f.Error.ErrorText)
+	f.Error.ErrorWindow.SetContent(box)
 }

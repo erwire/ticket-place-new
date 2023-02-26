@@ -38,7 +38,12 @@ func (l *ClientGateway) Login(config entities.AppConfig) (*entities.SessionInfo,
 		return nil, apperr.NewClientError(errorlog.IncorrectLoginOrPasswordErrorMessage, errorlog.InvalidLoginOrPassword)
 	}
 
-	requestURI := config.Driver.Connection + fmt.Sprintf(AuthorizationURL, config.User.Login, config.User.Password)
+	url := config.Driver.Connection
+	if url[len(url)-1] == '/' {
+		url = url[:len(url)-1]
+	}
+
+	requestURI := url + fmt.Sprintf(AuthorizationURL, config.User.Login, config.User.Password)
 
 	request, err := http.NewRequest(http.MethodPost, requestURI, nil)
 
@@ -82,7 +87,13 @@ func (l *ClientGateway) GetLastReceipt(connectionURL string, session entities.Se
 		return nil, apperr.NewClientError(errorlog.EmptyURLErrorMessage, errorlog.EmptyURLDataError)
 	}
 
-	requestURI := connectionURL + fmt.Sprintf(LastConditionURL, session.UserData.ID)
+	url := connectionURL
+
+	if url[len(url)-1] == '/' {
+		url = url[:len(url)-1]
+	}
+
+	requestURI := url + fmt.Sprintf(LastConditionURL, session.UserData.ID)
 
 	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 
@@ -127,7 +138,13 @@ func (l *ClientGateway) GetSell(info entities.Info, sellID string) (*entities.Se
 		return nil, apperr.NewClientError(errorlog.EmptyURLErrorMessage, errorlog.EmptyURLDataError)
 	}
 
-	requestURI := info.AppConfig.Driver.Connection + fmt.Sprintf(OrderURL, sellID)
+	url := info.AppConfig.Driver.Connection
+
+	if url[len(url)-1] == '/' {
+		url = url[:len(url)-1]
+	}
+
+	requestURI := url + fmt.Sprintf(OrderURL, sellID)
 
 	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 
@@ -172,7 +189,13 @@ func (l *ClientGateway) GetRefound(info entities.Info, refoundID string) (*entit
 		return nil, apperr.NewClientError(errorlog.EmptyURLErrorMessage, errorlog.EmptyURLDataError)
 	}
 
-	requestURI := info.AppConfig.Driver.Connection + fmt.Sprintf(RefoundURL, refoundID)
+	url := info.AppConfig.Driver.Connection
+
+	if url[len(url)-1] == '/' {
+		url = url[:len(url)-1]
+	}
+
+	requestURI := url + fmt.Sprintf(RefoundURL, refoundID)
 
 	request, err := http.NewRequest(http.MethodGet, requestURI, nil)
 

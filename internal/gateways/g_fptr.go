@@ -33,6 +33,7 @@ func (g *KKTGateway) Configurate() error {
 
 func (g *KKTGateway) Open() error {
 	if err := g.IFptr.Open(); err != nil {
+		log.Println(err)
 		return err
 	}
 	return nil

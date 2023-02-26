@@ -14,6 +14,7 @@ import (
 
 func (f *FyneApp) NewMainWindow() {
 	f.mainWindow = f.application.NewWindow("Ticket-Place")
+	f.mainWindow.SetMaster()
 }
 
 func (f *FyneApp) NewSettingWindow() {
@@ -119,4 +120,18 @@ func (f *FyneApp) NewWarningAlert() {
 	box := container.NewVBox(container.NewHBox(textError), container.NewHBox(f.Warning.WarningText), container.NewHBox(widget.NewLabel("")))
 	f.Warning.WarningWindow = dialog.NewCustom("Ошибка", "Понятно", box, f.mainWindow)
 	f.Warning.WarningWindow.SetOnClosed(f.WarningPressed)
+}
+
+func (f *FyneApp) NewErrorAlert() {
+	f.Error.ErrorWindow = f.application.NewWindow("Ошибка")
+	f.Error.ErrorText = canvas.NewText("", theme.ForegroundColor())
+	f.Error.ErrorText.Alignment = fyne.TextAlignCenter
+	f.Error.ErrorText.TextSize = 18
+	f.Error.ErrorConfirmButton = widget.NewButtonWithIcon("Хорошо", theme.ConfirmIcon(), func() {
+		f.Error.ErrorWindow.Hide()
+	})
+	f.Error.ErrorWindow.SetIcon(theme.WarningIcon())
+	f.Error.ErrorWindow.SetCloseIntercept(func() {
+		f.Error.ErrorWindow.Hide()
+	})
 }

@@ -35,7 +35,7 @@ func main() {
 		mainLogger.Errorf("Запуск драйвера ККТ завершился с ошибкой: %v", err)
 	}
 
-	client := &http.Client{Timeout: 2 * time.Second}
+	client := &http.Client{Timeout: 15 * time.Second}
 	gateway := gateways.NewGateway(client, fptrDriver)
 	service := services.NewServices(gateway, mainLogger)
 	view := view.NewFyneApp(app.New(), service, info)
