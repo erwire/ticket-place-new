@@ -9,24 +9,31 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"net/url"
 	"time"
 )
 
 func (f *FyneApp) NewMainWindow() {
-	f.mainWindow = f.application.NewWindow("Ticket-Place")
-	f.mainWindow.SetMaster()
+	f.MainWindow = f.application.NewWindow("Ticket-Place")
+	f.MainWindow.SetMaster()
 }
 
 func (f *FyneApp) NewSettingWindow() {
+	ButtonSeparatorText := canvas.NewText("Основные функции", theme.ForegroundColor())
+	ButtonSeparatorText.TextSize = 18
+	ButtonSeparatorText.Alignment = fyne.TextAlignCenter
+	f.DriverSetting.CloseShiftButton = widget.NewButtonWithIcon("Закрыть смену", theme.CancelIcon(), f.CloseShift)
 	content := container.NewVBox(
 		container.New(layout.NewFormLayout(), widget.NewLabel("Путь к драйверу"), f.DriverSetting.DriverPathEntry),
 		container.New(layout.NewFormLayout(), widget.NewLabel("Адрес сервера"), f.DriverSetting.DriverAddressEntry),
 		container.New(layout.NewFormLayout(), widget.NewLabel("COM-порт ККТ"), f.DriverSetting.DriverComPortEntry),
 		container.New(layout.NewFormLayout(), widget.NewLabel("Период опроса сервера"), f.DriverSetting.DriverPollingPeriodSelect),
-		widget.NewLabel(""),
+		widget.NewSeparator(),
+		ButtonSeparatorText,
+		container.NewMax(f.DriverSetting.CloseShiftButton),
 	)
 
-	f.SettingWindow = dialog.NewCustomConfirm("Настройки приложения", "Сохранить", "Отменить", content, f.SettingWindowPressed, f.mainWindow)
+	f.SettingWindow = dialog.NewCustomConfirm("Настройки приложения", "Сохранить", "Отменить", content, f.SettingWindowPressed, f.MainWindow)
 }
 
 func (f *FyneApp) NewAuthForm() {
@@ -40,14 +47,13 @@ func (f *FyneApp) NewAuthForm() {
 		widget.NewFormItem("Пароль", f.authForm.passwordEntry),
 		widget.NewFormItem("Настройки", f.authForm.settingButton),
 	)
-	f.authForm.form = dialog.NewForm("Авторизация", "Войти", "Выйти", authFormItems, f.AuthorizationPressed, f.mainWindow)
+	f.authForm.form = dialog.NewForm("Авторизация", "Войти", "Выйти", authFormItems, f.AuthorizationPressed, f.MainWindow)
 }
 
 func (f *FyneApp) NewMainWindowHeader() {
 	f.header.usernameLabel = canvas.NewText("", theme.ForegroundColor())
 	f.header.localTimeLabel = canvas.NewText(time.Now().Format("2.01.2006 15:04:05"), theme.ForegroundColor())
-	f.header.printLastСheckButton = widget.NewButton("Напечатать последний чек", f.printLastCheckPressed)
-	f.header.printXReportButton = widget.NewButton("Напечатать X-отчет", f.printXReportPressed)
+
 	f.header.exitButton = widget.NewButton("Выйти", f.exitPressed)
 	f.header.exitAndCloseShiftButton = widget.NewButton("Выйти и закрыть смену", f.exitAndCloseShiftButtonPressed)
 	f.header.listenerStatus.listenerToolbarItem = widget.NewToolbarAction(theme.CancelIcon(), f.listenerStatusAction)
@@ -68,13 +74,24 @@ func (f *FyneApp) NewPrintSettingsContainer() {
 func (f *FyneApp) NewPrintsRefoundAndDepositsAccordionItem() {
 	f.PrintsRefoundAndDeposits.RefoundEntry = widget.NewEntry()
 	f.PrintsRefoundAndDeposits.RefoundFormItem = widget.NewFormItem("Возврат заказа", f.PrintsRefoundAndDeposits.RefoundEntry)
-	f.PrintsRefoundAndDeposits.CashIncomeEntry = widget.NewEntry()
-	f.PrintsRefoundAndDeposits.CashIncomeFormItem = widget.NewFormItem("Внесение наличных", f.PrintsRefoundAndDeposits.CashIncomeEntry)
+
 	f.PrintsRefoundAndDeposits.PrintCheckEntry = widget.NewEntry()
 	f.PrintsRefoundAndDeposits.PrintCheckFormItem = widget.NewFormItem("Печать заказа", f.PrintsRefoundAndDeposits.PrintCheckEntry)
 	f.PrintsRefoundAndDeposits.RefoundForm = widget.NewForm(f.PrintsRefoundAndDeposits.RefoundFormItem)
-	f.PrintsRefoundAndDeposits.CashIncomeForm = widget.NewForm(f.PrintsRefoundAndDeposits.CashIncomeFormItem)
+
+	f.PrintsRefoundAndDeposits.AdminEntry = widget.NewPasswordEntry()
+	f.PrintsRefoundAndDeposits.AdminFormItem = widget.NewFormItem("Введите пароль", f.PrintsRefoundAndDeposits.AdminEntry)
+	f.PrintsRefoundAndDeposits.AdminForm = widget.NewForm(f.PrintsRefoundAndDeposits.AdminFormItem)
+
 	f.PrintsRefoundAndDeposits.PrintCheckForm = widget.NewForm(f.PrintsRefoundAndDeposits.PrintCheckFormItem)
+}
+
+func (f *FyneApp) NewInstrumentalAccordionItem() {
+	f.Instruments.printLastСheckButton = widget.NewButton("Напечатать последний чек", f.printLastCheckPressedFromKKT)
+	f.Instruments.printXReportButton = widget.NewButton("Напечатать X-отчет", f.printXReportPressed)
+	f.Instruments.CashIncomeEntry = widget.NewEntry()
+	f.Instruments.CashIncomeFormItem = widget.NewFormItem("Внесение наличных", f.Instruments.CashIncomeEntry)
+	f.Instruments.CashIncomeForm = widget.NewForm(f.Instruments.CashIncomeFormItem)
 }
 
 func (f *FyneApp) NewDriverSettingAccordionItem() {
@@ -107,9 +124,10 @@ func (f *FyneApp) NewDriverSettingAccordionItem() {
 func (f *FyneApp) NewMainWindowAccordion() {
 	f.ConfigurePrintSettingsContainer()
 	f.ConfigurePrintsRefoundAndDepositsAccordionItem()
+	f.ConfigurateInstrumentsAccordionItem()
 	f.ConfigureDriverSettingAccordionItem()
 	f.MainWindowAccordion = widget.NewAccordion(
-		f.PrintsRefoundAndDeposits.RefoundAndDepositsAccordionItem, f.DriverSetting.DriverSettingAccordion,
+		f.PrintsRefoundAndDeposits.RefoundAndDepositsAccordionItem, f.DriverSetting.DriverSettingAccordion, f.Instruments.InstrumentalAccordionItem,
 	)
 }
 
@@ -118,7 +136,7 @@ func (f *FyneApp) NewWarningAlert() {
 	textError := canvas.NewText("Возникла ошибка во время выполнения: ", theme.ForegroundColor())
 
 	box := container.NewVBox(container.NewHBox(textError), container.NewHBox(f.Warning.WarningText), container.NewHBox(widget.NewLabel("")))
-	f.Warning.WarningWindow = dialog.NewCustom("Ошибка", "Понятно", box, f.mainWindow)
+	f.Warning.WarningWindow = dialog.NewCustom("Ошибка", "Понятно", box, f.MainWindow)
 	f.Warning.WarningWindow.SetOnClosed(f.WarningPressed)
 }
 
@@ -133,5 +151,21 @@ func (f *FyneApp) NewErrorAlert() {
 	f.Error.ErrorWindow.SetIcon(theme.WarningIcon())
 	f.Error.ErrorWindow.SetCloseIntercept(func() {
 		f.Error.ErrorWindow.Hide()
+	})
+}
+
+func (f *FyneApp) NewCriticalAlert() {
+	f.CriticalError.ErrorWindow = f.application.NewWindow("Критическая ошибка")
+	f.CriticalError.ErrorText = canvas.NewText("", theme.ForegroundColor())
+	f.CriticalError.ErrorText.Alignment = fyne.TextAlignCenter
+	f.CriticalError.ErrorText.TextSize = 18
+	f.CriticalError.ErrorConfirmButton = widget.NewButtonWithIcon("Выйти", theme.ConfirmIcon(), func() {
+		f.application.Quit()
+	})
+	f.CriticalError.AdditionalText = canvas.NewText("", theme.ForegroundColor())
+	f.CriticalError.ErrorWindow.SetIcon(theme.WarningIcon())
+	f.CriticalError.ErrorLinkButton = widget.NewHyperlink("", &url.URL{})
+	f.CriticalError.ErrorWindow.SetCloseIntercept(func() {
+		f.application.Quit()
 	})
 }

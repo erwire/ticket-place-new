@@ -19,6 +19,13 @@ const (
 	LastConditionURL = "/api/print-requests/by-user/%d"       // структура Click
 )
 
+const (
+	sellDumpName    = "./debug_info/sell/sell.json"
+	refoundDumpName = "./debug_info/refound/refound.json"
+	clickDumpName   = "./debug_info/click/click.json"
+	loginDumpName   = "./debug_info/login/login.json"
+)
+
 type ClientGateway struct {
 	client *http.Client
 }
@@ -75,6 +82,7 @@ func (l *ClientGateway) Login(config entities.AppConfig) (*entities.SessionInfo,
 	}
 	err = json.Unmarshal(body, &session)
 	if err != nil {
+		l.writeProblemDataIntoJSONDump(body, loginDumpName)
 		return nil, apperr.NewClientError(errorlog.JsonUnmarshallingErrorMessage, err)
 	}
 	return &session, nil
@@ -122,6 +130,7 @@ func (l *ClientGateway) GetLastReceipt(connectionURL string, session entities.Se
 	body, err := io.ReadAll(response.Body)
 
 	if err != nil {
+		l.writeProblemDataIntoJSONDump(body, clickDumpName)
 		return nil, apperr.NewClientError(errorlog.ReadBodyErrorMessage, err)
 	}
 	err = json.Unmarshal(body, &click)
@@ -177,6 +186,7 @@ func (l *ClientGateway) GetSell(info entities.Info, sellID string) (*entities.Se
 	}
 	err = json.Unmarshal(body, &sell)
 	if err != nil {
+		l.writeProblemDataIntoJSONDump(body, sellDumpName)
 		return nil, apperr.NewClientError(errorlog.JsonUnmarshallingErrorMessage, err)
 	}
 	return &sell, nil
@@ -222,23 +232,33 @@ func (l *ClientGateway) GetRefound(info entities.Info, refoundID string) (*entit
 
 	body, err := io.ReadAll(response.Body)
 
-	file, err := os.OpenFile("./cookie/refound/.json", os.O_WRONLY, 0660)
-	if err != nil {
-		log.Println(err.Error())
-	}
-
-	if _, err = file.Write(body); err != nil {
-		log.Println(err.Error())
-	}
-
-	file.Close()
-
 	if err != nil {
 		return nil, apperr.NewClientError(errorlog.ReadBodyErrorMessage, err)
 	}
 	err = json.Unmarshal(body, &refound)
 	if err != nil {
+		l.writeProblemDataIntoJSONDump(body, refoundDumpName)
 		return nil, apperr.NewClientError(errorlog.JsonUnmarshallingErrorMessage, err)
 	}
 	return &refound, nil
+}
+
+func (l *ClientGateway) writeProblemDataIntoJSONDump(body []byte, filepath string) {
+
+	file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0660)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	if err := file.Truncate(0); err != nil {
+		log.Println(err.Error())
+	}
+
+	//message := l.messageDecode(string(body))
+	if _, err = file.WriteString(string(body)); err != nil {
+		log.Println(err.Error())
+	} else {
+		log.Println("Заказ с проблемной печатью перенесен в дамп файл")
+	}
+
+	file.Close()
 }

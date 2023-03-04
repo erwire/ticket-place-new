@@ -1,30 +1,20 @@
 package main
 
 import (
-	"errors"
-	"fmt"
-	apperr "fptr/internal/error_list"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 )
 
 func main() {
 
-	err := apperr.NewClientError("!", errors.New("!!!"))
-	fmt.Println(err)
-	fmt.Println(err.Error())
-	fmt.Println(errors.Unwrap(err))
+	myApp := app.New()
+	w := myApp.NewWindow("Image")
 
-	//err := errors.New("json unmarshalling error")
-	//err = NewClientError("Получены некорректные данные от сервера", err, http.StatusUnprocessableEntity)
-	//if err != nil {
-	//	log.Printf("Ошибка при выполнении печати чека: %s", err.Error()) //на уровень сервиса
-	//	ErrorHandler(err)                                                //на уровень контроллера
-	//}
-	//err2 := errors.New("request create error")
-	//err = error(NewClientError(RequestErrorMessage, err2))
-	//if err != nil {
-	//	log.Printf("Ошибка при выполнении печати чека: %s", err.Error())
-	//	ErrorHandler(err)
-	//}
+	w.SetContent(container.NewVBox(boxCenter, widget.NewLabel("!!!")))
+
+	w.ShowAndRun()
+
 }
 
 //func ErrorHandler(err error) {

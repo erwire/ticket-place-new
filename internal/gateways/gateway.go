@@ -44,4 +44,7 @@ type KKT interface {
 	CashIncome(income float64) error
 	CurrentErrorStatusCode() error
 	PrintRefoundFromCheck(sell entities.Sell) error
+	PrintLastCheckPressedFromKKT() error
+	WarningBeep()
+	ErrorBeep()
 }

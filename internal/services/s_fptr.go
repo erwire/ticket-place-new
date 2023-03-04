@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"fptr/internal/entities"
 	"fptr/internal/gateways"
 	"github.com/google/logger"
@@ -98,4 +99,24 @@ func (s *KKTService) CurrentError() error {
 		return err
 	}
 	return nil
+}
+
+func (s *KKTService) PrintLastCheckPressedFromKKT() error {
+	if err := s.gw.KKT.PrintLastCheckPressedFromKKT(); err != nil {
+		s.Errorf("Ошибка при печати копии последнего чека, напечатанного в ККТ: %v", err)
+		return err
+	}
+	s.Infof("Успешная печать копии последнего чека, напечатанного на ККТ\n")
+	return nil
+}
+
+func (s *KKTService) Beep(beepType string) {
+	switch beepType {
+	case "warning_beep":
+		s.gw.WarningBeep()
+	case "error_beep":
+		fmt.Println("!!!")
+		s.gw.ErrorBeep()
+	}
+
 }

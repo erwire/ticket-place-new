@@ -29,7 +29,7 @@ func (f *FyneApp) DriverPollingPeriodSelected(selected string) {
 }
 
 func (f *FyneApp) CashIncomeOnSubmit() {
-	incomeStr := f.PrintsRefoundAndDeposits.CashIncomeEntry.Text
+	incomeStr := f.Instruments.CashIncomeEntry.Text
 	income, err := strconv.ParseFloat(incomeStr, 32)
 	if err != nil {
 		f.ShowWarning("Некорректные данные в поле ввода суммы")
@@ -75,7 +75,7 @@ func (f *FyneApp) SetAdditionalTextPressed() {
 
 }
 
-func (f *FyneApp) printLastCheckPressed() {
+func (f *FyneApp) printLastCheckPressedFromCRM() {
 	click := &entities.Click{}
 	err := toml.ReadToml(toml.ClickPath, click)
 	if err != nil {
@@ -95,6 +95,13 @@ func (f *FyneApp) printLastCheckPressed() {
 	}
 
 	if err != nil {
+		f.ErrorHandler(err, FunctionResponsibility)
+		return
+	}
+}
+
+func (f *FyneApp) printLastCheckPressedFromKKT() {
+	if err := f.service.KKT.PrintLastCheckPressedFromKKT(); err != nil {
 		f.ErrorHandler(err, FunctionResponsibility)
 		return
 	}
@@ -121,7 +128,7 @@ func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик �
 		f.Login(conf)
 
 	} else {
-		f.mainWindow.Close()
+		f.MainWindow.Close()
 	}
 }
 
@@ -151,4 +158,12 @@ func (f *FyneApp) listenerStatusAction() {
 
 func (f *FyneApp) exitAndCloseShiftButtonPressed() {
 	f.LogoutWS()
+}
+
+func (f *FyneApp) CloseShift() {
+	err := f.service.CloseShift()
+	if err != nil {
+		f.ErrorHandler(err, FunctionResponsibility)
+		return
+	}
 }
