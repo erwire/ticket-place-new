@@ -37,4 +37,6 @@ type KKT interface {
 	CurrentShiftStatus() uint
 	CashIncome(income float64) error
 	CurrentError() error
+	PrintLastCheckPressedFromKKT() error
+	Beep(beepType string)
 }

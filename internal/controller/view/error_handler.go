@@ -7,11 +7,13 @@ import (
 	errorlog "fptr/pkg/error_logs"
 	"fptr/pkg/fptr10"
 	"fptr/pkg/toml"
-	"fyne.io/fyne/v2/dialog"
 	"log"
 	"net/http"
 	"strings"
 )
+
+var WarningBeep = "warning_beep"
+var ErrorBeep = "error_beep"
 
 type ResponsibilityType string
 
@@ -22,20 +24,26 @@ var ClickResponsibility ResponsibilityType
 var FunctionResponsibility ResponsibilityType
 
 func (f *FyneApp) ErrorHandler(err error, dependence ResponsibilityType) {
+
 	switch err.(type) {
 	case *apperr.ClientError:
+		f.service.Beep(ErrorBeep)
 		f.ClientErrorHandler(err.(*apperr.ClientError), dependence)
 		log.Printf("Ошибка клиента: %v\n", err)
 	case *fptr10.Error:
+		f.service.Beep(ErrorBeep)
 		log.Printf("Ошибка ККТ: %v\n", err)
 		f.FPTRErrorHandler(err.(*fptr10.Error), dependence)
 	case *toml.TomlError:
+		f.service.Beep(ErrorBeep)
 		log.Printf("Ошибка работы с файлами кэша")
 		f.TomlErrorHandler(err.(*toml.TomlError))
 	case *apperr.BusinessError:
+		f.service.Beep(WarningBeep)
 		log.Printf("Ошибка работы бизнес-логики")
 		f.BusinessErrorHandler(err.(*apperr.BusinessError))
 	default:
+		f.service.Beep(WarningBeep)
 		log.Printf("Ошибка не классифицирована: %v\n", err)
 	}
 }
@@ -166,7 +174,7 @@ func (f *FyneApp) FPTRErrorHandler(err *fptr10.Error, dependence ResponsibilityT
 func (f *FyneApp) BusinessErrorHandler(err *apperr.BusinessError) {
 	switch err.BusinessErr {
 	case errorlog.ValidateError:
-		inform := dialog.NewInformation("Информация", err.Message, f.mainWindow)
-		inform.Show()
+		//inform := dialog.NewInformation("Информация", err.Message, f.MainWindow)
+		//inform.Show()
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -17,7 +18,7 @@ const commonLogPath = "./log/common.log"
 
 func main() {
 	info := &entities.Info{}
-
+	createAppDirectories()
 	//log.Printf("Количество горутин в начале запуска: %d", runtime.NumGoroutine())
 
 	logVerbose := flag.Bool("log", false, "используется для логирования в консоль всех уровней")
@@ -31,9 +32,6 @@ func main() {
 	fptrDriver, err := fptr10.NewSafe()
 	defer fptrDriver.Destroy()
 	mainLogger.Infoln("Запуск драйвера KKT")
-	if err != nil {
-		mainLogger.Errorf("Запуск драйвера ККТ завершился с ошибкой: %v", err)
-	}
 
 	client := &http.Client{Timeout: 15 * time.Second}
 	gateway := gateways.NewGateway(client, fptrDriver)
@@ -47,5 +45,32 @@ func main() {
 	defer service.Logger.Infoln("Завершение работы приложения")
 
 	view.StartApp()
+	if err != nil {
+		service.Errorf("Запуск драйвера ККТ завершился с ошибкой: %v", err)
+		view.ShowCriticalError(err, "Пожалуйста, скачайте драйвер и перезапустите приложение", "https://atoldriver.ru/")
+		return
+	}
+	view.ShowAndRun()
+}
 
+func createAppDirectories() {
+	paths := directoriesList()
+	for _, path := range paths {
+		_, err := os.Stat(path)
+		if err != nil && os.IsNotExist(err) {
+			log.Printf("Создаем папку %s\n", path)
+			_ = os.Mkdir(path, 0660)
+		}
+	}
+}
+
+func directoriesList() []string {
+	return []string{
+		"./log",
+		"./debug_info",
+		"./debug_info/sell",
+		"./debug_info/refound",
+		"./debug_info/click",
+		"./debug_info/login",
+	}
 }

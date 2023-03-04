@@ -32,7 +32,7 @@ type FyneApp struct {
 	service     *services.Services
 	application fyne.App
 	//! главное окно
-	mainWindow fyne.Window
+	MainWindow fyne.Window
 	//элементы окна
 	authForm struct {
 		form                      dialog.Dialog
@@ -41,12 +41,11 @@ type FyneApp struct {
 	}
 
 	header struct {
-		usernameLabel           *canvas.Text
-		localTimeLabel          *canvas.Text
-		printLastСheckButton    *widget.Button
+		usernameLabel  *canvas.Text
+		localTimeLabel *canvas.Text
+
 		exitButton              *widget.Button
 		exitAndCloseShiftButton *widget.Button
-		printXReportButton      *widget.Button
 
 		listenerStatus struct {
 			listenerToolbar     *widget.Toolbar
@@ -68,14 +67,20 @@ type FyneApp struct {
 		RefoundForm                     *widget.Form
 		RefoundFormItem                 *widget.FormItem
 		RefoundEntry                    *widget.Entry
-
-		CashIncomeForm     *widget.Form
-		CashIncomeFormItem *widget.FormItem
-		CashIncomeEntry    *widget.Entry
-
-		PrintCheckForm     *widget.Form
-		PrintCheckFormItem *widget.FormItem
-		PrintCheckEntry    *widget.Entry
+		AdminEntry                      *widget.Entry
+		AdminFormItem                   *widget.FormItem
+		AdminForm                       *widget.Form
+		PrintCheckForm                  *widget.Form
+		PrintCheckFormItem              *widget.FormItem
+		PrintCheckEntry                 *widget.Entry
+	}
+	Instruments struct {
+		InstrumentalAccordionItem *widget.AccordionItem
+		CashIncomeForm            *widget.Form
+		CashIncomeFormItem        *widget.FormItem
+		CashIncomeEntry           *widget.Entry
+		printLastСheckButton      *widget.Button
+		printXReportButton        *widget.Button
 	}
 
 	DriverSetting struct {
@@ -89,6 +94,7 @@ type FyneApp struct {
 		DriverKKTPathFormItem                                   *widget.FormItem
 		DriverApiAddressFormItem                                *widget.FormItem
 		DriverPollingPeriodFormItem                             *widget.FormItem
+		CloseShiftButton                                        *widget.Button
 	}
 
 	PopUp struct {
@@ -116,6 +122,14 @@ type FyneApp struct {
 		ErrorConfirmButton *widget.Button
 		ErrorText          *canvas.Text
 	}
+
+	CriticalError struct {
+		ErrorWindow        fyne.Window
+		ErrorText          *canvas.Text
+		AdditionalText     *canvas.Text
+		ErrorConfirmButton *widget.Button
+		ErrorLinkButton    *widget.Hyperlink
+	}
 }
 
 func NewFyneApp(a fyne.App, view *services.Services, inf *entities.Info) *FyneApp { //, service *services.Service
@@ -127,11 +141,11 @@ func NewFyneApp(a fyne.App, view *services.Services, inf *entities.Info) *FyneAp
 }
 
 func (f *FyneApp) StartApp() {
-
 	f.ConfigureMainWindows()
 	f.ConfigureAuthDialogForm()
-	f.ConfigureWarningAlert() //
+	f.ConfigureWarningAlert()
 	f.ConfigurateErrorAlert()
+	f.ConfigurateCriticalErrorAlert()
 	f.ConfigureSettingWindow()
 	err := f.InitializeCookie()
 	if err != nil {
@@ -159,9 +173,12 @@ func (f *FyneApp) StartApp() {
 	f.flag.DebugOn = false
 
 	//f.PopUp.Text = widget.NewLabel("")
-	//f.PopUp.PopUp = widget.NewPopUp(f.PopUp.Text, f.mainWindow.Canvas())
+	//f.PopUp.PopUp = widget.NewPopUp(f.PopUp.Text, f.MainWindow.Canvas())
 
-	f.mainWindow.ShowAndRun()
+}
+
+func (f *FyneApp) ShowAndRun() {
+	f.MainWindow.ShowAndRun()
 }
 
 func (f *FyneApp) ClockUpdater() {

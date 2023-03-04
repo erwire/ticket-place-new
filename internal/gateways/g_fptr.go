@@ -6,6 +6,7 @@ import (
 	apperr "fptr/internal/error_list"
 	errorlog "fptr/pkg/error_logs"
 	"fptr/pkg/fptr10"
+	"fptr/pkg/notes"
 	"log"
 	"strconv"
 )
@@ -321,7 +322,7 @@ func (g *KKTGateway) PositionRegister(data entities.TicketData) error {
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_QUANTITY, 1)
 	g.IFptr.SetParam(1212, 4)
 	g.IFptr.SetParam(1214, 4)
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_TAX_TYPE, fptr10.LIBFPTR_TAX_NO)
+
 	return g.IFptr.Registration()
 }
 func (g *KKTGateway) NewCashierRegister(info entities.SessionInfo) error {
@@ -496,4 +497,43 @@ func (g *KKTGateway) CurrentErrorStatusCode() error {
 		return apperr.NewFPTRError(code, status)
 	}
 	return nil
+}
+
+func (g *KKTGateway) PrintLastCheckPressedFromKKT() error {
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_REPORT_TYPE, fptr10.LIBFPTR_RT_LAST_DOCUMENT)
+	return g.IFptr.Report()
+}
+
+func (g *KKTGateway) WarningBeep() {
+
+	var notes = [...]int{
+		notes.NoteC4, notes.NoteG4,
+	}
+
+	var times = [...]int{200, 200}
+
+	for key := range notes {
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_FREQUENCY, notes[key])
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DURATION, times[key])
+		g.IFptr.Beep()
+	}
+
+}
+
+func (g *KKTGateway) ErrorBeep() {
+
+	var notes = [...]int{
+		311, 466, 392,
+	}
+
+	var times = [...]int{
+		400, 100, 750,
+	}
+
+	for key := range notes {
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_FREQUENCY, notes[key])
+		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_DURATION, times[key])
+		g.IFptr.Beep()
+	}
+
 }

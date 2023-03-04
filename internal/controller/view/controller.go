@@ -211,3 +211,30 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 	}
 
 }
+
+func (f *FyneApp) ShowCriticalError(err error, text string, link ...string) {
+
+	f.CriticalError.ErrorText.Text = ""
+
+	if link != nil {
+		f.CriticalError.ErrorLinkButton.SetURLFromString(link[0])
+		f.CriticalError.ErrorLinkButton.SetText("Перейти к скачиванию драйвера")
+		f.CriticalError.ErrorLinkButton.Refresh()
+		f.CriticalError.ErrorLinkButton.Show()
+	} else {
+		f.CriticalError.ErrorLinkButton.Hide()
+	}
+	f.CriticalError.AdditionalText.Text = text
+	f.CriticalError.ErrorWindow.ShowAndRun()
+}
+
+func (f *FyneApp) BlockItemControl() {
+	for {
+		if !f.PrintsRefoundAndDeposits.RefoundAndDepositsAccordionItem.Open {
+			f.PrintsRefoundAndDeposits.RefoundForm.Hide()
+			f.PrintsRefoundAndDeposits.PrintCheckForm.Hide()
+			f.PrintsRefoundAndDeposits.AdminForm.Show()
+			return
+		}
+	}
+}
