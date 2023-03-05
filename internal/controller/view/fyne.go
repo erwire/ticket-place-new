@@ -15,6 +15,10 @@ type Flags struct {
 	PrintOnKKTTicketCheckBox, PrintCheckBox, PrintOnPrinterTicketBox bool
 	StopListen                                                       bool
 	DebugOn                                                          bool
+	SoundError                                                       bool
+	ProgressWorking                                                  bool
+	AuthJustHide                                                     bool
+	FirstStart                                                       bool
 }
 
 type Selected struct {
@@ -44,15 +48,14 @@ type FyneApp struct {
 		usernameLabel  *canvas.Text
 		localTimeLabel *canvas.Text
 
-		exitButton              *widget.Button
-		exitAndCloseShiftButton *widget.Button
-
 		listenerStatus struct {
 			listenerToolbar     *widget.Toolbar
 			listenerToolbarItem *widget.ToolbarAction
 		}
 	}
 	PrintSettingsItem struct {
+		exitButton              *widget.Button
+		exitAndCloseShiftButton *widget.Button
 		//PrintSettingsAccordionItem *widget.AccordionItem
 		PrintSettingsContainer *fyne.Container
 		PrintCheck             *widget.Check
@@ -60,6 +63,11 @@ type FyneApp struct {
 		PrintOnPrinter         *widget.Check
 		AdditionalText         *widget.Entry
 		SetAdditionalText      *widget.Button
+		CashIncomeForm         *widget.Form
+		CashIncomeFormItem     *widget.FormItem
+		CashIncomeEntry        *widget.Entry
+		printLastСheckButton   *widget.Button
+		printXReportButton     *widget.Button
 	}
 
 	PrintsRefoundAndDeposits struct {
@@ -74,14 +82,6 @@ type FyneApp struct {
 		PrintCheckFormItem              *widget.FormItem
 		PrintCheckEntry                 *widget.Entry
 	}
-	Instruments struct {
-		InstrumentalAccordionItem *widget.AccordionItem
-		CashIncomeForm            *widget.Form
-		CashIncomeFormItem        *widget.FormItem
-		CashIncomeEntry           *widget.Entry
-		printLastСheckButton      *widget.Button
-		printXReportButton        *widget.Button
-	}
 
 	DriverSetting struct {
 		DriverSettingAccordion                                  *widget.AccordionItem
@@ -95,6 +95,8 @@ type FyneApp struct {
 		DriverApiAddressFormItem                                *widget.FormItem
 		DriverPollingPeriodFormItem                             *widget.FormItem
 		CloseShiftButton                                        *widget.Button
+		ErrorSoundButton                                        *widget.Button
+		PrintLastButton                                         *widget.Button
 	}
 
 	PopUp struct {
@@ -130,6 +132,14 @@ type FyneApp struct {
 		ErrorConfirmButton *widget.Button
 		ErrorLinkButton    *widget.Hyperlink
 	}
+
+	Reconnector struct {
+		Progresser      fyne.Window
+		ProgresserText  *canvas.Text
+		ProgressBar     *widget.ProgressBarInfinite
+		ProgressConfirm *widget.Button
+		ProgressDismiss *widget.Button
+	}
 }
 
 func NewFyneApp(a fyne.App, view *services.Services, inf *entities.Info) *FyneApp { //, service *services.Service
@@ -141,12 +151,16 @@ func NewFyneApp(a fyne.App, view *services.Services, inf *entities.Info) *FyneAp
 }
 
 func (f *FyneApp) StartApp() {
+	if err := f.service.Open(); err != nil {
+		f.ErrorHandler(err, FunctionResponsibility)
+	}
 	f.ConfigureMainWindows()
 	f.ConfigureAuthDialogForm()
 	f.ConfigureWarningAlert()
 	f.ConfigurateErrorAlert()
 	f.ConfigurateCriticalErrorAlert()
 	f.ConfigureSettingWindow()
+	f.ConfigureProgresser()
 	err := f.InitializeCookie()
 	if err != nil {
 		f.ShowWarning("Данные по прошлой сессии повреждены или отсутствуют")
@@ -154,31 +168,34 @@ func (f *FyneApp) StartApp() {
 	}
 
 	if f.info.Session.IsDead() {
-		f.UpdateSession(entities.SessionInfo{})
+		f.Logout()
 	} else {
+
 		f.header.usernameLabel.Text = f.info.Session.UserData.Username
-		f.authForm.form.Hide()
+		f.HideAuthForm()
 		f.context.ctx, f.context.cancel = context.WithCancel(context.Background())
-		f.GetClickAndWriteIntoToml()
+
 		err = f.service.MakeSession(*f.info)
 		if err != nil {
 			f.ErrorHandler(err, LoginResponsibility)
 		}
 		f.service.Infof("Данные из сессии подгрузились. Успешная авторизация под пользователем %s", f.info.Session.UserData.FullName)
+		f.flag.StopListen = true
+		f.flag.FirstStart = true
 		go f.Listen(f.context.ctx, *f.info)
 	}
 
 	f.setupCookieIntoEntry()
 	go f.ClockUpdater()
 	f.flag.DebugOn = false
-
+	go func() {
+		time.Sleep(2 * time.Second)
+		f.flag.StopListen = false
+	}()
+	f.MainWindow.ShowAndRun()
 	//f.PopUp.Text = widget.NewLabel("")
 	//f.PopUp.PopUp = widget.NewPopUp(f.PopUp.Text, f.MainWindow.Canvas())
 
-}
-
-func (f *FyneApp) ShowAndRun() {
-	f.MainWindow.ShowAndRun()
 }
 
 func (f *FyneApp) ClockUpdater() {

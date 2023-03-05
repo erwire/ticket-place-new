@@ -7,7 +7,6 @@ import (
 	errorlog "fptr/pkg/error_logs"
 	"fptr/pkg/fptr10"
 	"fptr/pkg/toml"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -17,34 +16,29 @@ var ErrorBeep = "error_beep"
 
 type ResponsibilityType string
 
-var SellResponsibility ResponsibilityType
-var RefoundResponsibility ResponsibilityType
-var LoginResponsibility ResponsibilityType
-var ClickResponsibility ResponsibilityType
-var FunctionResponsibility ResponsibilityType
+var SellResponsibility = "SellResponsibility"
+var RefoundResponsibility = "RefoundResponsibility"
+var LoginResponsibility = "LoginResponsibility"
+var ClickResponsibility = "ClickResponsibility"
+var FunctionResponsibility = "FunctionResponsibility"
+var NewUser = "NewUser"
 
-func (f *FyneApp) ErrorHandler(err error, dependence ResponsibilityType) {
+func (f *FyneApp) ErrorHandler(err error, dependence string) {
 
 	switch err.(type) {
 	case *apperr.ClientError:
-		f.service.Beep(ErrorBeep)
 		f.ClientErrorHandler(err.(*apperr.ClientError), dependence)
-		log.Printf("Ошибка клиента: %v\n", err)
 	case *fptr10.Error:
-		f.service.Beep(ErrorBeep)
-		log.Printf("Ошибка ККТ: %v\n", err)
+		f.Beep(ErrorBeep)
 		f.FPTRErrorHandler(err.(*fptr10.Error), dependence)
 	case *toml.TomlError:
-		f.service.Beep(ErrorBeep)
-		log.Printf("Ошибка работы с файлами кэша")
+		f.Beep(ErrorBeep)
 		f.TomlErrorHandler(err.(*toml.TomlError))
 	case *apperr.BusinessError:
-		f.service.Beep(WarningBeep)
-		log.Printf("Ошибка работы бизнес-логики")
+		//f.Beep(WarningBeep)
 		f.BusinessErrorHandler(err.(*apperr.BusinessError))
 	default:
-		f.service.Beep(WarningBeep)
-		log.Printf("Ошибка не классифицирована: %v\n", err)
+		f.Beep(WarningBeep)
 	}
 }
 
@@ -59,9 +53,10 @@ func (f *FyneApp) TomlErrorHandler(err *toml.TomlError) {
 	}
 } //# Обработка ошибки TOML
 
-func (f *FyneApp) ClientErrorHandler(err *apperr.ClientError, dependence ResponsibilityType) {
+func (f *FyneApp) ClientErrorHandler(err *apperr.ClientError, dependence string) {
 	switch err.ClientErrorType {
 	case &apperr.RequestError:
+		f.Beep(ErrorBeep)
 		f.RequestErrorHandler(err, dependence)
 	case &apperr.ResponseError:
 		f.ResponseErrorHandler(err, dependence)
@@ -70,40 +65,43 @@ func (f *FyneApp) ClientErrorHandler(err *apperr.ClientError, dependence Respons
 	}
 } //# Обработка ошибок клиента
 
-func (f *FyneApp) RequestErrorHandler(err *apperr.ClientError, dependence ResponsibilityType) {
+func (f *FyneApp) RequestErrorHandler(err *apperr.ClientError, dependence string) {
 	switch err.Message {
 	case errorlog.CreateRequestErrorMessage:
-		if &dependence == &LoginResponsibility {
+		if dependence == LoginResponsibility {
 			f.Logout()
 			f.ShowWarning("Ошибка в создании запроса")
 		}
 	case errorlog.EmptyURLErrorMessage:
-		if &dependence == &LoginResponsibility {
+		if dependence == LoginResponsibility {
 			f.Logout()
 			f.ShowWarning("Не заполнено поле адреса сервера. Пожалуйста, заполните данные по адресу.")
 		}
 	case errorlog.IncorrectLoginOrPasswordErrorMessage:
-		if &dependence == &LoginResponsibility {
+		if dependence == LoginResponsibility {
 			f.Logout()
 			f.ShowWarning("Некорректно заполнены поля логина или пароля")
 		}
 	case errorlog.ReadBodyErrorMessage:
-		if &dependence == &LoginResponsibility {
+		if dependence == LoginResponsibility {
 			f.Logout()
 			f.ShowWarning("Ошибка чтения ответа от сервера")
 		}
 	case errorlog.JsonUnmarshallingErrorMessage:
-		if &dependence == &LoginResponsibility {
+		if dependence == LoginResponsibility {
 			f.Logout()
 			f.ShowWarning("Ошибка десериализации")
 		}
 	case errorlog.ProcessingRequestErrorMessage:
-		f.Logout()
+		//f.Logout()
 		switch true {
 		case strings.Contains(errors.Unwrap(err.ClientError).Error(), "A socket operation was attempted to an unreachable network"):
 			f.ShowWarning("Потерян доступ в интернет. Проверьте подключение к сети.")
 		case strings.Contains(errors.Unwrap(err.ClientError).Error(), "Client.Timeout exceeded while awaiting headers"):
-			f.ShowWarning("Неправильный адрес сервера или сервер недоступен.")
+			//f.ShowWarning("Неправильный адрес сервера или сервер недоступен.")
+			f.ShowProgresser()
+		case strings.Contains(errors.Unwrap(err.ClientError).Error(), "No connection could be made because the target machine actively refused it"):
+			f.ShowProgresser()
 		default:
 			f.ShowWarning("Неправильный адрес сервера или сервер недоступен. Попробуйте сменить адрес сервера или проверьте подключение к интернету.")
 		}
@@ -111,32 +109,45 @@ func (f *FyneApp) RequestErrorHandler(err *apperr.ClientError, dependence Respon
 	}
 } //# Обработка ошибок реквест-типа
 
-func (f *FyneApp) ResponseErrorHandler(err *apperr.ClientError, dependence ResponsibilityType) {
+func (f *FyneApp) ResponseErrorHandler(err *apperr.ClientError, dependence string) {
 	switch err.Message {
 	case errorlog.StatusCodeErrorMessage:
 		f.ResponseStatusCodeErrorHandler(err, dependence)
 	}
 } //# Обработка ошибок ответа
 
-func (f *FyneApp) ResponseStatusCodeErrorHandler(err *apperr.ClientError, dependence ResponsibilityType) {
+func (f *FyneApp) ResponseStatusCodeErrorHandler(err *apperr.ClientError, dependence string) {
 	switch err.StatusCode {
 	case http.StatusNotFound:
+		if dependence == ClickResponsibility {
+			return
+		}
+		f.Beep(ErrorBeep)
 		f.ShowWarning("По запросу не найден заказ")
+
 	case http.StatusUnprocessableEntity:
+		f.Beep(ErrorBeep)
 		f.ShowWarning("В вашем запросе присутствуют данные, которые не могут быть обработаны сервером")
 	case http.StatusForbidden:
-		switch &dependence {
-		case &LoginResponsibility:
+		f.Beep(ErrorBeep)
+		switch dependence {
+		case LoginResponsibility:
 			f.ShowWarning("Неправильный логин или пароль")
 		}
 	case http.StatusBadRequest:
+		f.Beep(ErrorBeep)
 		f.ShowWarning("Некорректный запрос")
 	case http.StatusInternalServerError:
+		f.Beep(ErrorBeep)
 		f.ShowWarning("Сервер недоступен")
 		f.Logout()
+	case http.StatusBadGateway:
+		f.Beep(ErrorBeep)
+		f.ShowProgresser()
 	default:
-		switch &dependence {
-		case &LoginResponsibility:
+		f.Beep(ErrorBeep)
+		switch dependence {
+		case LoginResponsibility:
 			f.ShowWarning("Сервер прислал необрабатываемую ошибку, обратитесь к системному администратору")
 			f.Logout()
 		default:
@@ -149,7 +160,7 @@ func (f *FyneApp) ResponseStatusCodeErrorHandler(err *apperr.ClientError, depend
 
 //# Раздел обработки ККТ-ошибок
 
-func (f *FyneApp) FPTRErrorHandler(err *fptr10.Error, dependence ResponsibilityType) {
+func (f *FyneApp) FPTRErrorHandler(err *fptr10.Error, dependence string) {
 	switch err.ErrorDescription {
 	case apperr.LibfptrErrorPortNotAvailable:
 		f.Logout()
@@ -161,10 +172,10 @@ func (f *FyneApp) FPTRErrorHandler(err *fptr10.Error, dependence ResponsibilityT
 		f.Logout()
 		f.ShowWarning(fmt.Sprintf("Прервалось соединение с кассой. Пожалуйста, проверьте подключение кассы!"))
 	case apperr.LibfptrErrorShiftExpired:
-		f.LogoutWS()
-		f.ShowWarning("Смена истекла, пожалуйста, авторизуйтесь в системе снова")
+		f.Reconnect()
+		f.ShowWarning("Смена истекла, вы были авторизованы снова")
 	case apperr.LibfptrErrorDeniedInClosedShift:
-		f.Logout()
+		f.Reconnect()
 		f.ShowWarning("Смена не открыта. Пожалуйста, авторизуйтесь повторно")
 	default:
 		f.ShowWarning(fmt.Sprintf("Необрабатываемая ошибка: %s", err.ErrorDescription))
@@ -176,5 +187,11 @@ func (f *FyneApp) BusinessErrorHandler(err *apperr.BusinessError) {
 	case errorlog.ValidateError:
 		//inform := dialog.NewInformation("Информация", err.Message, f.MainWindow)
 		//inform.Show()
+	}
+}
+
+func (f *FyneApp) Beep(beepType string) {
+	if f.flag.SoundError {
+		f.service.Beep(beepType)
 	}
 }

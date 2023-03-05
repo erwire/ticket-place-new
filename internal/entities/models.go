@@ -112,13 +112,13 @@ type Refound struct {
 					Total int `json:"total"`
 				} `json:"seats"`
 				Place struct {
-					Id       int      `json:"id"`
-					Name     string   `json:"name"`
-					Rows     int      `json:"rows"`
-					MaxSeats int      `json:"maxSeats"`
-					Sides    []string `json:"sides"`
-					Sectors  []string `json:"sectors"`
-					Map      string   `json:"map"`
+					Id       int           `json:"id"`
+					Name     string        `json:"name"`
+					Rows     int           `json:"rows"`
+					MaxSeats int           `json:"maxSeats"`
+					Sides    []string      `json:"sides"`
+					Sectors  []interface{} `json:"sectors"`
+					Map      string        `json:"map"`
 				} `json:"place"`
 				RentalPeriodId int    `json:"rental_period_id"`
 				RentalPeriod   string `json:"rental_period"`
@@ -309,13 +309,13 @@ type Sell struct {
 				Total int `json:"total"`
 			} `json:"seats"`
 			Place struct {
-				Id       int      `json:"id"`
-				Name     string   `json:"name"`
-				Rows     int      `json:"rows"`
-				MaxSeats int      `json:"maxSeats"`
-				Sides    []string `json:"sides"`
-				Sectors  []string `json:"sectors"`
-				Map      string   `json:"map"`
+				Id       int           `json:"id"`
+				Name     string        `json:"name"`
+				Rows     int           `json:"rows"`
+				MaxSeats int           `json:"maxSeats"`
+				Sides    []string      `json:"sides"`
+				Sectors  []interface{} `json:"sectors"`
+				Map      string        `json:"map"`
 			} `json:"place"`
 			RentalPeriodId int    `json:"rental_period_id"`
 			RentalPeriod   string `json:"rental_period"`

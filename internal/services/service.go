@@ -39,4 +39,5 @@ type KKT interface {
 	CurrentError() error
 	PrintLastCheckPressedFromKKT() error
 	Beep(beepType string)
+	Open() error
 }

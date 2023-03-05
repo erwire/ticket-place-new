@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"fptr/internal/entities"
 	"fptr/internal/gateways"
 	"github.com/google/logger"
@@ -28,12 +27,15 @@ func (s *KKTService) PrintXReport() error {
 	return nil
 }
 
-func (s *KKTService) MakeSession(info entities.Info) error {
+func (s *KKTService) Open() error {
 	if err := s.gw.Open(); err != nil {
 		s.Errorf("Ошибка при установлении связи с кассой: %v\n", err)
 		return err
 	}
+	return nil
+}
 
+func (s *KKTService) MakeSession(info entities.Info) error {
 	if err := s.gw.NewCashierRegister(info.Session); err != nil {
 		s.Errorf("Ошибка при регистрации кассира: %v\n", err)
 		return err
@@ -115,7 +117,6 @@ func (s *KKTService) Beep(beepType string) {
 	case "warning_beep":
 		s.gw.WarningBeep()
 	case "error_beep":
-		fmt.Println("!!!")
 		s.gw.ErrorBeep()
 	}
 

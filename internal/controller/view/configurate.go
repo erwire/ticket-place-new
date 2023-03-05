@@ -13,8 +13,15 @@ import (
 const iconPath = "./content/system/icon/main.png"
 const adminPassword = "ticket_admin"
 
+func (f *FyneApp) ConfigureFlags() {
+	f.flag.SoundError = true
+	f.flag.ProgressWorking = false
+	f.flag.AuthJustHide = false
+}
+
 func (f *FyneApp) ConfigureSettingWindow() {
 	f.NewSettingWindow()
+	f.ConfigureFlags()
 	f.SettingWindow.Resize(fyne.NewSize(500, 500))
 }
 
@@ -44,6 +51,13 @@ func (f *FyneApp) ConfigureAuthDialogForm() {
 	f.authForm.form.Show()
 }
 
+func (f *FyneApp) ConfigureProgresser() {
+	f.NewProgresser()
+	f.Reconnector.Progresser.Resize(fyne.NewSize(350, 100))
+	f.Reconnector.Progresser.SetFixedSize(true)
+
+}
+
 func (f *FyneApp) ConfigureMainWindowHeader() *fyne.Container {
 	f.NewMainWindowHeader()
 	f.header.usernameLabel.TextSize = 18
@@ -56,8 +70,6 @@ func (f *FyneApp) ConfigureMainWindowHeader() *fyne.Container {
 		f.header.usernameLabel,
 		f.header.localTimeLabel,
 		layout.NewSpacer(),
-		f.header.exitButton,
-		f.header.exitAndCloseShiftButton,
 		//f.header.listenerStatus.listenerToolbar,
 	)
 	return box
@@ -70,18 +82,33 @@ func (f *FyneApp) ConfigurePrintSettingsContainer() {
 	//f.PrintSettingsItem.AdditionalText.Resize(fyne.NewSize(300, 300))
 	//f.PrintSettingsItem.AdditionalText.SetPlaceHolder("Сообщение")
 	//f.PrintSettingsItem.AdditionalText.Refresh()
+
+	f.PrintSettingsItem.printXReportButton.Importance = widget.MediumImportance
+
+	f.PrintSettingsItem.CashIncomeForm.SubmitText = "Внести"
+	f.PrintSettingsItem.CashIncomeForm.OnSubmit = f.CashIncomeOnSubmit
+	_ = container.NewVBox(
+		container.NewGridWithColumns(2, f.PrintSettingsItem.printLastСheckButton,
+			f.PrintSettingsItem.printXReportButton), f.PrintSettingsItem.CashIncomeForm,
+	)
+
 	textCont := container.NewMax(f.PrintSettingsItem.AdditionalText)
 	textCont.Resize(fyne.NewSize(600, 600))
 	f.PrintSettingsItem.PrintCheck.SetChecked(true)
-	f.PrintSettingsItem.PrintSettingsContainer = container.NewCenter(
-		//textCont,
-		container.NewHBox(
-			f.PrintSettingsItem.PrintCheck,
-			f.PrintSettingsItem.PrintOnKKT,
-			f.PrintSettingsItem.PrintOnPrinter,
-			//f.PrintSettingsItem.SetAdditionalText,
-		),
-	)
+	f.PrintSettingsItem.PrintSettingsContainer =
+		container.NewVBox(
+			container.NewGridWithColumns(2, f.PrintSettingsItem.exitButton,
+				f.PrintSettingsItem.exitAndCloseShiftButton),
+			container.NewCenter(
+				container.NewHBox(f.PrintSettingsItem.PrintCheck,
+					f.PrintSettingsItem.PrintOnKKT,
+					f.PrintSettingsItem.PrintOnPrinter),
+			),
+			widget.NewSeparator(),
+			container.NewGridWithColumns(2, f.PrintSettingsItem.printLastСheckButton, f.PrintSettingsItem.printXReportButton),
+			f.PrintSettingsItem.CashIncomeForm,
+		)
+
 }
 
 func (f *FyneApp) ConfigurePrintsRefoundAndDepositsAccordionItem() {
@@ -112,25 +139,11 @@ func (f *FyneApp) ConfigurePrintsRefoundAndDepositsAccordionItem() {
 	f.PrintsRefoundAndDeposits.RefoundAndDepositsAccordionItem = widget.NewAccordionItem("Печать чеков продаж и возвратов", box)
 }
 
-func (f *FyneApp) ConfigurateInstrumentsAccordionItem() {
-	f.NewInstrumentalAccordionItem()
-	f.Instruments.printXReportButton.Importance = widget.MediumImportance
-
-	f.Instruments.CashIncomeForm.SubmitText = "Внести"
-	f.Instruments.CashIncomeForm.OnSubmit = f.CashIncomeOnSubmit
-	box := container.NewVBox(
-		container.NewGridWithColumns(2, f.Instruments.printLastСheckButton,
-			f.Instruments.printXReportButton), f.Instruments.CashIncomeForm, widget.NewLabel(""),
-	)
-	f.Instruments.InstrumentalAccordionItem = widget.NewAccordionItem("Инструментарий", box)
-	f.Instruments.InstrumentalAccordionItem.Open = true
-}
-
 func (f *FyneApp) ConfigureDriverSettingAccordionItem() {
 	f.NewDriverSettingAccordionItem()
 	f.DriverSetting.DriverSettingForm.SubmitText = "Подтвердить"
 	f.DriverSetting.DriverSettingForm.OnSubmit = f.DriverSettingFormOnSubmit
-
+	f.DriverSetting.DriverPollingPeriodSelect.Selected = "2s"
 	box := container.NewVBox(
 		widget.NewLabel("Настройки принтера"),
 		container.NewHBox(f.DriverSetting.DriverSettingButton, f.DriverSetting.DriverPrintHistoryButton),

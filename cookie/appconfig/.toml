@@ -2,4 +2,4 @@ path = ""
 com = ""
 time = ""
 baseurl = "https://ticket-place.ru/"
-polling_period = 3000000000
+polling_period = 4000000000

@@ -20,6 +20,19 @@ func (f *FyneApp) NewMainWindow() {
 
 func (f *FyneApp) NewSettingWindow() {
 	ButtonSeparatorText := canvas.NewText("Основные функции", theme.ForegroundColor())
+	f.DriverSetting.PrintLastButton = widget.NewButtonWithIcon("Напечатать последний чек", theme.DocumentIcon(), f.printLastCheckPressedFromKKT)
+	f.DriverSetting.ErrorSoundButton = widget.NewButtonWithIcon("Выключить звук оповещений", theme.MediaPauseIcon(), func() {
+		if f.flag.SoundError {
+			f.DriverSetting.ErrorSoundButton.Icon = theme.MediaPlayIcon()
+			f.DriverSetting.ErrorSoundButton.Text = "Включить звук оповещений"
+			f.flag.SoundError = false
+		} else {
+			f.DriverSetting.ErrorSoundButton.Icon = theme.MediaPauseIcon()
+			f.DriverSetting.ErrorSoundButton.Text = "Выключить звук оповещений"
+			f.flag.SoundError = true
+		}
+		f.DriverSetting.ErrorSoundButton.Refresh()
+	})
 	ButtonSeparatorText.TextSize = 18
 	ButtonSeparatorText.Alignment = fyne.TextAlignCenter
 	f.DriverSetting.CloseShiftButton = widget.NewButtonWithIcon("Закрыть смену", theme.CancelIcon(), f.CloseShift)
@@ -30,7 +43,7 @@ func (f *FyneApp) NewSettingWindow() {
 		container.New(layout.NewFormLayout(), widget.NewLabel("Период опроса сервера"), f.DriverSetting.DriverPollingPeriodSelect),
 		widget.NewSeparator(),
 		ButtonSeparatorText,
-		container.NewMax(f.DriverSetting.CloseShiftButton),
+		container.NewGridWithColumns(2, f.DriverSetting.CloseShiftButton, f.DriverSetting.ErrorSoundButton, f.DriverSetting.PrintLastButton),
 	)
 
 	f.SettingWindow = dialog.NewCustomConfirm("Настройки приложения", "Сохранить", "Отменить", content, f.SettingWindowPressed, f.MainWindow)
@@ -54,8 +67,6 @@ func (f *FyneApp) NewMainWindowHeader() {
 	f.header.usernameLabel = canvas.NewText("", theme.ForegroundColor())
 	f.header.localTimeLabel = canvas.NewText(time.Now().Format("2.01.2006 15:04:05"), theme.ForegroundColor())
 
-	f.header.exitButton = widget.NewButton("Выйти", f.exitPressed)
-	f.header.exitAndCloseShiftButton = widget.NewButton("Выйти и закрыть смену", f.exitAndCloseShiftButtonPressed)
 	f.header.listenerStatus.listenerToolbarItem = widget.NewToolbarAction(theme.CancelIcon(), f.listenerStatusAction)
 	f.header.listenerStatus.listenerToolbar = widget.NewToolbar(
 		f.header.listenerStatus.listenerToolbarItem,
@@ -64,11 +75,18 @@ func (f *FyneApp) NewMainWindowHeader() {
 }
 
 func (f *FyneApp) NewPrintSettingsContainer() {
+	f.PrintSettingsItem.exitButton = widget.NewButton("Выйти", f.exitPressed)
+	f.PrintSettingsItem.exitAndCloseShiftButton = widget.NewButton("Выйти и закрыть смену", f.exitAndCloseShiftButtonPressed)
 	f.PrintSettingsItem.PrintCheck = widget.NewCheckWithData("Печатать чек", binding.BindBool(&f.flag.PrintCheckBox))
 	f.PrintSettingsItem.PrintOnKKT = widget.NewCheckWithData("Печатать билет на кассе", binding.BindBool(&f.flag.PrintOnKKTTicketCheckBox))
 	f.PrintSettingsItem.PrintOnPrinter = widget.NewCheckWithData("Печатать билет на принтере", binding.BindBool(&f.flag.PrintOnPrinterTicketBox))
 	f.PrintSettingsItem.AdditionalText = widget.NewEntry() //widget.NewEntry()
 	f.PrintSettingsItem.SetAdditionalText = widget.NewButton("Записать", f.SetAdditionalTextPressed)
+	f.PrintSettingsItem.printLastСheckButton = widget.NewButton("Напечатать последний чек", f.printLastCheckPressedFromKKT)
+	f.PrintSettingsItem.printXReportButton = widget.NewButton("Напечатать X-отчет", f.printXReportPressed)
+	f.PrintSettingsItem.CashIncomeEntry = widget.NewEntry()
+	f.PrintSettingsItem.CashIncomeFormItem = widget.NewFormItem("Внесение наличных", f.PrintSettingsItem.CashIncomeEntry)
+	f.PrintSettingsItem.CashIncomeForm = widget.NewForm(f.PrintSettingsItem.CashIncomeFormItem)
 }
 
 func (f *FyneApp) NewPrintsRefoundAndDepositsAccordionItem() {
@@ -84,14 +102,6 @@ func (f *FyneApp) NewPrintsRefoundAndDepositsAccordionItem() {
 	f.PrintsRefoundAndDeposits.AdminForm = widget.NewForm(f.PrintsRefoundAndDeposits.AdminFormItem)
 
 	f.PrintsRefoundAndDeposits.PrintCheckForm = widget.NewForm(f.PrintsRefoundAndDeposits.PrintCheckFormItem)
-}
-
-func (f *FyneApp) NewInstrumentalAccordionItem() {
-	f.Instruments.printLastСheckButton = widget.NewButton("Напечатать последний чек", f.printLastCheckPressedFromKKT)
-	f.Instruments.printXReportButton = widget.NewButton("Напечатать X-отчет", f.printXReportPressed)
-	f.Instruments.CashIncomeEntry = widget.NewEntry()
-	f.Instruments.CashIncomeFormItem = widget.NewFormItem("Внесение наличных", f.Instruments.CashIncomeEntry)
-	f.Instruments.CashIncomeForm = widget.NewForm(f.Instruments.CashIncomeFormItem)
 }
 
 func (f *FyneApp) NewDriverSettingAccordionItem() {
@@ -124,10 +134,10 @@ func (f *FyneApp) NewDriverSettingAccordionItem() {
 func (f *FyneApp) NewMainWindowAccordion() {
 	f.ConfigurePrintSettingsContainer()
 	f.ConfigurePrintsRefoundAndDepositsAccordionItem()
-	f.ConfigurateInstrumentsAccordionItem()
+
 	f.ConfigureDriverSettingAccordionItem()
 	f.MainWindowAccordion = widget.NewAccordion(
-		f.PrintsRefoundAndDeposits.RefoundAndDepositsAccordionItem, f.DriverSetting.DriverSettingAccordion, f.Instruments.InstrumentalAccordionItem,
+		f.PrintsRefoundAndDeposits.RefoundAndDepositsAccordionItem, f.DriverSetting.DriverSettingAccordion,
 	)
 }
 
@@ -168,4 +178,24 @@ func (f *FyneApp) NewCriticalAlert() {
 	f.CriticalError.ErrorWindow.SetCloseIntercept(func() {
 		f.application.Quit()
 	})
+}
+
+func (f *FyneApp) NewProgresser() {
+	f.Reconnector.ProgressBar = widget.NewProgressBarInfinite()
+	f.Reconnector.ProgressConfirm = widget.NewButton("Попробовать снова", f.ProgresserPressedConfirm)
+	f.Reconnector.ProgressDismiss = widget.NewButton("Выйти", f.ProgresserPressedDismiss)
+	f.Reconnector.ProgresserText = canvas.NewText("Попытка подключиться к серверу номер 1", theme.ForegroundColor())
+	box := container.NewVBox(container.NewCenter(f.Reconnector.ProgresserText), f.Reconnector.ProgressBar, container.NewCenter(container.NewHBox(f.Reconnector.ProgressConfirm, f.Reconnector.ProgressDismiss)))
+	f.Reconnector.Progresser = f.application.NewWindow("Подключаемся к серверу")
+	f.Reconnector.Progresser.SetIcon(theme.AccountIcon())
+	f.Reconnector.Progresser.SetContent(box)
+	f.Reconnector.Progresser.Hide()
+}
+
+func (f *FyneApp) ProgresserPressedConfirm() {
+	f.ShowProgresser()
+}
+
+func (f *FyneApp) ProgresserPressedDismiss() {
+	f.Reconnector.Progresser.Hide()
 }
