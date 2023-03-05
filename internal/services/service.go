@@ -29,7 +29,7 @@ type Listener interface {
 
 type KKT interface {
 	PrintXReport() error
-	MakeSession(info entities.Info) error
+	MakeSession(fullName string) error
 	CloseShift() error
 	ShiftIsOpened() bool
 	ShiftIsClosed() bool
@@ -39,4 +39,5 @@ type KKT interface {
 	CurrentError() error
 	PrintLastCheckPressedFromKKT() error
 	Beep(beepType string)
+	Open() error
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"fptr/internal/controller/view"
 	"fptr/internal/entities"
 	"fptr/internal/gateways"
@@ -30,6 +31,9 @@ func main() {
 	}
 
 	fptrDriver, err := fptr10.NewSafe()
+	fptrDriver.SetSingleSetting(fptr10.LIBFPTR_SETTING_AUTO_RECONNECT, "false")
+	fptrDriver.ApplySingleSettings()
+	fmt.Println(fptrDriver.GetSingleSetting(fptr10.LIBFPTR_SETTING_AUTO_RECONNECT))
 	defer fptrDriver.Destroy()
 	mainLogger.Infoln("Запуск драйвера KKT")
 
@@ -45,12 +49,13 @@ func main() {
 	defer service.Logger.Infoln("Завершение работы приложения")
 
 	view.StartApp()
+
 	if err != nil {
 		service.Errorf("Запуск драйвера ККТ завершился с ошибкой: %v", err)
 		view.ShowCriticalError(err, "Пожалуйста, скачайте драйвер и перезапустите приложение", "https://atoldriver.ru/")
 		return
 	}
-	view.ShowAndRun()
+
 }
 
 func createAppDirectories() {

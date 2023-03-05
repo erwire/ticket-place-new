@@ -29,7 +29,7 @@ func (f *FyneApp) DriverPollingPeriodSelected(selected string) {
 }
 
 func (f *FyneApp) CashIncomeOnSubmit() {
-	incomeStr := f.Instruments.CashIncomeEntry.Text
+	incomeStr := f.PrintSettingsItem.CashIncomeEntry.Text
 	income, err := strconv.ParseFloat(incomeStr, 32)
 	if err != nil {
 		f.ShowWarning("Некорректные данные в поле ввода суммы")
@@ -128,6 +128,10 @@ func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик �
 		f.Login(conf)
 
 	} else {
+		if f.flag.AuthJustHide {
+			f.flag.AuthJustHide = false
+			return
+		}
 		f.MainWindow.Close()
 	}
 }
@@ -162,6 +166,14 @@ func (f *FyneApp) exitAndCloseShiftButtonPressed() {
 
 func (f *FyneApp) CloseShift() {
 	err := f.service.CloseShift()
+	if err != nil {
+		f.ErrorHandler(err, FunctionResponsibility)
+		return
+	}
+}
+
+func (f *FyneApp) OpenConnection() {
+	err := f.service.KKT.MakeSession(f.info.Session.UserData.FullName)
 	if err != nil {
 		f.ErrorHandler(err, FunctionResponsibility)
 		return

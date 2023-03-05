@@ -325,12 +325,8 @@ func (g *KKTGateway) PositionRegister(data entities.TicketData) error {
 
 	return g.IFptr.Registration()
 }
-func (g *KKTGateway) NewCashierRegister(info entities.SessionInfo) error {
-	if !g.IsOpened() {
-		return errorlog.BoxOfficeIsNotOpenError
-	}
-
-	g.IFptr.SetParam(1021, info.UserData.FullName)
+func (g *KKTGateway) NewCashierRegister(fullName string) error {
+	g.IFptr.SetParam(1021, fullName)
 	g.IFptr.SetParam(1203, "500100732259")
 	if err := g.IFptr.OperatorLogin(); err != nil {
 		return err

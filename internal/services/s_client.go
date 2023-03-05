@@ -5,6 +5,7 @@ import (
 	apperr "fptr/internal/error_list"
 	"fptr/internal/gateways"
 	"github.com/google/logger"
+	"net/http"
 )
 
 type ClientService struct {
@@ -22,6 +23,13 @@ func NewClientService(gw *gateways.Gateway, logg *logger.Logger) *ClientService 
 func (s *ClientService) GetLastReceipt(connectionURL string, session entities.SessionInfo) (*entities.Click, error) {
 	click, err := s.gw.GetLastReceipt(connectionURL, session)
 	if err != nil {
+		switch err.(type) {
+		case *apperr.ClientError:
+			if !(err.(*apperr.ClientError).StatusCode == http.StatusNotFound) {
+				s.Errorf("Ошибка при запросе последнего заказа: %v", err)
+			}
+		}
+
 		return nil, err
 	}
 

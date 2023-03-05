@@ -35,7 +35,7 @@ type KKT interface {
 	CloseShift() error
 	PrintSell(sell entities.Sell) error
 	PrintRefound(refound entities.Refound) error
-	NewCashierRegister(info entities.SessionInfo) error
+	NewCashierRegister(fullName string) error
 	ShiftIsExpired() bool
 	ShiftIsOpened() bool
 	ShiftIsClosed() bool
