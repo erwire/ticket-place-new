@@ -320,6 +320,7 @@ func (g *KKTGateway) PositionRegister(data entities.TicketData) error {
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_COMMODITY_NAME, fmt.Sprint(data.Number, ",", data.Event.Show.Name, ",", data.Event.Show.AgeLimit, ",", data.Event.DateTime, ",", data.Zona, ", Ряд:", data.RowSector, ", Место:", data.SeatNumber))
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PRICE, data.Amount)
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_QUANTITY, 1)
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_TAX_TYPE, fptr10.LIBFPTR_TAX_NO)
 	g.IFptr.SetParam(1212, 4)
 	g.IFptr.SetParam(1214, 4)
 

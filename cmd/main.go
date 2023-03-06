@@ -37,7 +37,7 @@ func main() {
 	defer fptrDriver.Destroy()
 	mainLogger.Infoln("Запуск драйвера KKT")
 
-	client := &http.Client{Timeout: 2 * time.Second}
+	client := &http.Client{Timeout: 20 * time.Second}
 	gateway := gateways.NewGateway(client, fptrDriver)
 	service := services.NewServices(gateway, mainLogger)
 	view := view.NewFyneApp(app.New(), service, info)
