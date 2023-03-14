@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"fptr/cmd/middleware"
 	"fptr/internal/controller/view"
 	"fptr/internal/entities"
 	"fptr/internal/gateways"
@@ -11,7 +12,6 @@ import (
 	"fyne.io/fyne/v2/app"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -21,7 +21,7 @@ var updType = "github"
 
 func main() {
 	info := &entities.Info{}
-	createAppDirectories()
+
 	//log.Printf("Количество горутин в начале запуска: %d", runtime.NumGoroutine())
 
 	logVerbose := flag.Bool("log", false, "используется для логирования в консоль всех уровней")
@@ -31,6 +31,8 @@ func main() {
 	if err := mainLogger.InitLog(); err != nil {
 		log.Fatal(err.Error())
 	}
+
+	middleware.NewMiddleware(mainLogger.Logger).BasicMiddleware()
 
 	fptrDriver, err := fptr10.NewSafe()
 	fptrDriver.SetSingleSetting(fptr10.LIBFPTR_SETTING_AUTO_RECONNECT, "false")
@@ -60,35 +62,4 @@ func main() {
 		return
 	}
 
-}
-
-func createAppDirectories() {
-	paths := directoriesList()
-	for _, path := range paths {
-		_, err := os.Stat(path)
-		if err != nil && os.IsNotExist(err) {
-			log.Printf("Создаем папку %s\n", path)
-			_ = os.Mkdir(path, 0660)
-		}
-	}
-}
-
-func directoriesList() []string {
-	return []string{
-		"./log",
-		"./debug_info",
-		"./debug_info/sell",
-		"./debug_info/refound",
-		"./debug_info/click",
-		"./debug_info/login",
-		"./content",
-		"./content/system",
-		"./content/system/icon",
-		"./cookie",
-		"./cookie/appconfig",
-		"./cookie/click",
-		"./cookie/session",
-		"./cookie/userdata",
-		"./db",
-	}
 }

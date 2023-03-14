@@ -195,8 +195,15 @@ func (f *FyneApp) CheckUpdateAction() {
 		return
 	}
 	vers := semver.MustParse(f.AppInfo.version)
-	if latest.Version.LTE(vers) || !found {
+
+	if !found {
+		dialog.ShowInformation("Обновление", "Обновления не найдены", f.MainWindow)
+		return
+	}
+
+	if latest.Version.LTE(vers) {
 		dialog.ShowInformation("Обновление", "У вас последняя версия ПО", f.MainWindow)
 		return
 	}
+
 }

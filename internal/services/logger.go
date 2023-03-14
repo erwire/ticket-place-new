@@ -24,6 +24,12 @@ func NewLogger(logVerbose bool) *LoggerService {
 }
 
 func (l *LoggerService) InitLog() error {
+	if _, err := os.Stat(logPath); err != nil && os.IsNotExist(err) {
+		err = os.Mkdir(logPath, 0660)
+		if err != nil {
+			return err
+		}
+	}
 	file, err := os.OpenFile(logPath+time.Now().Format("02-01-2006")+logExt, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
 	if err != nil {
 		return err
