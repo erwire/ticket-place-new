@@ -194,10 +194,23 @@ func (f *FyneApp) NewProgresser() {
 	f.Reconnector.Progresser.Hide()
 }
 
+func (f *FyneApp) NewToolbar() {
+	//f.Toolbar.Logo = canvas.NewImageFromFile("")
+	//f.Toolbar.Logo.FillMode = canvas.ImageFillStretch
+	f.Toolbar.Info = widget.NewToolbarAction(theme.InfoIcon(), f.ToolbarInfoPressed)
+}
+
 func (f *FyneApp) ProgresserPressedConfirm() {
 	f.ShowProgresser()
 }
 
 func (f *FyneApp) ProgresserPressedDismiss() {
 	f.Reconnector.Progresser.Hide()
+}
+
+func (f *FyneApp) NewAboutDialog() {
+	f.AboutDialog.Img = canvas.NewImageFromFile("./content/system/icon/logo.png")
+	f.AboutDialog.Version = canvas.NewText("", theme.ForegroundColor())
+	f.AboutDialog.Information = canvas.NewText("", theme.ForegroundColor())
+	f.AboutDialog.CheckUpdateButton = widget.NewButtonWithIcon("Проверить обновления", theme.DownloadIcon(), f.CheckUpdateAction)
 }

@@ -25,8 +25,22 @@ type Selected struct {
 	Additional *string
 }
 
+type AppInfo struct {
+	version    string
+	updatePath string
+	updateType string
+}
+
 type FyneApp struct {
 	info *entities.Info
+	*AppInfo
+	AboutDialog struct {
+		Dialog            dialog.Dialog
+		Version           *canvas.Text
+		Information       *canvas.Text
+		Img               *canvas.Image
+		CheckUpdateButton *widget.Button
+	}
 
 	context struct {
 		ctx    context.Context
@@ -38,6 +52,15 @@ type FyneApp struct {
 	//! главное окно
 	MainWindow fyne.Window
 	//элементы окна
+
+	//Меню
+	Toolbar struct {
+		Box     *fyne.Container
+		Toolbar *widget.Toolbar
+		Logo    *canvas.Image
+		Info    *widget.ToolbarAction
+	}
+
 	authForm struct {
 		form                      dialog.Dialog
 		loginEntry, passwordEntry *widget.Entry
@@ -153,6 +176,7 @@ func NewFyneApp(a fyne.App, view *services.Services, inf *entities.Info) *FyneAp
 
 func (f *FyneApp) StartApp() {
 
+	f.ConfigurateToolbar()
 	f.ConfigureMainWindows()
 	f.ConfigureAuthDialogForm()
 	f.ConfigureWarningAlert()
@@ -160,6 +184,7 @@ func (f *FyneApp) StartApp() {
 	f.ConfigurateCriticalErrorAlert()
 	f.ConfigureSettingWindow()
 	f.ConfigureProgresser()
+	f.ConfigurateAboutDialogWindow()
 	if err := f.service.Open(); err != nil {
 		f.ErrorHandler(err, FunctionResponsibility)
 	}

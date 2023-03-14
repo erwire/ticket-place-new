@@ -1,6 +1,7 @@
 package view
 
 import (
+	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -36,13 +37,12 @@ func (f *FyneApp) ConfigureMainWindows() {
 		f.MainWindow.SetIcon(icoResource)
 	}
 	//f.application.Settings().SetTheme(theme.DarkTheme())
-	f.MainWindow.SetContent(
-		container.NewVBox(
-			f.ConfigureMainWindowHeader(),
-			f.PrintSettingsItem.PrintSettingsContainer,
-			f.MainWindowAccordion,
-		),
-	)
+	content := container.NewBorder(f.Toolbar.Box, nil, nil, nil, container.NewVBox(
+		f.ConfigureMainWindowHeader(),
+		f.PrintSettingsItem.PrintSettingsContainer,
+		f.MainWindowAccordion,
+	))
+	f.MainWindow.SetContent(content)
 }
 
 func (f *FyneApp) ConfigureAuthDialogForm() {
@@ -193,4 +193,25 @@ func (f *FyneApp) ConfigurateCriticalErrorAlert() {
 	boxCenter := container.NewCenter(boxImage)
 	box := container.NewBorder(title, container.NewCenter(f.CriticalError.ErrorConfirmButton), container.New(layout.NewGridWrapLayout(fyne.NewSize(50, 50))), container.New(layout.NewGridWrapLayout(fyne.NewSize(50, 50))), container.NewVBox(boxCenter, f.CriticalError.AdditionalText, f.CriticalError.ErrorLinkButton))
 	f.CriticalError.ErrorWindow.SetContent(box)
+}
+
+func (f *FyneApp) ConfigurateToolbar() {
+	f.NewToolbar()
+
+	//boxImage := container.NewGridWrap(fyne.NewSize(165, 40), f.Toolbar.Logo)
+	f.Toolbar.Toolbar = widget.NewToolbar(widget.NewToolbarSpacer(), f.Toolbar.Info)
+	f.Toolbar.Box = container.New(layout.NewMaxLayout(), f.Toolbar.Toolbar)
+
+}
+
+func (f *FyneApp) ConfigurateAboutDialogWindow() {
+	f.NewAboutDialog()
+	f.AboutDialog.Version.Text = fmt.Sprintf("Версия текущего ПО: %s", f.AppInfo.version)
+	f.AboutDialog.Version.Alignment = fyne.TextAlignCenter
+	f.AboutDialog.Information.Text = fmt.Sprintf("Дополнительная информация о ПО: ")
+	f.AboutDialog.Version.Alignment = fyne.TextAlignCenter
+	box := container.NewVBox(f.AboutDialog.Version, container.NewCenter(f.AboutDialog.CheckUpdateButton), f.AboutDialog.Information)
+	f.AboutDialog.Dialog = dialog.NewCustom("О программе", "Закрыть", box, f.MainWindow)
+
+	f.AboutDialog.Dialog.Hide()
 }

@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"fptr/internal/entities"
 	"fptr/pkg/toml"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
+	"github.com/blang/semver"
+	"github.com/rhysd/go-github-selfupdate/selfupdate"
 	"strconv"
 )
 
@@ -176,6 +179,24 @@ func (f *FyneApp) OpenConnection() {
 	err := f.service.KKT.MakeSession(f.info.Session.UserData.FullName)
 	if err != nil {
 		f.ErrorHandler(err, FunctionResponsibility)
+		return
+	}
+}
+
+func (f *FyneApp) ToolbarInfoPressed() {
+	f.AboutDialog.Dialog.Show()
+
+}
+
+func (f *FyneApp) CheckUpdateAction() {
+	latest, found, err := selfupdate.DetectLatest(f.AppInfo.updatePath)
+	if err != nil {
+		dialog.ShowInformation("Обновление", "Ошибка при доступе к хранилищу обновлений", f.MainWindow)
+		return
+	}
+	vers := semver.MustParse(f.AppInfo.version)
+	if latest.Version.LTE(vers) || !found {
+		dialog.ShowInformation("Обновление", "У вас последняя версия ПО", f.MainWindow)
 		return
 	}
 }

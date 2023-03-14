@@ -15,7 +15,9 @@ import (
 	"time"
 )
 
-const commonLogPath = "./log/common.log"
+var version = "1.0.7"
+var updatePath = "jahngeor/ticket-place-new"
+var updType = "github"
 
 func main() {
 	info := &entities.Info{}
@@ -41,6 +43,8 @@ func main() {
 	gateway := gateways.NewGateway(client, fptrDriver)
 	service := services.NewServices(gateway, mainLogger)
 	view := view.NewFyneApp(app.New(), service, info)
+
+	view.SetAppInfo(version, updatePath, updType)
 
 	service.LoggerService.Infoln("Начало работы приложения")
 	//service.LoggerService.ReinitDebugger(time.Hour * 24)
@@ -77,5 +81,14 @@ func directoriesList() []string {
 		"./debug_info/refound",
 		"./debug_info/click",
 		"./debug_info/login",
+		"./content",
+		"./content/system",
+		"./content/system/icon",
+		"./cookie",
+		"./cookie/appconfig",
+		"./cookie/click",
+		"./cookie/session",
+		"./cookie/userdata",
+		"./db",
 	}
 }
