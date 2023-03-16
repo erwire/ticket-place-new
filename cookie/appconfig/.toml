@@ -3,3 +3,4 @@ com = ""
 time = ""
 baseurl = "http://188.225.26.201/"
 polling_period = 4000000000
+timeout_duration = 60000000000

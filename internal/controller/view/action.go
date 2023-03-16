@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"github.com/blang/semver"
 	"github.com/rhysd/go-github-selfupdate/selfupdate"
+	"os"
 	"strconv"
 )
 
@@ -205,5 +206,18 @@ func (f *FyneApp) CheckUpdateAction() {
 		dialog.ShowInformation("Обновление", "У вас последняя версия ПО", f.MainWindow)
 		return
 	}
+
+	exe, err := os.Executable()
+	if err != nil {
+		dialog.ShowInformation("Ошибка", "Ошибка в определении исполняемого файла", f.MainWindow)
+		return
+	}
+
+	if err := selfupdate.UpdateTo(latest.AssetURL, exe); err != nil {
+		dialog.ShowInformation("Ошибка", "Ошибка во время обновления программы"+err.Error(), f.MainWindow)
+		return
+	}
+
+	dialog.ShowInformation("Обновление", fmt.Sprintf("Успешное обновление до версии %s. Закройте и запустите приложение заново.", latest.Version), f.MainWindow)
 
 }

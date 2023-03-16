@@ -3,6 +3,7 @@ package view
 import (
 	"fptr/internal/entities"
 	"fptr/pkg/toml"
+	"log"
 	"time"
 )
 
@@ -15,11 +16,14 @@ func (f *FyneApp) formAuthData() entities.UserInfo {
 
 func (f *FyneApp) formDriverData() entities.DriverInfo {
 	duration, _ := time.ParseDuration(f.DriverSetting.DriverPollingPeriodSelect.Selected)
+	timeoutDuration, err := time.ParseDuration(f.DriverSetting.DriverTimeoutSelect.Selected)
+	log.Println(timeoutDuration, err)
 	return entities.DriverInfo{
 		Path:          f.DriverSetting.DriverPathEntry.Text,
 		Com:           f.DriverSetting.DriverComPortEntry.Text,
 		Connection:    f.DriverSetting.DriverAddressEntry.Text,
 		PollingPeriod: duration,
+		TimeoutPeriod: timeoutDuration,
 	}
 } //собирает данные из программы в структуру
 
@@ -60,11 +64,22 @@ func (f *FyneApp) InitializeCookie() error {
 }
 
 func (f *FyneApp) setupCookieIntoEntry() {
-
 	f.DriverSetting.DriverPathEntry.Text = f.info.AppConfig.Driver.Path
 	f.DriverSetting.DriverAddressEntry.Text = f.info.AppConfig.Driver.Connection
 	f.DriverSetting.DriverComPortEntry.Text = f.info.AppConfig.Driver.Com
-	f.DriverSetting.DriverPollingPeriodSelect.Selected = f.info.AppConfig.Driver.PollingPeriod.String()
+
+	if f.info.AppConfig.Driver.PollingPeriod.String() == "0s" {
+		f.DriverSetting.DriverPollingPeriodSelect.Selected = "2s"
+	} else {
+		f.DriverSetting.DriverTimeoutSelect.Selected = f.info.AppConfig.Driver.TimeoutPeriod.String()
+	}
+
+	if f.info.AppConfig.Driver.TimeoutPeriod.String() == "0s" {
+		f.DriverSetting.DriverTimeoutSelect.Selected = "20s"
+	} else {
+		f.DriverSetting.DriverPollingPeriodSelect.Selected = f.info.AppConfig.Driver.PollingPeriod.String()
+	}
+
 	f.authForm.loginEntry.Text = f.info.AppConfig.User.Login
 	f.authForm.passwordEntry.Text = f.info.AppConfig.User.Password
 	f.DriverSetting.DriverPathEntry.Refresh()

@@ -1,11 +1,11 @@
-access_token = "4573|1gL2RHsUt5WjVM7ob7lTgAd0kbZF3Mokq2aPmvIB"
-token_type = "Bearer"
-created_at = 2023-03-15T00:48:43.5632783+03:00
+access_token = ""
+token_type = ""
+created_at = 0001-01-01T00:00:00Z
 
 [user_data]
-  id = 8732
-  full_name = "Бушкова Т.В."
-  user_name = "Бушкова Т.В."
+  id = 0
+  full_name = ""
+  user_name = ""
   avatar = ""
-  email = "service@circus.ru"
-  role = "admin"
+  email = ""
+  role = ""

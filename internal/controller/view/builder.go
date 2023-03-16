@@ -14,7 +14,7 @@ import (
 )
 
 func (f *FyneApp) NewMainWindow() {
-	f.MainWindow = f.application.NewWindow("Ticket-Place")
+	f.MainWindow = f.application.NewWindow("Ticket-Place-1.0.7")
 	f.MainWindow.SetMaster()
 }
 
@@ -41,6 +41,7 @@ func (f *FyneApp) NewSettingWindow() {
 		container.New(layout.NewFormLayout(), widget.NewLabel("Адрес сервера"), f.DriverSetting.DriverAddressEntry),
 		container.New(layout.NewFormLayout(), widget.NewLabel("COM-порт ККТ"), f.DriverSetting.DriverComPortEntry),
 		container.New(layout.NewFormLayout(), widget.NewLabel("Период опроса сервера"), f.DriverSetting.DriverPollingPeriodSelect),
+		container.New(layout.NewFormLayout(), widget.NewLabel("Длительность опроса"), f.DriverSetting.DriverTimeoutSelect),
 		widget.NewSeparator(),
 		ButtonSeparatorText,
 		container.NewGridWithColumns(2, f.DriverSetting.CloseShiftButton, f.DriverSetting.ErrorSoundButton, f.DriverSetting.PrintLastButton),
@@ -114,16 +115,21 @@ func (f *FyneApp) NewDriverSettingAccordionItem() {
 	f.DriverSetting.DriverComPortEntry = widget.NewEntry()
 	f.DriverSetting.DriverPathEntry = widget.NewEntry()
 	f.DriverSetting.DriverAddressEntry = widget.NewEntry()
+	f.DriverSetting.DriverTimeoutSelect = widget.NewSelect([]string{"2s", "5s", "10s", "20s", "40s", "60s", "70s", "80s", "90s", "100s", "120s"}, nil)
 	f.DriverSetting.DriverPollingPeriodSelect = widget.NewSelect(
 		[]string{"1s", "2s", "3s", "4s", "5s", "10s", "15s"},
 		f.DriverPollingPeriodSelected,
 	)
+	f.DriverSetting.DriverTimeoutSelect.Selected = "20s"
+	f.DriverSetting.DriverPollingPeriodSelect.Selected = "3s"
+
 	f.DriverSetting.DriverPollingPeriodSelect.Resize(fyne.NewSize(300, 300))
 	f.DriverSetting.DriverPollingPeriodSelect.Refresh()
 	f.DriverSetting.DriverKKTComFormItem = widget.NewFormItem("COM-порт кассы", f.DriverSetting.DriverComPortEntry)
 	f.DriverSetting.DriverKKTPathFormItem = widget.NewFormItem("Путь к драйверу", f.DriverSetting.DriverPathEntry)
 	f.DriverSetting.DriverApiAddressFormItem = widget.NewFormItem("Адрес сервера", f.DriverSetting.DriverAddressEntry)
 	f.DriverSetting.DriverPollingPeriodFormItem = widget.NewFormItem("Период опроса сервера", f.DriverSetting.DriverPollingPeriodSelect)
+
 	f.DriverSetting.DriverSettingForm = widget.NewForm(
 		f.DriverSetting.DriverKKTComFormItem,
 		f.DriverSetting.DriverKKTPathFormItem,

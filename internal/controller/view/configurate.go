@@ -144,7 +144,7 @@ func (f *FyneApp) ConfigureDriverSettingAccordionItem() {
 	f.NewDriverSettingAccordionItem()
 	f.DriverSetting.DriverSettingForm.SubmitText = "Подтвердить"
 	f.DriverSetting.DriverSettingForm.OnSubmit = f.DriverSettingFormOnSubmit
-	f.DriverSetting.DriverPollingPeriodSelect.Selected = "2s"
+
 	box := container.NewVBox(
 		widget.NewLabel("Настройки принтера"),
 		container.NewHBox(f.DriverSetting.DriverSettingButton, f.DriverSetting.DriverPrintHistoryButton),

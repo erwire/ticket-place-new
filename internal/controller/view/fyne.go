@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	"log"
 	"time"
 )
 
@@ -113,6 +114,7 @@ type FyneApp struct {
 		DriverSettingLabel                                      *widget.Label
 		DriverComPortEntry, DriverPathEntry, DriverAddressEntry *widget.Entry
 		DriverPollingPeriodSelect                               *widget.Select
+		DriverTimeoutSelect                                     *widget.Select
 		DriverSettingForm                                       *widget.Form
 		DriverKKTComFormItem                                    *widget.FormItem
 		DriverKKTPathFormItem                                   *widget.FormItem
@@ -185,6 +187,19 @@ func (f *FyneApp) StartApp() {
 	f.ConfigureSettingWindow()
 	f.ConfigureProgresser()
 	f.ConfigurateAboutDialogWindow()
+	//f.CheckUpdateAction()
+	if f.DriverSetting.DriverPollingPeriodSelect.Selected == "0s" {
+		f.DriverSetting.DriverPollingPeriodSelect.Selected = "2s"
+		f.DriverSetting.DriverPollingPeriodSelect.Refresh()
+	} else {
+		log.Println("Not null")
+	}
+
+	if f.DriverSetting.DriverTimeoutSelect.Selected == "0s" {
+		f.DriverSetting.DriverTimeoutSelect.Selected = "20s"
+		f.DriverSetting.DriverTimeoutSelect.Refresh()
+	}
+
 	if err := f.service.Open(); err != nil {
 		f.ErrorHandler(err, FunctionResponsibility)
 	}
@@ -220,8 +235,6 @@ func (f *FyneApp) StartApp() {
 		f.flag.StopListen = false
 	}()
 	f.MainWindow.ShowAndRun()
-	//f.PopUp.Text = widget.NewLabel("")
-	//f.PopUp.PopUp = widget.NewPopUp(f.PopUp.Text, f.MainWindow.Canvas())
 
 }
 
