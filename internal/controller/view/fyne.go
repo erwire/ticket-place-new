@@ -227,7 +227,8 @@ func (f *FyneApp) StartApp() {
 		go f.Listen(f.context.ctx, *f.info)
 	}
 
-	f.setupCookieIntoEntry()
+	//f.setupCookieIntoEntry()
+
 	go f.ClockUpdater()
 	f.flag.DebugOn = false
 	go func() {

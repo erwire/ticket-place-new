@@ -63,30 +63,41 @@ func (f *FyneApp) InitializeCookie() error {
 	return nil
 }
 
+func (f *FyneApp) setupDefaultIntoCookie() {
+	if f.info.AppConfig.Driver.Connection == "" {
+		f.info.AppConfig.Driver.Connection = "https://ticket-place.ru"
+		f.service.Logger.Infof("Установлено значение по умолчанию для адреса: %s", f.info.AppConfig.Driver.Connection)
+	}
+
+	if f.info.AppConfig.Driver.TimeoutPeriod.Seconds() == 0 {
+		f.info.AppConfig.Driver.TimeoutPeriod = time.Second * 20
+		f.service.Logger.Infof("Установлено значение по умолчанию для времени жизни запроса: %s", f.info.AppConfig.Driver.TimeoutPeriod)
+
+	}
+
+	if f.info.AppConfig.Driver.PollingPeriod.Seconds() == 0 {
+		f.info.AppConfig.Driver.PollingPeriod = time.Second * 5
+		f.service.Logger.Infof("Установлено значение по умолчанию %s", f.info.AppConfig.Driver.PollingPeriod)
+	}
+}
+
 func (f *FyneApp) setupCookieIntoEntry() {
+	f.setupDefaultIntoCookie()
+
 	f.DriverSetting.DriverPathEntry.Text = f.info.AppConfig.Driver.Path
 	f.DriverSetting.DriverAddressEntry.Text = f.info.AppConfig.Driver.Connection
 	f.DriverSetting.DriverComPortEntry.Text = f.info.AppConfig.Driver.Com
-
-	if f.info.AppConfig.Driver.PollingPeriod.String() == "0s" {
-		f.DriverSetting.DriverPollingPeriodSelect.Selected = "2s"
-	} else {
-		f.DriverSetting.DriverTimeoutSelect.Selected = f.info.AppConfig.Driver.TimeoutPeriod.String()
-	}
-
-	if f.info.AppConfig.Driver.TimeoutPeriod.String() == "0s" {
-		f.DriverSetting.DriverTimeoutSelect.Selected = "20s"
-	} else {
-		f.DriverSetting.DriverPollingPeriodSelect.Selected = f.info.AppConfig.Driver.PollingPeriod.String()
-	}
+	f.DriverSetting.DriverTimeoutSelect.Selected = f.info.AppConfig.Driver.TimeoutPeriod.String()
+	f.DriverSetting.DriverPollingPeriodSelect.Selected = f.info.AppConfig.Driver.PollingPeriod.String()
 
 	f.authForm.loginEntry.Text = f.info.AppConfig.User.Login
 	f.authForm.passwordEntry.Text = f.info.AppConfig.User.Password
+
 	f.DriverSetting.DriverPathEntry.Refresh()
 	f.DriverSetting.DriverAddressEntry.Refresh()
 	f.DriverSetting.DriverComPortEntry.Refresh()
 	f.DriverSetting.DriverPollingPeriodSelect.Refresh()
-
+	f.DriverSetting.DriverTimeoutSelect.Refresh()
 }
 
 func (f *FyneApp) UpdateSession(session entities.SessionInfo) error {
