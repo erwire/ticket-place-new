@@ -55,7 +55,7 @@ func (f *FyneApp) PrintCheckOnSubmit() {
 	}
 	f.service.Infof("Запрос на печать заказа с номером %s", id)
 
-	if err := f.service.PrintSell(*f.info, id); err != nil {
+	if err := f.service.PrintSell(*f.info, id, nil); err != nil {
 		f.ErrorHandler(err, SellResponsibility)
 		return
 	}
@@ -93,9 +93,9 @@ func (f *FyneApp) printLastCheckPressedFromCRM() {
 	err = nil
 	switch click.Data.Type {
 	case "order":
-		err = f.service.PrintSell(*f.info, id)
+		err = f.service.PrintSell(*f.info, id, nil)
 	default:
-		err = f.service.PrintRefound(*f.info, id)
+		err = f.service.PrintRefound(*f.info, id, nil)
 	}
 
 	if err != nil {
@@ -192,32 +192,39 @@ func (f *FyneApp) ToolbarInfoPressed() {
 func (f *FyneApp) CheckUpdateAction() {
 	latest, found, err := selfupdate.DetectLatest(f.AppInfo.updatePath)
 	if err != nil {
+		f.service.Warningf("Ошибка при попытке доступа к хранилищу обновления: %s", err.Error())
 		dialog.ShowInformation("Обновление", "Ошибка при доступе к хранилищу обновлений", f.MainWindow)
 		return
 	}
+
 	vers := semver.MustParse(f.AppInfo.version)
 
 	if !found {
+		f.service.Warningf("Обновление не найдено, текущая версия ПО: %s", f.AppInfo.version)
 		dialog.ShowInformation("Обновление", "Обновления не найдены", f.MainWindow)
 		return
 	}
 
 	if latest.Version.LTE(vers) {
+		f.service.Infof("Не найдено версии, новее текущей: %s", f.AppInfo.version)
 		dialog.ShowInformation("Обновление", "У вас последняя версия ПО", f.MainWindow)
 		return
 	}
 
 	exe, err := os.Executable()
 	if err != nil {
+		f.service.Errorf("Ошибка в определении исполняемого файла при процессе обновления: %s", err.Error())
 		dialog.ShowInformation("Ошибка", "Ошибка в определении исполняемого файла", f.MainWindow)
 		return
 	}
 
 	if err := selfupdate.UpdateTo(latest.AssetURL, exe); err != nil {
-		dialog.ShowInformation("Ошибка", "Ошибка во время обновления программы"+err.Error(), f.MainWindow)
+		f.service.Errorf("Ошибка во время исполнения программы: %s", err.Error())
+		dialog.ShowInformation("Ошибка", "Ошибка во время обновления программы", f.MainWindow)
 		return
 	}
 
 	dialog.ShowInformation("Обновление", fmt.Sprintf("Успешное обновление до версии %s. Закройте и запустите приложение заново.", latest.Version), f.MainWindow)
+	f.service.Infof("Успешное обновления до версии: %s", latest.Version)
 
 }

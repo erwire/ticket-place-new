@@ -124,6 +124,7 @@ func (f *FyneApp) Reconnect() {
 
 func (f *FyneApp) StartListen() {
 	f.service.Infof("Запущен поток прослушивания по адресу: %s", f.info.AppConfig.Driver.Connection)
+	f.service.SetTimeout(f.info.AppConfig.Driver.TimeoutPeriod)
 	go f.Listen(f.context.ctx, *f.info)
 } //# Начать прослушку
 
@@ -192,6 +193,11 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 				continue
 			}
 
+			if clickCache.Data.OrderId == click.Data.OrderId {
+				// f.service.Warningf("Попытка повторно распечатать чек продажи/возврата: id: %d, uuid: %d", click.Data.OrderId, click.Data.Id)
+				continue
+			}
+
 			if err := toml.WriteToml(toml.ClickPath, click); err != nil {
 				f.service.Infoln(err)
 				continue
@@ -200,14 +206,15 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 				// отладка
 			} else {
 				if f.flag.PrintCheckBox {
+					uuid := fmt.Sprint(click.Data.Id)
 					switch click.Data.Type {
 					case "order":
-						if err = f.service.PrintSell(*f.info, fmt.Sprint(click.Data.OrderId)); err != nil {
+						if err = f.service.PrintSell(*f.info, fmt.Sprint(click.Data.OrderId), &uuid); err != nil {
 							f.ErrorHandler(err, SellResponsibility)
 							continue
 						}
 					default:
-						if err = f.service.PrintRefound(*f.info, fmt.Sprint(click.Data.OrderId)); err != nil {
+						if err = f.service.PrintRefound(*f.info, fmt.Sprint(click.Data.OrderId), &uuid); err != nil {
 							f.ErrorHandler(err, RefoundResponsibility)
 							continue
 						}

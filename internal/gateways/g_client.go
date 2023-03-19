@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 const (
@@ -34,6 +35,10 @@ func NewClientGateway(client *http.Client) *ClientGateway {
 	return &ClientGateway{
 		client: client,
 	}
+}
+
+func (l *ClientGateway) SetTimeout(timeout time.Duration) {
+	l.client.Timeout = timeout
 }
 
 func (l *ClientGateway) Login(config entities.AppConfig) (*entities.SessionInfo, error) {

@@ -4,6 +4,7 @@ import (
 	"fptr/internal/entities"
 	"fptr/pkg/fptr10"
 	"net/http"
+	"time"
 )
 
 type PrintType string
@@ -25,6 +26,7 @@ type Listener interface {
 	GetLastReceipt(connectionURL string, session entities.SessionInfo) (*entities.Click, error)
 	GetSell(info entities.Info, sellID string) (*entities.Sell, error)
 	GetRefound(info entities.Info, refoundID string) (*entities.Refound, error)
+	SetTimeout(timeout time.Duration)
 }
 
 type KKT interface {

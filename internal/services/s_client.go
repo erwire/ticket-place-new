@@ -6,6 +6,7 @@ import (
 	"fptr/internal/gateways"
 	"github.com/google/logger"
 	"net/http"
+	"time"
 )
 
 type ClientService struct {
@@ -18,6 +19,11 @@ func NewClientService(gw *gateways.Gateway, logg *logger.Logger) *ClientService 
 		gw:     gw,
 		Logger: logg,
 	}
+}
+
+func (s *ClientService) SetTimeout(timeout time.Duration) {
+	s.gw.SetTimeout(timeout)
+	s.Infof("Установлена длительность попытки запроса на %s", timeout)
 }
 
 func (s *ClientService) GetLastReceipt(connectionURL string, session entities.SessionInfo) (*entities.Click, error) {
@@ -36,23 +42,31 @@ func (s *ClientService) GetLastReceipt(connectionURL string, session entities.Se
 	return click, nil
 }
 
-func (s *ClientService) PrintSell(info entities.Info, id string) error {
+func (s *ClientService) PrintSell(info entities.Info, id string, uuid *string) error {
+	uuidStr := ""
+
+	if uuid == nil {
+		uuidStr = "отсутствует (печать с панели)"
+	} else {
+		uuidStr = *uuid
+	}
+
 	sell, err := s.gw.Listener.GetSell(info, id)
 	if err != nil {
-		s.Errorf("Ошибка во время печати заказа с номером %s, клиент: %v", id, err)
+		s.Errorf("Ошибка во время получения заказа с номером %s, uuid: %s, клиент: %v", id, uuidStr, err)
 		return err
 	}
 
 	if err = s.gw.KKT.PrintSell(*sell); err != nil {
 		switch err.(type) {
 		case *apperr.BusinessError:
-			s.Warningf("Ошибка во время печати чека продажи заказа с номером %s, ККТ: %v", id, err)
+			s.Warningf("Ошибка во время печати чека продажи заказа с номером %s, uuid: %s, ККТ: %v", id, uuidStr, err)
 		default:
-			s.Errorf("Ошибка во время печати чека продажи заказа с номером %s, ККТ: %v", id, err)
+			s.Errorf("Ошибка во время печати чека продажи заказа с номером %s, uuid: %s, ККТ: %v", id, uuidStr, err)
 		}
 		return err
 	}
-	s.Infof("Выполнена печать чека заказа с номером: %s\n", id)
+	s.Infof("Выполнена печать чека заказа с номером: %s, uuid: %s\n", id, uuidStr)
 	return nil
 }
 
@@ -76,10 +90,19 @@ func (s *ClientService) PrintRefoundFromSell(info entities.Info, id string) erro
 	return nil
 }
 
-func (s *ClientService) PrintRefound(info entities.Info, id string) error {
+func (s *ClientService) PrintRefound(info entities.Info, id string, uuid *string) error {
+	uuidStr := ""
+
+	if uuid == nil {
+		uuidStr = "отсутствует (печать с панели)"
+	} else {
+		uuidStr = *uuid
+	}
+
 	refound, err := s.gw.Listener.GetRefound(info, id)
+
 	if err != nil {
-		s.Errorf("Ошибка во время печати возврата заказа с номером %s, клиент: %v", id, err)
+		s.Errorf("Ошибка во время получения возврата заказа с номером %s, uuid: %s, клиент: %v", id, uuidStr, err)
 		return err
 	}
 
@@ -87,14 +110,14 @@ func (s *ClientService) PrintRefound(info entities.Info, id string) error {
 	if err != nil {
 		switch err.(type) {
 		case *apperr.BusinessError:
-			s.Warningf("Ошибка во время печати возврата заказа с номером %s, ККТ: %v", id, err)
+			s.Warningf("Ошибка во время печати возврата заказа с номером %s, uuid: %s, ККТ: %v", id, uuidStr, err)
 		default:
-			s.Errorf("Ошибка во время печати возврата заказа с номером %s, ККТ: %v", id, err)
+			s.Errorf("Ошибка во время печати возврата заказа с номером %s, uuid: %s, ККТ: %v", id, uuidStr, err)
 		}
 		return err
 	}
 
-	s.Infof("Выполнена печать чека возврата заказа с номером: %s\n", id)
+	s.Infof("Выполнена печать чека возврата заказа с номером: %s, uuid: %s\n", id, uuid)
 	return nil
 }
 

@@ -14,7 +14,7 @@ import (
 )
 
 func (f *FyneApp) NewMainWindow() {
-	f.MainWindow = f.application.NewWindow("Ticket-Place-1.0.7")
+	f.MainWindow = f.application.NewWindow("Ticket Place")
 	f.MainWindow.SetMaster()
 }
 

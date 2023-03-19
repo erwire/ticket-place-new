@@ -1,8 +1,12 @@
 package middleware
 
 import (
+	apperr "fptr/internal/error_list"
+	errorlog "fptr/pkg/error_logs"
 	"github.com/google/logger"
+	"io"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -29,7 +33,10 @@ var Files = [...]string{
 	"./content/system/icon/main.png",
 }
 
-var FilesPathsMap = map[string]string{}
+var FilesPathsMap = map[string]string{
+	"./content/system/icon/logo.png": "https://github.com/JahnGeor/ticket-place-new/raw/master/content/system/icon/logo.png",
+	"./content/system/icon/main.png": "https://github.com/JahnGeor/ticket-place-new/raw/master/content/system/icon/main.png",
+}
 
 type Middleware struct {
 	logf *logger.Logger
@@ -70,6 +77,12 @@ func (m *Middleware) PullAllNonExistingFiles() {
 	for key, value := range m.FileStatus {
 		if !value {
 			m.logf.Warningf("Происходит загрузка отсутствующего файла - %s", key)
+			err := m.DownloadIcon(FilesPathsMap[key], key)
+			if err != nil {
+				m.logf.Warningf("Ошибка при загрузке файла %s: %v", key, err)
+				continue
+			}
+			m.logf.Infof("Файл скачался")
 		}
 	}
 }
@@ -84,8 +97,34 @@ func (m *Middleware) CreateAppDirectories() {
 	}
 }
 
+func (m *Middleware) DownloadIcon(reqPath string, path string) error {
+	resp, err := http.Get(reqPath)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return apperr.NewClientError("Ошибка при скачивании файла", errorlog.ResponseError, resp.StatusCode)
+	}
+
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	_, err = io.Copy(file, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Middleware) BasicMiddleware() {
 	m.Initialize()
 	m.CheckAllFiles()
 	m.PullAllNonExistingFiles()
+
 }

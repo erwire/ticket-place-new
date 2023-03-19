@@ -3,6 +3,7 @@ package services
 import (
 	"fptr/internal/entities"
 	"fptr/internal/gateways"
+	"time"
 )
 
 type Services struct {
@@ -21,10 +22,11 @@ func NewServices(g *gateways.Gateway, logger *LoggerService) *Services {
 
 type Listener interface {
 	GetLastReceipt(connectionURL string, session entities.SessionInfo) (*entities.Click, error)
-	PrintSell(info entities.Info, id string) error
-	PrintRefound(info entities.Info, id string) error
+	PrintSell(info entities.Info, id string, uuid *string) error
+	PrintRefound(info entities.Info, id string, uuid *string) error
 	Login(config entities.AppConfig) (*entities.SessionInfo, error)
 	PrintRefoundFromSell(info entities.Info, id string) error
+	SetTimeout(timeout time.Duration)
 }
 
 type KKT interface {
