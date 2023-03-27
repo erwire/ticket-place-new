@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+const AttemptDurationInSeconds = 2
+const AttemptCount = 5
+
 type ClientService struct {
 	gw *gateways.Gateway
 	*logger.Logger
@@ -27,19 +30,37 @@ func (s *ClientService) SetTimeout(timeout time.Duration) {
 }
 
 func (s *ClientService) GetLastReceipt(connectionURL string, session entities.SessionInfo) (*entities.Click, error) {
-	click, err := s.gw.GetLastReceipt(connectionURL, session)
-	if err != nil {
-		switch err.(type) {
-		case *apperr.ClientError:
-			if !(err.(*apperr.ClientError).StatusCode == http.StatusNotFound) {
-				s.Errorf("Ошибка при запросе последнего заказа: %v", err)
-			}
-		}
 
-		return nil, err
+	var err error
+	var click *entities.Click
+
+	for i := 0; i < AttemptCount; i++ {
+		click, err = s.gw.GetLastReceipt(connectionURL, session)
+		if err != nil {
+			if i == 0 {
+				s.Errorf("Во время запроса к истории печати произошла ошибка: %v", err)
+				s.Warningf("[Операция закончилась неуспешно, запуск повторных попыток подключения]")
+			} else {
+				s.Errorf("[Попытка номер %d] -> Ошибка: %v", i, err)
+			}
+			time.Sleep(AttemptDurationInSeconds * time.Second)
+			continue
+		} else {
+			if i != 0 {
+				s.Infof("[Попытка номер %d] -> Попытка завершена успешно, операция выполнена", i)
+			}
+			return click, nil
+		}
 	}
 
-	return click, nil
+	switch err.(type) {
+	case *apperr.ClientError:
+		if !(err.(*apperr.ClientError).StatusCode == http.StatusNotFound) {
+			s.Errorf("[Попытки завершились неудачно] -> Ошибка при запросе последнего заказа: %v", err)
+		}
+	}
+	return nil, err
+
 }
 
 func (s *ClientService) PrintSell(info entities.Info, id string, uuid *string) error {
@@ -122,10 +143,26 @@ func (s *ClientService) PrintRefound(info entities.Info, id string, uuid *string
 }
 
 func (s *ClientService) Login(config entities.AppConfig) (*entities.SessionInfo, error) {
-	session, err := s.gw.Login(config)
-	if err != nil {
-		s.Errorf("Во время авторизации произошла ошибка: %v", err)
-		return nil, err
+	var err error
+	var session *entities.SessionInfo
+	for i := 0; i < AttemptCount; i++ {
+		session, err = s.gw.Login(config)
+		if err != nil {
+			if i == 0 {
+				s.Errorf("Во время авторизации произошла ошибка: %v", err)
+				s.Warningf("[Операция закончилась неуспешно, запуск повторных попыток подключения]")
+			} else {
+				s.Errorf("[Попытка номер %d] -> Во время авторизации произошла ошибка: %v", i, err)
+			}
+			time.Sleep(AttemptDurationInSeconds * time.Second)
+			continue
+		} else {
+			if i != 0 {
+				s.Infof("[Попытка номер %d] -> Попытка завершена успешно, операция выполнена", i)
+			}
+			return session, nil
+		}
 	}
-	return session, nil
+	s.Errorf("[Попытки завершились неудачно] -> Во время авторизации произошла ошибка: %v", err)
+	return nil, err
 }

@@ -14,3 +14,10 @@ func (f *FyneApp) ShowWarning(err string) {
 	//f.Warning.WarningWindow.Show()
 
 }
+
+func (f *FyneApp) ShowPrintConfirm() {
+	f.PrintDoubleConfirm.Window.Hide()
+	f.PrintDoubleConfirm.Window.CenterOnScreen()
+	f.PrintDoubleConfirm.Window.RequestFocus()
+	f.PrintDoubleConfirm.Window.Show()
+}

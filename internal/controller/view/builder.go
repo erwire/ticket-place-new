@@ -220,3 +220,14 @@ func (f *FyneApp) NewAboutDialog() {
 	f.AboutDialog.Information = canvas.NewText("", theme.ForegroundColor())
 	f.AboutDialog.CheckUpdateButton = widget.NewButtonWithIcon("Проверить обновления", theme.DownloadIcon(), f.CheckUpdateAction)
 }
+
+func (f *FyneApp) NewPrintDoubleConfirm() {
+	f.PrintDoubleConfirm.PDConfirm = widget.NewButton("Да", func() {
+		f.flag.Waiter <- true
+		f.PrintDoubleConfirm.Window.Hide()
+	})
+	f.PrintDoubleConfirm.PDDismiss = widget.NewButton("Нет", func() {
+		f.flag.Waiter <- false
+		f.PrintDoubleConfirm.Window.Hide()
+	})
+}

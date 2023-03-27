@@ -215,3 +215,15 @@ func (f *FyneApp) ConfigurateAboutDialogWindow() {
 
 	f.AboutDialog.Dialog.Hide()
 }
+
+func (f *FyneApp) ConfigurateDoubleConfirm() {
+	f.NewPrintDoubleConfirm()
+	box := container.NewVBox(
+		widget.NewLabel("Вы пытаетесь распечатать чек, который был напечатан в течении 15 секунд. Повторить печать?"),
+		f.PrintDoubleConfirm.PDConfirm,
+		f.PrintDoubleConfirm.PDDismiss,
+	)
+	f.PrintDoubleConfirm.Window = f.application.NewWindow("Повторная печать")
+	f.PrintDoubleConfirm.Window.SetContent(box)
+	f.PrintDoubleConfirm.Window.Hide()
+}

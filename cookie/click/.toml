@@ -1,7 +1,8 @@
 [Data]
-  Id = 4202
+  Id = 4292
   UserId = 8732
-  OrderId = 574
-  Type = "refund"
+  OrderId = 19388
+  Type = "order"
   Check = "0"
-  CreatedAt = 2023-03-06T13:46:35Z
+  CreatedAt = 2023-03-27T02:22:54Z
+  RecordedAt = 2023-03-27T06:31:12.1019745+03:00
