@@ -3,6 +3,7 @@ package services
 import (
 	"fptr/internal/entities"
 	"fptr/internal/gateways"
+	"fyne.io/fyne/v2/data/binding"
 	"time"
 )
 
@@ -27,6 +28,7 @@ type Listener interface {
 	Login(config entities.AppConfig) (*entities.SessionInfo, error)
 	PrintRefoundFromSell(info entities.Info, id string) error
 	SetTimeout(timeout time.Duration)
+	SetProgressData(pc binding.Float, st binding.String)
 }
 
 type KKT interface {

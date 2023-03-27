@@ -16,6 +16,7 @@ func (f *FyneApp) GetClickAndWriteIntoToml() {
 		f.ErrorHandler(err, ClickResponsibility)
 		return
 	}
+	click.Data.RecordedAt = time.Now()
 	if err := toml.WriteToml(toml.ClickPath, click); err != nil {
 		f.ErrorHandler(err, LoginResponsibility)
 		return
@@ -154,7 +155,6 @@ func (f *FyneApp) WarningShow() {
 
 func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 	for {
-
 		select {
 		case <-ctx.Done():
 			return
@@ -170,7 +170,6 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 
 			if f.info.Session.IsDead() {
 				f.Reconnect()
-				//f.ShowWarning("Ваша сессия устарела. Пожалуйста, авторизуйтесь снова!")
 			}
 
 			time.Sleep(info.AppConfig.Driver.PollingPeriod * time.Nanosecond)
@@ -183,7 +182,17 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 			}
 
 			click, err := f.service.GetLastReceipt(info.AppConfig.Driver.Connection, info.Session)
-
+			go func() {
+				str, _ := f.ProgressAction.ProgressStatus.Get()
+				value, _ := f.ProgressAction.ProgressValue.Get()
+				if value == 1.0 && str != "Текущий статус: нет задач" {
+					time.Sleep(time.Second * 15)
+					f.ProgressAction.ProgressStatus.Set("Текущий статус: нет задач")
+					f.ProgressAction.ProgressValue.Set(0.0)
+					return
+				}
+				return
+			}()
 			if err != nil {
 				f.ErrorHandler(err, ClickResponsibility)
 				continue
@@ -193,11 +202,45 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 				continue
 			}
 
-			if clickCache.Data.OrderId == click.Data.OrderId {
-				// f.service.Warningf("Попытка повторно распечатать чек продажи/возврата: id: %d, uuid: %d", click.Data.OrderId, click.Data.Id)
-				continue
+			if clickCache.Data.OrderId == click.Data.OrderId && time.Since(clickCache.Data.RecordedAt) <= 15*time.Second {
+				f.service.Logger.Warningf("Попытка распечатать дупликат чека с ID: %d, OrderID: %d", click.Data.OrderId, click.Data.Id)
+
+				f.flag.Waiter = make(chan bool, 1)
+				f.ShowPrintConfirm()
+
+				timer := time.After(time.Second * 15)
+
+				choice := func() bool {
+					for {
+						select {
+						case status := <-f.flag.Waiter:
+							if status {
+								f.service.Infof("Принят к печати пользователем")
+								return true
+							} else {
+								f.service.Infof("Отклонен к печати пользователем")
+								return false
+							}
+						case <-timer:
+							f.PrintDoubleConfirm.Window.Hide()
+							f.service.Infof("Отклонен к печати по истечению времени")
+							return false
+						default:
+							continue
+						}
+					}
+				}()
+
+				if !choice {
+					click.Data.RecordedAt = time.Now()
+					if err := toml.WriteToml(toml.ClickPath, click); err != nil {
+						f.service.Infoln(err)
+					}
+					continue
+				}
 			}
 
+			click.Data.RecordedAt = time.Now()
 			if err := toml.WriteToml(toml.ClickPath, click); err != nil {
 				f.service.Infoln(err)
 				continue

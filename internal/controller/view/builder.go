@@ -220,3 +220,23 @@ func (f *FyneApp) NewAboutDialog() {
 	f.AboutDialog.Information = canvas.NewText("", theme.ForegroundColor())
 	f.AboutDialog.CheckUpdateButton = widget.NewButtonWithIcon("Проверить обновления", theme.DownloadIcon(), f.CheckUpdateAction)
 }
+
+func (f *FyneApp) NewPrintDoubleConfirm() {
+	f.PrintDoubleConfirm.PDConfirm = widget.NewButton("Да", func() {
+		f.flag.Waiter <- true
+		f.PrintDoubleConfirm.Window.Hide()
+	})
+	f.PrintDoubleConfirm.PDDismiss = widget.NewButton("Нет", func() {
+		f.flag.Waiter <- false
+		f.PrintDoubleConfirm.Window.Hide()
+	})
+}
+
+func (f *FyneApp) NewProgressAction() { //+ Внедрение Progress Bar
+	f.ProgressAction.ProgressValue = binding.NewFloat()
+	f.ProgressAction.ProgressStatus = binding.NewString()
+	f.ProgressAction.ProgressStatus.Set("Текущий статус: нет задач")
+	f.service.SetProgressData(f.ProgressAction.ProgressValue, f.ProgressAction.ProgressStatus)
+	f.ProgressAction.StatusText = widget.NewLabelWithData(f.ProgressAction.ProgressStatus)
+	f.ProgressAction.Progress = widget.NewProgressBarWithData(f.ProgressAction.ProgressValue)
+}

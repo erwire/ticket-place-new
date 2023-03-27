@@ -29,6 +29,7 @@ func (f *FyneApp) ConfigureSettingWindow() {
 func (f *FyneApp) ConfigureMainWindows() {
 	f.NewMainWindow()
 	f.ConfigureMainWindowAccordion()
+	f.NewProgressAction()
 	f.MainWindow.Resize(fyne.NewSize(600, 600))
 	icoResource, err := fyne.LoadResourceFromPath(iconPath)
 	if err != nil {
@@ -37,10 +38,12 @@ func (f *FyneApp) ConfigureMainWindows() {
 		f.MainWindow.SetIcon(icoResource)
 	}
 	//f.application.Settings().SetTheme(theme.DarkTheme())
+	f.ProgressAction.ProgressBox = container.NewVBox(f.ProgressAction.StatusText, f.ProgressAction.Progress)
 	content := container.NewBorder(f.Toolbar.Box, nil, nil, nil, container.NewVBox(
 		f.ConfigureMainWindowHeader(),
 		f.PrintSettingsItem.PrintSettingsContainer,
 		f.MainWindowAccordion,
+		f.ProgressAction.ProgressBox,
 	))
 	f.MainWindow.SetContent(content)
 }
@@ -60,6 +63,7 @@ func (f *FyneApp) ConfigureProgresser() {
 
 func (f *FyneApp) ConfigureMainWindowHeader() *fyne.Container {
 	f.NewMainWindowHeader()
+
 	f.header.usernameLabel.TextSize = 18
 	f.header.localTimeLabel.TextSize = 18
 
@@ -214,4 +218,16 @@ func (f *FyneApp) ConfigurateAboutDialogWindow() {
 	f.AboutDialog.Dialog = dialog.NewCustom("О программе", "Закрыть", box, f.MainWindow)
 
 	f.AboutDialog.Dialog.Hide()
+}
+
+func (f *FyneApp) ConfigurateDoubleConfirm() {
+	f.NewPrintDoubleConfirm()
+	box := container.NewVBox(
+		widget.NewLabel("Вы пытаетесь распечатать чек, который был напечатан в течении 15 секунд. Повторить печать?"),
+		f.PrintDoubleConfirm.PDConfirm,
+		f.PrintDoubleConfirm.PDDismiss,
+	)
+	f.PrintDoubleConfirm.Window = f.application.NewWindow("Повторная печать")
+	f.PrintDoubleConfirm.Window.SetContent(box)
+	f.PrintDoubleConfirm.Window.Hide()
 }

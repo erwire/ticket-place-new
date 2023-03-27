@@ -6,9 +6,9 @@ import (
 	"fptr/internal/services"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
-	"log"
 	"time"
 )
 
@@ -20,6 +20,7 @@ type Flags struct {
 	ProgressWorking                                                  bool
 	AuthJustHide                                                     bool
 	FirstStart                                                       bool
+	Waiter                                                           chan bool
 }
 
 type Selected struct {
@@ -166,6 +167,20 @@ type FyneApp struct {
 		ProgressConfirm *widget.Button
 		ProgressDismiss *widget.Button
 	}
+
+	PrintDoubleConfirm struct {
+		Window    fyne.Window
+		PDConfirm *widget.Button
+		PDDismiss *widget.Button
+	}
+
+	ProgressAction struct { //+ Внедрение Progress Bar
+		StatusText     *widget.Label       //+ Внедрение Progress Bar
+		Progress       *widget.ProgressBar //+ Внедрение Progress Bar
+		ProgressBox    *fyne.Container
+		ProgressValue  binding.Float
+		ProgressStatus binding.String
+	} //+ Внедрение Progress Bar
 }
 
 func NewFyneApp(a fyne.App, view *services.Services, inf *entities.Info) *FyneApp { //, service *services.Service
@@ -187,19 +202,7 @@ func (f *FyneApp) StartApp() {
 	f.ConfigureSettingWindow()
 	f.ConfigureProgresser()
 	f.ConfigurateAboutDialogWindow()
-	//f.CheckUpdateAction()
-	if f.DriverSetting.DriverPollingPeriodSelect.Selected == "0s" {
-		f.DriverSetting.DriverPollingPeriodSelect.Selected = "2s"
-		f.DriverSetting.DriverPollingPeriodSelect.Refresh()
-	} else {
-		log.Println("Not null")
-	}
-
-	if f.DriverSetting.DriverTimeoutSelect.Selected == "0s" {
-		f.DriverSetting.DriverTimeoutSelect.Selected = "20s"
-		f.DriverSetting.DriverTimeoutSelect.Refresh()
-	}
-
+	f.ConfigurateDoubleConfirm()
 	if err := f.service.Open(); err != nil {
 		f.ErrorHandler(err, FunctionResponsibility)
 	}

@@ -6,12 +6,13 @@ import (
 
 type Click struct {
 	Data struct {
-		Id        int       `json:"id"`
-		UserId    int       `json:"user_id"`
-		OrderId   int       `json:"order_id"`
-		Type      string    `json:"type"`
-		Check     string    `json:"check"`
-		CreatedAt time.Time `json:"created_at"`
+		Id         int       `json:"id"`
+		UserId     int       `json:"user_id"`
+		OrderId    int       `json:"order_id"`
+		Type       string    `json:"type"`
+		Check      string    `json:"check"`
+		CreatedAt  time.Time `json:"created_at"`
+		RecordedAt time.Time
 	} `json:"data"`
 }
 

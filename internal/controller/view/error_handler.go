@@ -95,6 +95,7 @@ func (f *FyneApp) RequestErrorHandler(err *apperr.ClientError, dependence string
 		//f.Logout()
 		switch true {
 		case strings.Contains(errors.Unwrap(err.ClientError).Error(), "A socket operation was attempted to an unreachable network"):
+			f.Logout()
 			f.ShowWarning("Потерян доступ в интернет. Проверьте подключение к сети.")
 		case strings.Contains(errors.Unwrap(err.ClientError).Error(), "Client.Timeout exceeded while awaiting headers"):
 			//f.ShowWarning("Неправильный адрес сервера или сервер недоступен.")
