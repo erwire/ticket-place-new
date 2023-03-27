@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-var version = "1.0.7"
+var version = "1.0.8"
 var updatePath = "jahngeor/ticket-place-new"
 var updType = "github"
 
