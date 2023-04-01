@@ -29,6 +29,7 @@ type DriverInfo struct {
 	Connection    string        `toml:"baseurl"`
 	PollingPeriod time.Duration `toml:"polling_period"`
 	TimeoutPeriod time.Duration `toml:"timeout_duration"`
+	UpdatePath    string        `toml:"update_path"`
 }
 
 type SessionInfo struct {

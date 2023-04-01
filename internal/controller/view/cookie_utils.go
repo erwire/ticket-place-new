@@ -24,6 +24,7 @@ func (f *FyneApp) formDriverData() entities.DriverInfo {
 		Connection:    f.DriverSetting.DriverAddressEntry.Text,
 		PollingPeriod: duration,
 		TimeoutPeriod: timeoutDuration,
+		UpdatePath:    f.DriverSetting.DriverUpdatePath.Text,
 	}
 } //собирает данные из программы в структуру
 
@@ -79,6 +80,12 @@ func (f *FyneApp) setupDefaultIntoCookie() {
 		f.info.AppConfig.Driver.PollingPeriod = time.Second * 5
 		f.service.Logger.Infof("Установлено значение по умолчанию %s", f.info.AppConfig.Driver.PollingPeriod)
 	}
+
+	if f.info.AppConfig.Driver.UpdatePath == "" {
+		f.info.AppConfig.Driver.UpdatePath = "jahngeor/ticket-place"
+		f.service.Logger.Infof("Установлено значение по умолчанию %s", f.info.AppConfig.Driver.UpdatePath)
+	}
+
 }
 
 func (f *FyneApp) setupCookieIntoEntry() {
@@ -89,6 +96,7 @@ func (f *FyneApp) setupCookieIntoEntry() {
 	f.DriverSetting.DriverComPortEntry.Text = f.info.AppConfig.Driver.Com
 	f.DriverSetting.DriverTimeoutSelect.Selected = f.info.AppConfig.Driver.TimeoutPeriod.String()
 	f.DriverSetting.DriverPollingPeriodSelect.Selected = f.info.AppConfig.Driver.PollingPeriod.String()
+	f.DriverSetting.DriverUpdatePath.Text = f.info.AppConfig.Driver.UpdatePath
 
 	f.authForm.loginEntry.Text = f.info.AppConfig.User.Login
 	f.authForm.passwordEntry.Text = f.info.AppConfig.User.Password
@@ -98,6 +106,7 @@ func (f *FyneApp) setupCookieIntoEntry() {
 	f.DriverSetting.DriverComPortEntry.Refresh()
 	f.DriverSetting.DriverPollingPeriodSelect.Refresh()
 	f.DriverSetting.DriverTimeoutSelect.Refresh()
+	f.DriverSetting.DriverUpdatePath.Refresh()
 }
 
 func (f *FyneApp) UpdateSession(session entities.SessionInfo) error {

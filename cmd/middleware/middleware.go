@@ -60,7 +60,7 @@ func (m *Middleware) Initialize() {
 	m.CreateAppDirectories()
 	m.FileStatus = make(map[string]bool)
 	for _, value := range Files {
-		m.FileStatus[value] = false
+		m.FileStatus[value] = true
 	}
 }
 

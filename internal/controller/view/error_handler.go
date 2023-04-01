@@ -31,13 +31,13 @@ func (f *FyneApp) ErrorHandler(err error, dependence string) {
 	case *fptr10.Error:
 		f.FPTRErrorHandler(err.(*fptr10.Error), dependence)
 	case *toml.TomlError:
-		f.Beep(ErrorBeep)
+		go f.Beep(ErrorBeep)
 		f.TomlErrorHandler(err.(*toml.TomlError))
 	case *apperr.BusinessError:
 		//f.Beep(WarningBeep)
 		f.BusinessErrorHandler(err.(*apperr.BusinessError))
 	default:
-		f.Beep(WarningBeep)
+		go f.Beep(WarningBeep)
 	}
 }
 
@@ -55,7 +55,7 @@ func (f *FyneApp) TomlErrorHandler(err *toml.TomlError) {
 func (f *FyneApp) ClientErrorHandler(err *apperr.ClientError, dependence string) {
 	switch err.ClientErrorType {
 	case &apperr.RequestError:
-		f.Beep(ErrorBeep)
+		go f.Beep(ErrorBeep)
 		f.RequestErrorHandler(err, dependence)
 	case &apperr.ResponseError:
 		f.ResponseErrorHandler(err, dependence)
@@ -122,30 +122,30 @@ func (f *FyneApp) ResponseStatusCodeErrorHandler(err *apperr.ClientError, depend
 		if dependence == ClickResponsibility {
 			return
 		}
-		f.Beep(ErrorBeep)
+		go f.Beep(ErrorBeep)
 		f.ShowWarning("По запросу не найден заказ")
 
 	case http.StatusUnprocessableEntity:
-		f.Beep(ErrorBeep)
+		go f.Beep(ErrorBeep)
 		f.ShowWarning("В вашем запросе присутствуют данные, которые не могут быть обработаны сервером")
 	case http.StatusForbidden:
-		f.Beep(ErrorBeep)
+		go f.Beep(ErrorBeep)
 		switch dependence {
 		case LoginResponsibility:
 			f.ShowWarning("Неправильный логин или пароль")
 		}
 	case http.StatusBadRequest:
-		f.Beep(ErrorBeep)
+		go f.Beep(ErrorBeep)
 		f.ShowWarning("Некорректный запрос")
 	case http.StatusInternalServerError:
-		f.Beep(ErrorBeep)
+		go f.Beep(ErrorBeep)
 		f.ShowWarning("Сервер недоступен")
 		f.Logout()
 	case http.StatusBadGateway:
-		f.Beep(ErrorBeep)
+		go f.Beep(ErrorBeep)
 		f.ShowProgresser()
 	default:
-		f.Beep(ErrorBeep)
+		go f.Beep(ErrorBeep)
 		switch dependence {
 		case LoginResponsibility:
 			f.ShowWarning("Сервер прислал необрабатываемую ошибку, обратитесь к системному администратору")

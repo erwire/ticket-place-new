@@ -202,7 +202,7 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 				continue
 			}
 
-			if clickCache.Data.OrderId == click.Data.OrderId && time.Since(clickCache.Data.RecordedAt) <= 15*time.Second {
+			if clickCache.Data.OrderId == click.Data.OrderId {
 				f.service.Logger.Warningf("Попытка распечатать дупликат чека с ID: %d, OrderID: %d", click.Data.OrderId, click.Data.Id)
 
 				f.flag.Waiter = make(chan bool, 1)

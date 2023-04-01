@@ -35,6 +35,7 @@ func (f *FyneApp) NewSettingWindow() {
 	})
 	ButtonSeparatorText.TextSize = 18
 	ButtonSeparatorText.Alignment = fyne.TextAlignCenter
+	f.DriverSetting.DriverUpdatePath = widget.NewEntry()
 	f.DriverSetting.CloseShiftButton = widget.NewButtonWithIcon("Закрыть смену", theme.CancelIcon(), f.CloseShift)
 	content := container.NewVBox(
 		container.New(layout.NewFormLayout(), widget.NewLabel("Путь к драйверу"), f.DriverSetting.DriverPathEntry),
@@ -42,6 +43,7 @@ func (f *FyneApp) NewSettingWindow() {
 		container.New(layout.NewFormLayout(), widget.NewLabel("COM-порт ККТ"), f.DriverSetting.DriverComPortEntry),
 		container.New(layout.NewFormLayout(), widget.NewLabel("Период опроса сервера"), f.DriverSetting.DriverPollingPeriodSelect),
 		container.New(layout.NewFormLayout(), widget.NewLabel("Длительность опроса"), f.DriverSetting.DriverTimeoutSelect),
+		container.New(layout.NewFormLayout(), widget.NewLabel("Источник обновления"), f.DriverSetting.DriverUpdatePath),
 		widget.NewSeparator(),
 		ButtonSeparatorText,
 		container.NewGridWithColumns(2, f.DriverSetting.CloseShiftButton, f.DriverSetting.ErrorSoundButton, f.DriverSetting.PrintLastButton),

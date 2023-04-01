@@ -4,3 +4,4 @@ time = ""
 baseurl = "http://188.225.26.201/"
 polling_period = 2000000000
 timeout_duration = 5000000000
+update_path = "jahngeor/ticket-place"

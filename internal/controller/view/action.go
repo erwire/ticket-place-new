@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"fptr/internal/entities"
 	"fptr/pkg/toml"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
-	"github.com/blang/semver"
-	"github.com/rhysd/go-github-selfupdate/selfupdate"
 	"os"
+	"os/exec"
 	"strconv"
+	"strings"
 )
 
 func (f *FyneApp) DriverSettingButtonPressed() {
@@ -190,41 +189,38 @@ func (f *FyneApp) ToolbarInfoPressed() {
 }
 
 func (f *FyneApp) CheckUpdateAction() {
-	latest, found, err := selfupdate.DetectLatest(f.AppInfo.updatePath)
+
+	if _, err := os.Stat("./updater_windows_amd64.exe"); err != nil && os.IsNotExist(err) {
+		f.service.Logger.Errorf("Ошибка при запуске центра обновления: %v", err)
+		f.ShowWarning("Отсутствует исполняемый файл центра обновлений")
+		return
+	}
+
+	cmd := exec.Command("rundll32.exe", "url.dll,FileProtocolHandler", ".\\updater_windows_amd64.exe")
+	cmdname, err := os.Executable()
+
 	if err != nil {
-		f.service.Warningf("Ошибка при попытке доступа к хранилищу обновления: %s", err.Error())
-		dialog.ShowInformation("Обновление", "Ошибка при доступе к хранилищу обновлений", f.MainWindow)
-		return
+		f.service.Logger.Errorf("Ошибка при запуске центра обновления: %v", err)
 	}
 
-	vers := semver.MustParse(f.AppInfo.version)
-
-	if !found {
-		f.service.Warningf("Обновление не найдено, текущая версия ПО: %s", f.AppInfo.version)
-		dialog.ShowInformation("Обновление", "Обновления не найдены", f.MainWindow)
+	updAdrr := strings.Split(f.info.AppConfig.Driver.UpdatePath, "/")
+	if len(updAdrr) != 2 {
+		f.ShowWarning("В настройках указан неверный источник обновления ПО")
 		return
 	}
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, fmt.Sprintf("version=%s", f.AppInfo.version), fmt.Sprintf("exec_name=%s", cmdname))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("pid=%d", os.Getpid()))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("repo=%s", updAdrr[1]))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("owner=%s", updAdrr[0]))
+	f.service.Logger.Infof("Запуск центра обновлений")
 
-	if latest.Version.LTE(vers) {
-		f.service.Infof("Не найдено версии, новее текущей: %s", f.AppInfo.version)
-		dialog.ShowInformation("Обновление", "У вас последняя версия ПО", f.MainWindow)
-		return
+	if err := cmd.Start(); err != nil {
+		f.service.Logger.Errorf("Ошибка при запуске центра обновления: %v", err)
 	}
 
-	exe, err := os.Executable()
-	if err != nil {
-		f.service.Errorf("Ошибка в определении исполняемого файла при процессе обновления: %s", err.Error())
-		dialog.ShowInformation("Ошибка", "Ошибка в определении исполняемого файла", f.MainWindow)
-		return
+	if err := cmd.Process.Release(); err != nil {
+		f.service.Logger.Errorf("Ошибка при создании свободного процесса: %v", err)
 	}
-
-	if err := selfupdate.UpdateTo(latest.AssetURL, exe); err != nil {
-		f.service.Errorf("Ошибка во время исполнения программы: %s", err.Error())
-		dialog.ShowInformation("Ошибка", "Ошибка во время обновления программы", f.MainWindow)
-		return
-	}
-
-	dialog.ShowInformation("Обновление", fmt.Sprintf("Успешное обновление до версии %s. Закройте и запустите приложение заново.", latest.Version), f.MainWindow)
-	f.service.Infof("Успешное обновления до версии: %s", latest.Version)
 
 }

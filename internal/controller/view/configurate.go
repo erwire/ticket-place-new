@@ -213,8 +213,10 @@ func (f *FyneApp) ConfigurateAboutDialogWindow() {
 	f.AboutDialog.Version.Text = fmt.Sprintf("Версия текущего ПО: %s", f.AppInfo.version)
 	f.AboutDialog.Version.Alignment = fyne.TextAlignCenter
 	f.AboutDialog.Information.Text = fmt.Sprintf("Дополнительная информация о ПО: ")
+	f.AboutDialog.Information.Text = ""
+	//f.AboutDialog.Information.Hide()
 	f.AboutDialog.Version.Alignment = fyne.TextAlignCenter
-	box := container.NewVBox(f.AboutDialog.Version, container.NewCenter(f.AboutDialog.CheckUpdateButton), f.AboutDialog.Information)
+	box := container.NewVBox(f.AboutDialog.Version, container.NewCenter(f.AboutDialog.CheckUpdateButton), widget.NewSeparator())
 	f.AboutDialog.Dialog = dialog.NewCustom("О программе", "Закрыть", box, f.MainWindow)
 
 	f.AboutDialog.Dialog.Hide()

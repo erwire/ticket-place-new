@@ -53,7 +53,7 @@ func (s *ClientService) GetLastReceipt(connectionURL string, session entities.Se
 				s.Errorf("[Попытка номер %d] -> Ошибка: %v", i, err)
 			}
 			time.Sleep(AttemptDurationInSeconds * time.Second)
-			s.ProgressCount.Set(float64(i+1) * 0.2)
+			s.ProgressCount.Set(float64(i+1) * 1 / float64(AttemptCount))
 			continue
 		} else {
 			if i != 0 {
@@ -84,9 +84,34 @@ func (s *ClientService) PrintSell(info entities.Info, id string, uuid *string) e
 		uuidStr = *uuid
 	}
 
-	sell, err := s.gw.Listener.GetSell(info, id)
+	var sell *entities.Sell
+	var err error
+
+	for i := 0; i < AttemptCount; i++ {
+		sell, err = s.gw.Listener.GetSell(info, id)
+		if err != nil {
+			s.ProgressStatus.Set("Текущий статус: во время попытки получить от сервера данные возникла ошибка")
+			if i == 0 {
+				s.Errorf("Во время запроса к данным заказа произошла ошибка: %v", err)
+				s.Warningf("[Операция закончилась неуспешно, запуск повторных попыток подключения]")
+			} else {
+				s.Errorf("[Попытка номер %d] -> Ошибка: %v", i, err)
+			}
+			time.Sleep(AttemptDurationInSeconds * time.Second)
+			s.ProgressCount.Set(float64(i+1) * 1 / float64(AttemptCount))
+			continue
+		} else {
+			if i != 0 {
+				s.Infof("[Попытка номер %d] -> Попытка завершена успешно, операция выполнена", i)
+				s.ProgressCount.Set(1)
+				s.ProgressStatus.Set("Текущий статус: операция выполнена успешно")
+			}
+			break
+		}
+	}
+
 	if err != nil {
-		s.Errorf("Ошибка во время получения заказа с номером %s, uuid: %s, клиент: %v", id, uuidStr, err)
+		s.Errorf("[Попытки закончены неудачно] -> ID: %s, UUID: %s, ERR: %v", id, uuidStr, err)
 		return err
 	}
 
@@ -104,11 +129,36 @@ func (s *ClientService) PrintSell(info entities.Info, id string, uuid *string) e
 }
 
 func (s *ClientService) PrintRefoundFromSell(info entities.Info, id string) error {
-	sell, err := s.gw.Listener.GetSell(info, id)
+	var sell *entities.Sell
+	var err error
+	for i := 0; i < AttemptCount; i++ {
+		sell, err = s.gw.Listener.GetSell(info, id)
+		if err != nil {
+			s.ProgressStatus.Set("Текущий статус: во время попытки получить от сервера данные возникла ошибка")
+			if i == 0 {
+				s.Errorf("Во время запроса к данным заказа произошла ошибка: %v", err)
+				s.Warningf("[Операция закончилась неуспешно, запуск повторных попыток подключения]")
+			} else {
+				s.Errorf("[Попытка номер %d] -> Ошибка: %v", i, err)
+			}
+			time.Sleep(AttemptDurationInSeconds * time.Second)
+			s.ProgressCount.Set(float64(i+1) * 1 / float64(AttemptCount))
+			continue
+		} else {
+			if i != 0 {
+				s.Infof("[Попытка номер %d] -> Попытка завершена успешно, операция выполнена", i)
+				s.ProgressCount.Set(1)
+				s.ProgressStatus.Set("Текущий статус: операция выполнена успешно")
+			}
+			break
+		}
+	}
+
 	if err != nil {
 		s.Errorf("Ошибка во время печати возврата заказа с номером %s, клиент: %v", id, err)
 		return err
 	}
+
 	err = s.gw.KKT.PrintRefoundFromCheck(*sell)
 	if err != nil {
 		switch err.(type) {
@@ -125,6 +175,8 @@ func (s *ClientService) PrintRefoundFromSell(info entities.Info, id string) erro
 
 func (s *ClientService) PrintRefound(info entities.Info, id string, uuid *string) error {
 	uuidStr := ""
+	var refound *entities.Refound
+	var err error
 
 	if uuid == nil {
 		uuidStr = "отсутствует (печать с панели)"
@@ -132,7 +184,28 @@ func (s *ClientService) PrintRefound(info entities.Info, id string, uuid *string
 		uuidStr = *uuid
 	}
 
-	refound, err := s.gw.Listener.GetRefound(info, id)
+	for i := 0; i < AttemptCount; i++ {
+		refound, err = s.gw.Listener.GetRefound(info, id)
+		if err != nil {
+			s.ProgressStatus.Set("Текущий статус: во время попытки получить от сервера данные возникла ошибка")
+			if i == 0 {
+				s.Errorf("Во время запроса к данным заказа произошла ошибка: %v", err)
+				s.Warningf("[Операция закончилась неуспешно, запуск повторных попыток подключения]")
+			} else {
+				s.Errorf("[Попытка номер %d] -> Ошибка: %v", i, err)
+			}
+			time.Sleep(AttemptDurationInSeconds * time.Second)
+			s.ProgressCount.Set(float64(i+1) * 1 / float64(AttemptCount))
+			continue
+		} else {
+			if i != 0 {
+				s.Infof("[Попытка номер %d] -> Попытка завершена успешно, операция выполнена", i)
+				s.ProgressCount.Set(1)
+				s.ProgressStatus.Set("Текущий статус: операция выполнена успешно")
+			}
+			break
+		}
+	}
 
 	if err != nil {
 		s.Errorf("Ошибка во время получения возврата заказа с номером %s, uuid: %s, клиент: %v", id, uuidStr, err)
@@ -157,24 +230,33 @@ func (s *ClientService) PrintRefound(info entities.Info, id string, uuid *string
 func (s *ClientService) Login(config entities.AppConfig) (*entities.SessionInfo, error) {
 	var err error
 	var session *entities.SessionInfo
+
 	for i := 0; i < AttemptCount; i++ {
 		session, err = s.gw.Login(config)
 		if err != nil {
+			s.ProgressStatus.Set("Текущий статус: во время попытки получить от сервера данные возникла ошибка")
 			if i == 0 {
 				s.Errorf("Во время авторизации произошла ошибка: %v", err)
 				s.Warningf("[Операция закончилась неуспешно, запуск повторных попыток подключения]")
 			} else {
-				s.Errorf("[Попытка номер %d] -> Во время авторизации произошла ошибка: %v", i, err)
+				s.Errorf("[Попытка номер %d] -> Ошибка: %v", i, err)
 			}
 			time.Sleep(AttemptDurationInSeconds * time.Second)
+			s.ProgressCount.Set(float64(i+1) * 1 / float64(AttemptCount))
 			continue
 		} else {
 			if i != 0 {
 				s.Infof("[Попытка номер %d] -> Попытка завершена успешно, операция выполнена", i)
+				s.ProgressCount.Set(1)
+				s.ProgressStatus.Set("Текущий статус: операция выполнена успешно")
 			}
-			return session, nil
+			break
 		}
 	}
-	s.Errorf("[Попытки завершились неудачно] -> Во время авторизации произошла ошибка: %v", err)
-	return nil, err
+	if err != nil {
+		s.Errorf("[Попытки завершились неудачно] -> Во время авторизации произошла ошибка: %v", err)
+		return nil, err
+	}
+
+	return session, err
 }

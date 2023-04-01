@@ -16,7 +16,8 @@ import (
 )
 
 var version = "1.0.8"
-var updatePath = "jahngeor/ticket-place-new"
+var updatePath = "jahngeor"
+var updateRepo = "test"
 var updType = "github"
 
 func main() {
@@ -46,12 +47,12 @@ func main() {
 	service := services.NewServices(gateway, mainLogger)
 	view := view.NewFyneApp(app.New(), service, info)
 
-	view.SetAppInfo(version, updatePath, updType)
+	view.SetAppInfo(version, updatePath, updType, updateRepo)
 
 	service.LoggerService.Infoln("Начало работы приложения")
 	//service.LoggerService.ReinitDebugger(time.Hour * 24)
 
-	defer service.Logger.Close()
+	defer service.LoggerService.Close()
 	defer service.Logger.Infoln("Завершение работы приложения")
 
 	view.StartApp()

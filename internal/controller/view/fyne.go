@@ -21,6 +21,7 @@ type Flags struct {
 	AuthJustHide                                                     bool
 	FirstStart                                                       bool
 	Waiter                                                           chan bool
+	UpdateTimer                                                      time.Time
 }
 
 type Selected struct {
@@ -31,6 +32,7 @@ type AppInfo struct {
 	version    string
 	updatePath string
 	updateType string
+	updateRepo string
 }
 
 type FyneApp struct {
@@ -114,6 +116,7 @@ type FyneApp struct {
 		DriverSettingButton, DriverPrintHistoryButton           *widget.Button
 		DriverSettingLabel                                      *widget.Label
 		DriverComPortEntry, DriverPathEntry, DriverAddressEntry *widget.Entry
+		DriverUpdatePath                                        *widget.Entry
 		DriverPollingPeriodSelect                               *widget.Select
 		DriverTimeoutSelect                                     *widget.Select
 		DriverSettingForm                                       *widget.Form
@@ -244,12 +247,13 @@ func (f *FyneApp) StartApp() {
 
 func (f *FyneApp) ClockUpdater() {
 	for {
+		f.StatusUpdater()
 		time.Sleep(time.Second)
 		timeLog, err := f.service.LoggerService.CurrentTime()
 		if err != nil {
 			f.service.Warning(err)
 		}
-		if time.Now().Format("02-01-2006") != timeLog.Format("02-01-2006") {
+		if time.Now().Format("2006-01-02") != timeLog.Format("2006-01-02") {
 			if err := f.service.LoggerService.Reinit(); err != nil {
 				f.service.Warning(err)
 			}
@@ -257,6 +261,19 @@ func (f *FyneApp) ClockUpdater() {
 		f.header.localTimeLabel.Text = time.Now().Format("02.01.2006 15:04:05")
 		f.header.localTimeLabel.Refresh()
 	}
+}
+
+func (f *FyneApp) StatusUpdater() {
+	if !f.flag.UpdateTimer.IsZero() && time.Since(f.flag.UpdateTimer) >= 15*time.Second {
+		f.ProgressAction.ProgressStatus.Set("Текущий статус: нет задач")
+		f.ProgressAction.ProgressValue.Set(0)
+		f.flag.UpdateTimer = time.Time{}
+	}
+
+	if num, _ := f.ProgressAction.ProgressValue.Get(); num == 1.0 {
+		f.flag.UpdateTimer = time.Now()
+	}
+
 }
 
 // + Главное окно

@@ -30,7 +30,7 @@ func (l *LoggerService) InitLog() error {
 			return err
 		}
 	}
-	file, err := os.OpenFile(logPath+time.Now().Format("02-01-2006")+logExt, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
+	file, err := os.OpenFile(logPath+time.Now().Format("2006-01-02")+logExt, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func (l *LoggerService) Reinit() error {
 	if err != nil {
 		return err
 	}
-	if info.Name() == logPath+time.Now().Format("02-01-2006")+logExt {
+	if info.Name() == logPath+time.Now().Format("2006-01-02")+logExt {
 		return fmt.Errorf("уже ведется запись в файл с таким именем")
 	}
 
@@ -63,7 +63,7 @@ func (l *LoggerService) CurrentTime() (time.Time, error) {
 		err = fmt.Errorf("ошибка чтения информации о текущем log-файле: %w", err)
 		return time.Time{}, err
 	}
-	currentTime, err := time.Parse("02-01-2006", strings.ReplaceAll(strings.ReplaceAll(info.Name(), logPath, ""), logExt, ""))
+	currentTime, err := time.Parse("2006-01-02", strings.ReplaceAll(strings.ReplaceAll(info.Name(), logPath, ""), logExt, ""))
 	if err != nil {
 		err = fmt.Errorf("ошибка чтения даты из текущего log-файла: %w", err)
 		return time.Time{}, err
@@ -71,7 +71,7 @@ func (l *LoggerService) CurrentTime() (time.Time, error) {
 	return currentTime, nil
 }
 func (l *LoggerService) InitLogDebugger(duration time.Duration) error {
-	file, err := os.OpenFile(logPath+time.Now().Add(duration).Format("02-01-2006")+logExt, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
+	file, err := os.OpenFile(logPath+time.Now().Add(duration).Format("2006-01-02")+logExt, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
 	if err != nil {
 		err = fmt.Errorf("ошибка открытия файла: %w", err)
 		return err
@@ -86,7 +86,7 @@ func (l *LoggerService) ReinitDebugger(duration time.Duration) error {
 	if err != nil {
 		return err
 	}
-	if info.Name() == logPath+time.Now().Add(duration).Format("02-01-2006")+logExt {
+	if info.Name() == logPath+time.Now().Add(duration).Format("2006-01-02")+logExt {
 		return fmt.Errorf("уже ведется запись в файл с таким именем")
 	}
 	l.Logger.Infoln("Начат перенос в следующий файл")
@@ -103,6 +103,5 @@ func (l *LoggerService) ReinitDebugger(duration time.Duration) error {
 }
 
 func (l *LoggerService) Close() {
-	l.file.Close()
 	l.Logger.Close()
 }
