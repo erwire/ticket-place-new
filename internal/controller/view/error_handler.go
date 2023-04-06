@@ -102,6 +102,9 @@ func (f *FyneApp) RequestErrorHandler(err *apperr.ClientError, dependence string
 			f.ShowProgresser()
 		case strings.Contains(errors.Unwrap(err.ClientError).Error(), "No connection could be made because the target machine actively refused it"):
 			f.ShowProgresser()
+		case strings.Contains(errors.Unwrap(err.ClientError).Error(), "no such host"):
+			f.ShowWarning("Нет подключения к интернету или адрес недоступен. Проверьте параметры настроек и подключение к интернету и авторизуйтесь повторно.")
+			f.Logout()
 		default:
 			f.ShowWarning("Неправильный адрес сервера или сервер недоступен. Попробуйте сменить адрес сервера или проверьте подключение к интернету.")
 		}

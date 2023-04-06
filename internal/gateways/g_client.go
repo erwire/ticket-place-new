@@ -252,7 +252,7 @@ func (l *ClientGateway) writeProblemDataIntoJSONDump(body []byte, filepath strin
 
 	file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0660)
 	if err != nil {
-		log.Println(err.Error())
+		// return err -> в дальнейшем избавиться от функций без обработчика ошибок. Можно не возвращать в handler, но в сервисе быть должны однозначно для логирования
 	}
 	if err := file.Truncate(0); err != nil {
 		log.Println(err.Error())
@@ -260,9 +260,9 @@ func (l *ClientGateway) writeProblemDataIntoJSONDump(body []byte, filepath strin
 
 	//message := l.messageDecode(string(body))
 	if _, err = file.WriteString(string(body)); err != nil {
-		log.Println(err.Error())
+		// return err -> в дальнейшем избавиться от функций без обработчика ошибок. Можно не возвращать в handler, но в сервисе быть должны однозначно для логирования
 	} else {
-		log.Println("Заказ с проблемной печатью перенесен в дамп файл")
+		// return err -> в дальнейшем избавиться от функций без обработчика ошибок. Можно не возвращать в handler, но в сервисе быть должны однозначно для логирования
 	}
 
 	file.Close()

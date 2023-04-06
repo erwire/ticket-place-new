@@ -1,17 +1,11 @@
 package main
 
-import (
-	"fmt"
-	"os"
-	"os/exec"
-)
+import "log"
 
 func main() {
-	pwd, _ := os.Getwd()
+	s := "Hello"
+	s_link := &s
+	s_double := *s_link
+	log.Printf("s_double %s", s_double)
 
-	fmt.Println(pwd)
-	cmdPath := fmt.Sprintf("G:\\Проекты\\Работа\\Рабочие проекты\\Freelance\\Григорий\\ticket-place-new\\build\\ticket-place_windows_amd64.exe")
-	cmd := exec.Command("rundll32.exe", "url.dll,FileProtocolHandler", cmdPath)
-
-	fmt.Println(cmd.Run())
 }

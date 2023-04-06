@@ -182,17 +182,7 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 			}
 
 			click, err := f.service.GetLastReceipt(info.AppConfig.Driver.Connection, info.Session)
-			go func() {
-				str, _ := f.ProgressAction.ProgressStatus.Get()
-				value, _ := f.ProgressAction.ProgressValue.Get()
-				if value == 1.0 && str != "Текущий статус: нет задач" {
-					time.Sleep(time.Second * 15)
-					f.ProgressAction.ProgressStatus.Set("Текущий статус: нет задач")
-					f.ProgressAction.ProgressValue.Set(0.0)
-					return
-				}
-				return
-			}()
+
 			if err != nil {
 				f.ErrorHandler(err, ClickResponsibility)
 				continue
@@ -204,8 +194,20 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 
 			if clickCache.Data.OrderId == click.Data.OrderId {
 				f.service.Logger.Warningf("Попытка распечатать дупликат чека с ID: %d, OrderID: %d", click.Data.OrderId, click.Data.Id)
+				if time.Since(clickCache.Data.RecordedAt) < 15*time.Second {
+					f.service.Logger.Warningf("Игнорирование печати дупликата с ID: %d, OrderID: %d - чек был отправлен на печать меньше 15 секунд назад", click.Data.OrderId, click.Data.Id)
 
+					click.Data.RecordedAt = time.Now()
+					if err := toml.WriteToml(toml.ClickPath, click); err != nil {
+						f.service.Infoln(err)
+						continue
+					}
+
+					continue
+				}
 				f.flag.Waiter = make(chan bool, 1)
+				f.PrintDoubleConfirm.Text.Text = fmt.Sprintf("Чек с ID: %d уже был отправлен на печать. Напечатать повторно?", click.Data.OrderId)
+				f.PrintDoubleConfirm.Text.Refresh()
 				f.ShowPrintConfirm()
 
 				timer := time.After(time.Second * 15)

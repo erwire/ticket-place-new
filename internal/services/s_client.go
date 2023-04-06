@@ -44,7 +44,16 @@ func (s *ClientService) GetLastReceipt(connectionURL string, session entities.Se
 
 	for i := 0; i < AttemptCount; i++ {
 		click, err = s.gw.GetLastReceipt(connectionURL, session)
+
 		if err != nil {
+
+			switch err.(type) {
+			case *apperr.ClientError:
+				if err.(*apperr.ClientError).StatusCode == http.StatusNotFound {
+					return nil, err
+				}
+			}
+
 			s.ProgressStatus.Set("Текущий статус: во время обращения к истории пользователя возникла ошибка")
 			if i == 0 {
 				s.Errorf("Во время запроса к истории печати произошла ошибка: %v", err)
@@ -223,7 +232,7 @@ func (s *ClientService) PrintRefound(info entities.Info, id string, uuid *string
 		return err
 	}
 
-	s.Infof("Выполнена печать чека возврата заказа с номером: %s, uuid: %s\n", id, uuid)
+	s.Infof("Выполнена печать чека возврата заказа с номером: %s, uuid: %s\n", id, uuidStr)
 	return nil
 }
 
