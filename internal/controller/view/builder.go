@@ -232,6 +232,7 @@ func (f *FyneApp) NewPrintDoubleConfirm() {
 		f.flag.Waiter <- false
 		f.PrintDoubleConfirm.Window.Hide()
 	})
+	f.PrintDoubleConfirm.Text = canvas.NewText("", theme.ForegroundColor())
 }
 
 func (f *FyneApp) NewProgressAction() { //+ Внедрение Progress Bar

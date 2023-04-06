@@ -7,7 +7,6 @@ import (
 	errorlog "fptr/pkg/error_logs"
 	"fptr/pkg/fptr10"
 	"fptr/pkg/notes"
-	"log"
 	"strconv"
 )
 
@@ -34,7 +33,6 @@ func (g *KKTGateway) Configurate() error {
 
 func (g *KKTGateway) Open() error {
 	if err := g.IFptr.Open(); err != nil {
-		log.Println(err)
 		return err
 	}
 	return nil
@@ -262,7 +260,6 @@ func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
 
 		for {
 			if err := g.IFptr.CheckDocumentClosed(); err != nil {
-				log.Println(g.IFptr.ErrorDescription()) //позднее добавить механизм по таймеру для избежания циклов
 				continue
 			} else {
 				break

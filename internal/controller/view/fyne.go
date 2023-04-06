@@ -173,6 +173,7 @@ type FyneApp struct {
 
 	PrintDoubleConfirm struct {
 		Window    fyne.Window
+		Text      *canvas.Text
 		PDConfirm *widget.Button
 		PDDismiss *widget.Button
 	}
@@ -268,9 +269,12 @@ func (f *FyneApp) StatusUpdater() {
 		f.ProgressAction.ProgressStatus.Set("Текущий статус: нет задач")
 		f.ProgressAction.ProgressValue.Set(0)
 		f.flag.UpdateTimer = time.Time{}
+		return
+	} else if !f.flag.UpdateTimer.IsZero() && time.Since(f.flag.UpdateTimer) < 15*time.Second {
+		return
 	}
 
-	if num, _ := f.ProgressAction.ProgressValue.Get(); num == 1.0 {
+	if num, _ := f.ProgressAction.ProgressValue.Get(); num >= 1.0 {
 		f.flag.UpdateTimer = time.Now()
 	}
 

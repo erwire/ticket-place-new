@@ -14,6 +14,7 @@ import (
 )
 
 const logPath = "./log/"
+const icoPath = "./content/system/icon/main.png"
 
 func Build() {
 
@@ -39,8 +40,12 @@ func Build() {
 
 	app := app.New()
 	mainWindow := app.NewWindow("Центр обновления")
+	resource, err := fyne.LoadResourceFromPath(icoPath)
+	if err != nil {
+		logger.Infof("Во время привязки иконки произошла ошибка: %v", err)
+	}
 	mw := NewMainWindow(mainWindow)
-
+	mw.Window.SetIcon(resource)
 	updatePath, err := os.Executable()
 	if err != nil {
 		mw.EnvError("Невозможно определить имя исполняемого файла центра обновления")

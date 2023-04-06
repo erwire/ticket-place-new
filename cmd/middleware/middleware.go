@@ -5,7 +5,6 @@ import (
 	errorlog "fptr/pkg/error_logs"
 	"github.com/google/logger"
 	"io"
-	"log"
 	"net/http"
 	"os"
 )
@@ -31,11 +30,13 @@ var Directories = [...]string{
 var Files = [...]string{
 	"./content/system/icon/logo.png",
 	"./content/system/icon/main.png",
+	"./content/system/icon/main.ico",
 }
 
 var FilesPathsMap = map[string]string{
-	"./content/system/icon/logo.png": "https://github.com/JahnGeor/ticket-place-new/raw/master/content/system/icon/logo.png",
-	"./content/system/icon/main.png": "https://github.com/JahnGeor/ticket-place-new/raw/master/content/system/icon/main.png",
+	"./content/system/icon/logo.png": "https://raw.githubusercontent.com/JahnGeor/ticket-place/main/content/system/icon/logo.png",
+	"./content/system/icon/main.png": "https://raw.githubusercontent.com/JahnGeor/ticket-place/main/content/system/icon/main.png",
+	"./content/system/icon/main.ico": "https://raw.githubusercontent.com/JahnGeor/ticket-place/main/content/system/icon/main.ico",
 }
 
 type Middleware struct {
@@ -91,7 +92,7 @@ func (m *Middleware) CreateAppDirectories() {
 	for _, path := range Directories {
 		_, err := os.Stat(path)
 		if err != nil && os.IsNotExist(err) {
-			log.Printf("Создаем папку %s\n", path)
+			m.logf.Infof("Создаем папку %s\n", path)
 			_ = os.Mkdir(path, 0660)
 		}
 	}

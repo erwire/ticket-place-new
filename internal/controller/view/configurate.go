@@ -225,11 +225,16 @@ func (f *FyneApp) ConfigurateAboutDialogWindow() {
 func (f *FyneApp) ConfigurateDoubleConfirm() {
 	f.NewPrintDoubleConfirm()
 	box := container.NewVBox(
-		widget.NewLabel("Вы пытаетесь распечатать чек, который был напечатан в течении 15 секунд. Повторить печать?"),
+		f.PrintDoubleConfirm.Text,
 		f.PrintDoubleConfirm.PDConfirm,
 		f.PrintDoubleConfirm.PDDismiss,
 	)
 	f.PrintDoubleConfirm.Window = f.application.NewWindow("Повторная печать")
 	f.PrintDoubleConfirm.Window.SetContent(box)
+	resource, err := fyne.LoadResourceFromPath(iconPath) // Ресурс должен создаваться однажды и заноситься в структуру при запуске приложения
+	if err != nil {                                      // Ресурс должен создаваться однажды и заноситься в структуру при запуске приложения
+		f.service.Warning("Иконка не установлена по причине: %v", err) // Ресурс должен создаваться однажды и заноситься в структуру при запуске приложения
+	} // Ресурс должен создаваться однажды и заноситься в структуру при запуске приложения
+	f.PrintDoubleConfirm.Window.SetIcon(resource)
 	f.PrintDoubleConfirm.Window.Hide()
 }
