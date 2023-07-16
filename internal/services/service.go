@@ -10,20 +10,22 @@ import (
 type Services struct {
 	Listener
 	KKT
+	PrinterInterface
 	*LoggerService
 }
 
 func NewServices(g *gateways.Gateway, logger *LoggerService) *Services {
 	return &Services{
-		Listener:      NewClientService(g, logger.Logger),
-		KKT:           NewKKTService(g, logger.Logger),
-		LoggerService: logger,
+		Listener:         NewClientService(g, logger.Logger),
+		KKT:              NewKKTService(g, logger.Logger),
+		PrinterInterface: NewPrinterService(logger.Logger),
+		LoggerService:    logger,
 	}
 }
 
 type Listener interface {
 	GetLastReceipt(connectionURL string, session entities.SessionInfo) (*entities.Click, error)
-	PrintSell(info entities.Info, id string, uuid *string) error
+	PrintSell(info entities.Info, id string, uuid *string, dto entities.PageParamsDTO, box entities.PrintCheckBox) error
 	PrintRefound(info entities.Info, id string, uuid *string) error
 	Login(config entities.AppConfig) (*entities.SessionInfo, error)
 	PrintRefoundFromSell(info entities.Info, id string) error
@@ -32,6 +34,8 @@ type Listener interface {
 }
 
 type KKT interface {
+	Destroy()
+	Configurate() error
 	PrintXReport() error
 	MakeSession(fullName string) error
 	CloseShift() error

@@ -17,6 +17,19 @@ func NewKKTService(gw *gateways.Gateway, logg *logger.Logger) *KKTService {
 	}
 }
 
+func (s *KKTService) Destroy() {
+	s.gw.Destroy()
+}
+
+func (s *KKTService) Configurate() error {
+	err := s.gw.Configurate()
+	if err != nil {
+		s.Errorf("%s: %v", "Ошибка при запуске приложения - отсутствует драйвер", err)
+		return err
+	}
+	return nil
+}
+
 func (s *KKTService) PrintXReport() error {
 	err := s.gw.PrintXReport()
 	if err != nil {

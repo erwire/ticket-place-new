@@ -13,6 +13,8 @@ import (
 )
 
 type Flags struct {
+	pageParams                                                       entities.PageParamsDTO
+	printCheckBox                                                    entities.PrintCheckBox
 	PrintOnKKTTicketCheckBox, PrintCheckBox, PrintOnPrinterTicketBox bool
 	StopListen                                                       bool
 	DebugOn                                                          bool
@@ -84,18 +86,20 @@ type FyneApp struct {
 		exitButton              *widget.Button
 		exitAndCloseShiftButton *widget.Button
 		//PrintSettingsAccordionItem *widget.AccordionItem
-		PrintSettingsContainer *fyne.Container
-		PrintCheck             *widget.Check
-		PrintOnKKT             *widget.Check
-		PrintOnPrinter         *widget.Check
-		AdditionalText         *widget.Entry
-		SetAdditionalText      *widget.Button
-		CashIncomeForm         *widget.Form
-		CashIncomeFormItem     *widget.FormItem
-		CashIncomeEntry        *widget.Entry
-		printLastСheckButton   *widget.Button
-		printXReportButton     *widget.Button
-		reconnectButton        *widget.Button
+		PrintSettingsContainer    *fyne.Container
+		PrintCheck                *widget.Check
+		PrintOnKKT                *widget.Check
+		PrintOnPrinter            *widget.Check
+		AdditionalText            *widget.Entry
+		SetAdditionalText         *widget.Button
+		CashIncomeForm            *widget.Form
+		CashIncomeFormItem        *widget.FormItem
+		CashIncomeEntry           *widget.Entry
+		printLastСheckButton      *widget.Button
+		printXReportButton        *widget.Button
+		reconnectButton           *widget.Button
+		PageSizeRadioGroup        *widget.RadioGroup
+		PageOrientationRadioGroup *widget.RadioGroup
 	}
 
 	PrintsRefoundAndDeposits struct {
@@ -127,6 +131,18 @@ type FyneApp struct {
 		CloseShiftButton                                        *widget.Button
 		ErrorSoundButton                                        *widget.Button
 		PrintLastButton                                         *widget.Button
+		PrinterSettings                                         *widget.Button
+	}
+
+	PrinterSettings struct {
+		CheckPrinterStatus    *widget.Button
+		StatusContainer       *fyne.Container
+		GetListOfPrinters     *widget.Button
+		RunPrinterService     *widget.Button
+		StopPrinterService    *widget.Button
+		PrinterServiceAddress *widget.Entry
+		SelectPrinter         *widget.Select
+		StatusImage           *canvas.Image
 	}
 
 	PopUp struct {
@@ -141,10 +157,11 @@ type FyneApp struct {
 		WarningWindow dialog.Dialog
 		WarningText   *canvas.Text
 	}
-	InfoDialogWindow dialog.Dialog
-	InfoDialogText   canvas.Text
-	AlertWindow      dialog.Dialog
-	SettingWindow    dialog.Dialog
+	InfoDialogWindow      dialog.Dialog
+	InfoDialogText        canvas.Text
+	AlertWindow           dialog.Dialog
+	SettingWindow         dialog.Dialog
+	PrinterSettingsWindow dialog.Dialog
 	//Флаги
 	flag     Flags
 	selected Selected
@@ -196,7 +213,7 @@ func NewFyneApp(a fyne.App, view *services.Services, inf *entities.Info) *FyneAp
 }
 
 func (f *FyneApp) StartApp() {
-
+	defer f.service.Destroy()
 	f.ConfigurateToolbar()
 	f.ConfigureMainWindows()
 	f.ConfigureAuthDialogForm()
@@ -207,6 +224,11 @@ func (f *FyneApp) StartApp() {
 	f.ConfigureProgresser()
 	f.ConfigurateAboutDialogWindow()
 	f.ConfigurateDoubleConfirm()
+	f.ConfiguratePrinterSettings()
+	if err := f.service.Configurate(); err != nil {
+		f.ErrorHandler(err, FunctionResponsibility)
+	}
+
 	if err := f.service.Open(); err != nil {
 		f.ErrorHandler(err, FunctionResponsibility)
 	}
@@ -242,6 +264,10 @@ func (f *FyneApp) StartApp() {
 		time.Sleep(2 * time.Second)
 		f.flag.StopListen = false
 	}()
+	if err := f.service.StartService(f.info.AppConfig.Driver); err != nil {
+		f.ErrorHandler(err, PrinterResponsibility)
+	}
+
 	f.MainWindow.ShowAndRun()
 
 }
@@ -279,6 +305,3 @@ func (f *FyneApp) StatusUpdater() {
 	}
 
 }
-
-// + Главное окно
-// ! Окно

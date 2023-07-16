@@ -25,6 +25,7 @@ func NewKKTGateway(IFptr *fptr10.IFptr) *KKTGateway {
 
 func (g *KKTGateway) Configurate() error {
 	g.IFptr.SetSingleSetting(fptr10.LIBFPTR_SETTING_PORT, strconv.Itoa(fptr10.LIBFPTR_PORT_USB))
+	g.IFptr.SetSingleSetting(fptr10.LIBFPTR_SETTING_AUTO_RECONNECT, "false")
 	if err := g.IFptr.ApplySingleSettings(); err != nil {
 		return err
 	}
@@ -42,6 +43,10 @@ func (g *KKTGateway) Close() error {
 	return nil
 }
 
+func (g *KKTGateway) Destroy() {
+	g.IFptr.Destroy()
+}
+
 func (g *KKTGateway) OpenShift() error {
 	return g.IFptr.OpenShift()
 }
@@ -54,6 +59,15 @@ func (g *KKTGateway) CloseShift() error {
 func (g *KKTGateway) PrintTicket() error {
 	return nil
 }
+
+/*
+
+	Ticket []: Amount,
+	PaymentType
+
+
+
+*/
 
 func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 	zeroAmountFlag, acceptedFlag, checkStatus := g.ZeroAmountStatus(sell), g.AcceptedForPrint(sell), g.CheckStatus(sell, CheckType)

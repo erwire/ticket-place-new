@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -16,6 +17,40 @@ type Click struct {
 	} `json:"data"`
 }
 
+func (s *Sell) ConvertToNewStruct() OrderDTO {
+	orderDTO := OrderDTO{
+		Id:             s.Data.Id,
+		CashierName:    s.Data.KassirName,
+		PaymentType:    s.Data.PaymentType,
+		Ticket:         []TicketDTO{},
+		AdditionalText: "",
+		AdditionalData: nil,
+	}
+
+	for _, value := range s.Data.Tickets {
+		eventDate, _ := time.Parse("2006-01-02 15:04:05", s.Data.Event.Datetime)
+		orderDate, _ := time.Parse("02.01.2006 15:04", s.Data.DateTime)
+
+		t := TicketDTO{
+			Id:           value.Id,
+			Status:       value.Status,
+			Number:       value.Number,
+			OrderDate:    orderDate,
+			EventManager: s.Data.Event.Place.Name,
+			//EventAddress:  "",
+			EventName:     value.Event.Show.Name,
+			EventAgeLimit: value.Event.Show.AgeLimit,
+			EventDate:     eventDate,
+			SeatRow:       fmt.Sprint(value.RowSector),
+			SeatPlace:     fmt.Sprint(value.SeatNumber),
+			SeatZona:      value.Zona,
+			Amount:        value.Amount,
+		}
+		orderDTO.Ticket = append(orderDTO.Ticket, t)
+	}
+	return orderDTO
+}
+
 type Refound struct {
 	Data struct {
 		Id            int    `json:"id"`
@@ -26,6 +61,7 @@ type Refound struct {
 		Status        string `json:"status"`
 		StatusName    string `json:"status_name"`
 		PaymentType   string `json:"payment_type"`
+		KassirName    string `json:"kassir_name"`
 		Order         struct {
 			Id       int         `json:"id"`
 			OrderId  int         `json:"order_id"`
@@ -224,11 +260,12 @@ type Refound struct {
 
 type Sell struct {
 	Data struct {
-		Id       int         `json:"id"`
-		OrderId  int         `json:"order_id"`
-		SellerId int         `json:"seller_id"`
-		AgentId  interface{} `json:"agent_id"`
-		Seller   struct {
+		Id         int         `json:"id"`
+		OrderId    int         `json:"order_id"`
+		SellerId   int         `json:"seller_id"`
+		AgentId    interface{} `json:"agent_id"`
+		KassirName string      `json:"kassir_name"`
+		Seller     struct {
 			Id        int         `json:"id"`
 			ParentId  int         `json:"parent_id"`
 			Name      string      `json:"name"`

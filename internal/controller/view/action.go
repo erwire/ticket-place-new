@@ -54,7 +54,7 @@ func (f *FyneApp) PrintCheckOnSubmit() {
 	}
 	f.service.Infof("Запрос на печать заказа с номером %s", id)
 
-	if err := f.service.PrintSell(*f.info, id, nil); err != nil {
+	if err := f.service.PrintSell(*f.info, id, nil, f.flag.pageParams, f.flag.printCheckBox); err != nil {
 		f.ErrorHandler(err, SellResponsibility)
 		return
 	}
@@ -92,7 +92,7 @@ func (f *FyneApp) printLastCheckPressedFromCRM() {
 	err = nil
 	switch click.Data.Type {
 	case "order":
-		err = f.service.PrintSell(*f.info, id, nil)
+		err = f.service.PrintSell(*f.info, id, nil, f.flag.pageParams, f.flag.printCheckBox)
 	default:
 		err = f.service.PrintRefound(*f.info, id, nil)
 	}
@@ -142,10 +142,12 @@ func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик �
 func (f *FyneApp) SettingWindowPressed(choice bool) {
 	settings := f.formDriverData()
 	if choice {
+		//переписать
 		err := toml.WriteToml(toml.DriverInfoPath, settings)
 		if err != nil {
 			//заполнить
 		}
+		f.info.AppConfig.Driver.PrinterServiceAddress = f.PrinterSettings.PrinterServiceAddress.Text
 
 	}
 }
@@ -223,4 +225,12 @@ func (f *FyneApp) CheckUpdateAction() {
 		f.service.Logger.Errorf("Ошибка при создании свободного процесса: %v", err)
 	}
 
+}
+
+func (f *FyneApp) CloseCritical() {
+	f.application.Quit()
+}
+
+func (f *FyneApp) OpenPrinterSettings() {
+	f.PrinterSettingsWindow.Show()
 }

@@ -108,6 +108,9 @@ func (f *FyneApp) ConfigurePrintSettingsContainer() {
 					f.PrintSettingsItem.PrintOnKKT,
 					f.PrintSettingsItem.PrintOnPrinter),
 			),
+			container.NewCenter(
+				container.NewHBox(f.PrintSettingsItem.PageSizeRadioGroup, f.PrintSettingsItem.PageOrientationRadioGroup),
+			),
 			widget.NewSeparator(),
 			container.NewGridWithColumns(2, f.PrintSettingsItem.printLastСheckButton, f.PrintSettingsItem.printXReportButton),
 			//container.NewGridWithColumns(1, f.PrintSettingsItem.reconnectButton),
@@ -237,4 +240,20 @@ func (f *FyneApp) ConfigurateDoubleConfirm() {
 	} // Ресурс должен создаваться однажды и заноситься в структуру при запуске приложения
 	f.PrintDoubleConfirm.Window.SetIcon(resource)
 	f.PrintDoubleConfirm.Window.Hide()
+}
+
+func (f *FyneApp) ConfiguratePrinterSettings() {
+	f.NewPrinterSettings()
+	f.PrinterSettings.StatusImage.FillMode = canvas.ImageFillStretch
+	imageCont := container.NewGridWrap(fyne.NewSize(20, 20), f.PrinterSettings.StatusImage)
+	f.PrinterSettings.StatusContainer = container.New(layout.NewFormLayout(), f.PrinterSettings.CheckPrinterStatus, container.NewCenter(imageCont))
+	content := container.NewVBox(f.PrinterSettings.StatusContainer, f.PrinterSettings.GetListOfPrinters, f.PrinterSettings.SelectPrinter, f.PrinterSettings.PrinterServiceAddress) //f.PrinterSettings.RunPrinterService, f.PrinterSettings.StopPrinterService
+	f.PrinterSettingsWindow = dialog.NewCustomConfirm("Настройки принтера", "Сохранить", "Отменить", content, f.SavePrinterSettingsAction, f.MainWindow)
+
+}
+
+func (f *FyneApp) SavePrinterSettingsAction(confirm bool) {
+	if !confirm {
+		f.setupPrinterSettingsIntoEntry()
+	}
 }

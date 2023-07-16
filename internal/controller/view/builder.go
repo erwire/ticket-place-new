@@ -13,9 +13,60 @@ import (
 	"time"
 )
 
+const (
+	PageA4        = "A4"
+	PageA5        = "A5"
+	PagePortrait  = "Portrait"
+	PageLandscape = "Landscape"
+)
+
 func (f *FyneApp) NewMainWindow() {
 	f.MainWindow = f.application.NewWindow("Ticket Place")
 	f.MainWindow.SetMaster()
+}
+
+func (f *FyneApp) NewPrinterSettings() {
+	f.PrinterSettings.CheckPrinterStatus = widget.NewButton("Проверить статус службы", f.CheckStatusAction)
+	f.PrinterSettings.RunPrinterService = widget.NewButton("Запустить службу печати", f.RunPrintServiceAction)
+	f.PrinterSettings.SelectPrinter = widget.NewSelect([]string{}, f.SelectPrinterAction)
+	f.PrinterSettings.StatusImage = canvas.NewImageFromResource(theme.QuestionIcon())
+	f.PrinterSettings.StopPrinterService = widget.NewButton("", f.StopPrinterServiceAction)
+	f.PrinterSettings.GetListOfPrinters = widget.NewButton("Обновить список принтеров", f.GetListOfPrintersAction)
+	f.PrinterSettings.PrinterServiceAddress = widget.NewEntry()
+	f.PrinterSettings.PrinterServiceAddress.PlaceHolder = "Адрес службы печати"
+}
+
+func (f *FyneApp) StopPrinterServiceAction() {
+
+}
+
+func (f *FyneApp) GetListOfPrintersAction() {
+	printers, err := f.service.GetListOfPrinters(f.info.AppConfig.Driver)
+	if err != nil {
+		return
+	}
+	f.PrinterSettings.SelectPrinter.Options = printers
+	f.PrinterSettings.SelectPrinter.Refresh()
+}
+
+func (f *FyneApp) RunPrintServiceAction() {
+
+}
+
+func (f *FyneApp) SelectPrinterAction(change string) {
+
+}
+
+func (f *FyneApp) CheckStatusAction() {
+	if err := f.service.Ping(f.info.AppConfig.Driver); err != nil {
+		f.PrinterSettings.StatusImage.Resource = theme.ErrorIcon()
+		f.PrinterSettings.StatusImage.Refresh()
+		return
+	}
+
+	f.PrinterSettings.StatusImage.Resource = theme.ConfirmIcon()
+	f.PrinterSettings.StatusImage.Refresh()
+
 }
 
 func (f *FyneApp) NewSettingWindow() {
@@ -37,6 +88,7 @@ func (f *FyneApp) NewSettingWindow() {
 	ButtonSeparatorText.Alignment = fyne.TextAlignCenter
 	f.DriverSetting.DriverUpdatePath = widget.NewEntry()
 	f.DriverSetting.CloseShiftButton = widget.NewButtonWithIcon("Закрыть смену", theme.CancelIcon(), f.CloseShift)
+	f.DriverSetting.PrinterSettings = widget.NewButtonWithIcon("Настройки принтера", theme.DocumentPrintIcon(), f.OpenPrinterSettings)
 	content := container.NewVBox(
 		container.New(layout.NewFormLayout(), widget.NewLabel("Путь к драйверу"), f.DriverSetting.DriverPathEntry),
 		container.New(layout.NewFormLayout(), widget.NewLabel("Адрес сервера"), f.DriverSetting.DriverAddressEntry),
@@ -44,11 +96,11 @@ func (f *FyneApp) NewSettingWindow() {
 		container.New(layout.NewFormLayout(), widget.NewLabel("Период опроса сервера"), f.DriverSetting.DriverPollingPeriodSelect),
 		container.New(layout.NewFormLayout(), widget.NewLabel("Длительность опроса"), f.DriverSetting.DriverTimeoutSelect),
 		container.New(layout.NewFormLayout(), widget.NewLabel("Источник обновления"), f.DriverSetting.DriverUpdatePath),
+
 		widget.NewSeparator(),
 		ButtonSeparatorText,
-		container.NewGridWithColumns(2, f.DriverSetting.CloseShiftButton, f.DriverSetting.ErrorSoundButton, f.DriverSetting.PrintLastButton),
+		container.NewGridWithColumns(2, f.DriverSetting.CloseShiftButton, f.DriverSetting.ErrorSoundButton, f.DriverSetting.PrintLastButton, f.DriverSetting.PrinterSettings),
 	)
-
 	f.SettingWindow = dialog.NewCustomConfirm("Настройки приложения", "Сохранить", "Отменить", content, f.SettingWindowPressed, f.MainWindow)
 }
 
@@ -80,9 +132,9 @@ func (f *FyneApp) NewMainWindowHeader() {
 func (f *FyneApp) NewPrintSettingsContainer() {
 	f.PrintSettingsItem.exitButton = widget.NewButton("Выйти", f.exitPressed)
 	f.PrintSettingsItem.exitAndCloseShiftButton = widget.NewButton("Выйти и закрыть смену", f.exitAndCloseShiftButtonPressed)
-	f.PrintSettingsItem.PrintCheck = widget.NewCheckWithData("Печатать чек", binding.BindBool(&f.flag.PrintCheckBox))
-	f.PrintSettingsItem.PrintOnKKT = widget.NewCheckWithData("Печатать билет на кассе", binding.BindBool(&f.flag.PrintOnKKTTicketCheckBox))
-	f.PrintSettingsItem.PrintOnPrinter = widget.NewCheckWithData("Печатать билет на принтере", binding.BindBool(&f.flag.PrintOnPrinterTicketBox))
+	f.PrintSettingsItem.PrintCheck = widget.NewCheckWithData("Печатать чек", binding.BindBool(&f.flag.printCheckBox.PrintCheckBox))
+	f.PrintSettingsItem.PrintOnKKT = widget.NewCheckWithData("Печатать билет на кассе", binding.BindBool(&f.flag.printCheckBox.PrintOnKKTTicketCheckBox))
+	f.PrintSettingsItem.PrintOnPrinter = widget.NewCheckWithData("Печатать билет на принтере", binding.BindBool(&f.flag.printCheckBox.PrintOnPrinterTicketBox))
 	f.PrintSettingsItem.AdditionalText = widget.NewEntry() //widget.NewEntry()
 	f.PrintSettingsItem.SetAdditionalText = widget.NewButton("Записать", f.SetAdditionalTextPressed)
 	f.PrintSettingsItem.printLastСheckButton = widget.NewButton("Напечатать последний чек", f.printLastCheckPressedFromKKT)
@@ -91,7 +143,15 @@ func (f *FyneApp) NewPrintSettingsContainer() {
 	f.PrintSettingsItem.CashIncomeFormItem = widget.NewFormItem("Внесение наличных", f.PrintSettingsItem.CashIncomeEntry)
 	f.PrintSettingsItem.CashIncomeForm = widget.NewForm(f.PrintSettingsItem.CashIncomeFormItem)
 	f.PrintSettingsItem.reconnectButton = widget.NewButton("Восстановить соединение с кассой", f.OpenConnection)
+	f.PrintSettingsItem.PageSizeRadioGroup = widget.NewRadioGroup([]string{PageA4, PageA5}, func(s string) {
+		f.flag.pageParams.PageSize = s
+	})
+	f.PrintSettingsItem.PageSizeRadioGroup.Horizontal = true
+	f.PrintSettingsItem.PageOrientationRadioGroup = widget.NewRadioGroup([]string{PageLandscape, PagePortrait}, func(s string) {
+		f.flag.pageParams.PageOrientation = s
 
+	})
+	f.PrintSettingsItem.PageOrientationRadioGroup.Horizontal = true
 }
 
 func (f *FyneApp) NewPrintsRefoundAndDepositsAccordionItem() {

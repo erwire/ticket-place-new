@@ -7,27 +7,32 @@ import (
 	"time"
 )
 
+// Собирает данные из формы авторизации в структуру
 func (f *FyneApp) formAuthData() entities.UserInfo {
 	return entities.UserInfo{
 		Login:    f.authForm.loginEntry.Text,
 		Password: f.authForm.passwordEntry.Text,
 	}
-} //собирает данные из программы в структуру
+}
 
+// Собирает данные из формы настроек драйвера в структуру
 func (f *FyneApp) formDriverData() entities.DriverInfo {
 	duration, _ := time.ParseDuration(f.DriverSetting.DriverPollingPeriodSelect.Selected)
 	timeoutDuration, err := time.ParseDuration(f.DriverSetting.DriverTimeoutSelect.Selected)
 	log.Println(timeoutDuration, err)
 	return entities.DriverInfo{
-		Path:          f.DriverSetting.DriverPathEntry.Text,
-		Com:           f.DriverSetting.DriverComPortEntry.Text,
-		Connection:    f.DriverSetting.DriverAddressEntry.Text,
-		PollingPeriod: duration,
-		TimeoutPeriod: timeoutDuration,
-		UpdatePath:    f.DriverSetting.DriverUpdatePath.Text,
+		Path:                  f.DriverSetting.DriverPathEntry.Text,
+		Com:                   f.DriverSetting.DriverComPortEntry.Text,
+		Connection:            f.DriverSetting.DriverAddressEntry.Text,
+		PollingPeriod:         duration,
+		TimeoutPeriod:         timeoutDuration,
+		UpdatePath:            f.DriverSetting.DriverUpdatePath.Text,
+		PrinterServiceAddress: f.PrinterSettings.PrinterServiceAddress.Text,
+		PrinterName:           f.PrinterSettings.SelectPrinter.Selected,
 	}
-} //собирает данные из программы в структуру
+}
 
+// Собирает данные из форм авторизации и настроек в структуру
 func (f *FyneApp) formAppConfig() entities.AppConfig {
 	return entities.AppConfig{
 		User:   f.formAuthData(),
@@ -35,6 +40,7 @@ func (f *FyneApp) formAppConfig() entities.AppConfig {
 	}
 }
 
+// Считывает данные из файлов хранения в кэш
 func (f *FyneApp) InitializeCookie() error {
 	userInfo, driverInfo := &entities.UserInfo{}, &entities.DriverInfo{}
 	session := &entities.SessionInfo{}
@@ -64,6 +70,7 @@ func (f *FyneApp) InitializeCookie() error {
 	return nil
 }
 
+// Устанавливает значения по умолчанию в структуру кэша
 func (f *FyneApp) setupDefaultIntoCookie() {
 	if f.info.AppConfig.Driver.Connection == "" {
 		f.info.AppConfig.Driver.Connection = "https://ticket-place.ru"
@@ -86,8 +93,14 @@ func (f *FyneApp) setupDefaultIntoCookie() {
 		f.service.Logger.Infof("Установлено значение по умолчанию %s", f.info.AppConfig.Driver.UpdatePath)
 	}
 
+	if f.info.AppConfig.Driver.PrinterServiceAddress == "" {
+		f.info.AppConfig.Driver.PrinterServiceAddress = "http://localhost:1000"
+		f.service.Logger.Infof("Установлено значение по умолчанию %s", f.info.AppConfig.Driver.PrinterServiceAddress)
+	}
+
 }
 
+// Устанавливает значения настроек в поля формы из структуры кэша
 func (f *FyneApp) setupCookieIntoEntry() {
 	f.setupDefaultIntoCookie()
 
@@ -97,7 +110,6 @@ func (f *FyneApp) setupCookieIntoEntry() {
 	f.DriverSetting.DriverTimeoutSelect.Selected = f.info.AppConfig.Driver.TimeoutPeriod.String()
 	f.DriverSetting.DriverPollingPeriodSelect.Selected = f.info.AppConfig.Driver.PollingPeriod.String()
 	f.DriverSetting.DriverUpdatePath.Text = f.info.AppConfig.Driver.UpdatePath
-
 	f.authForm.loginEntry.Text = f.info.AppConfig.User.Login
 	f.authForm.passwordEntry.Text = f.info.AppConfig.User.Password
 
@@ -107,8 +119,18 @@ func (f *FyneApp) setupCookieIntoEntry() {
 	f.DriverSetting.DriverPollingPeriodSelect.Refresh()
 	f.DriverSetting.DriverTimeoutSelect.Refresh()
 	f.DriverSetting.DriverUpdatePath.Refresh()
+	f.setupPrinterSettingsIntoEntry()
 }
 
+func (f *FyneApp) setupPrinterSettingsIntoEntry() {
+	f.PrinterSettings.SelectPrinter.Selected = f.info.AppConfig.Driver.PrinterName
+	f.PrinterSettings.PrinterServiceAddress.Text = f.info.AppConfig.Driver.PrinterServiceAddress
+
+	f.PrinterSettings.SelectPrinter.Refresh()
+	f.PrinterSettings.PrinterServiceAddress.Refresh()
+}
+
+// Обновляет значения сессии в структуре кэша и в файлах хранения
 func (f *FyneApp) UpdateSession(session entities.SessionInfo) error {
 	err := toml.WriteToml(toml.SessionPath, session)
 	if err != nil {
@@ -116,8 +138,9 @@ func (f *FyneApp) UpdateSession(session entities.SessionInfo) error {
 	}
 	f.info.Session = session
 	return nil
-} //заносит данные внутрь структуры, также заносит данные внутрь TOML
+}
 
+// Обновляет значения данных пользователя в структуре кэша и в файлах хранения
 func (f *FyneApp) UpdateUserInfo(info entities.UserInfo) error {
 	err := toml.WriteToml(toml.UserInfoPath, info)
 	if err != nil {
@@ -127,6 +150,7 @@ func (f *FyneApp) UpdateUserInfo(info entities.UserInfo) error {
 	return nil
 }
 
+// Обновляет значения данных настроек в структуре кэша и в файлах хранения
 func (f *FyneApp) UpdateDriverInfo(info entities.DriverInfo) error {
 	err := toml.WriteToml(toml.DriverInfoPath, info)
 	if err != nil {

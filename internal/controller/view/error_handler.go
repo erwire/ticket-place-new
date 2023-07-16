@@ -21,6 +21,7 @@ var RefoundResponsibility = "RefoundResponsibility"
 var LoginResponsibility = "LoginResponsibility"
 var ClickResponsibility = "ClickResponsibility"
 var FunctionResponsibility = "FunctionResponsibility"
+var PrinterResponsibility = "PrinterResponsibility"
 var NewUser = "NewUser"
 
 func (f *FyneApp) ErrorHandler(err error, dependence string) {

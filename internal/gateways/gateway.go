@@ -12,12 +12,14 @@ type PrintType string
 type Gateway struct {
 	Listener
 	KKT
+	PrinterInterface
 }
 
 func NewGateway(client *http.Client, iFptr *fptr10.IFptr) *Gateway {
 	return &Gateway{
-		Listener: NewClientGateway(client),
-		KKT:      NewKKTGateway(iFptr),
+		Listener:         NewClientGateway(client),
+		KKT:              NewKKTGateway(iFptr),
+		PrinterInterface: NewPrinter(),
 	}
 }
 
@@ -33,6 +35,7 @@ type KKT interface {
 	Open() error
 	Close() error
 	Configurate() error
+	Destroy()
 	OpenShift() error
 	CloseShift() error
 	PrintSell(sell entities.Sell) error

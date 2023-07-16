@@ -23,13 +23,15 @@ type UserInfo struct {
 }
 
 type DriverInfo struct {
-	Path          string        `toml:"path"`
-	Com           string        `toml:"com"`
-	Time          string        `toml:"time"`
-	Connection    string        `toml:"baseurl"`
-	PollingPeriod time.Duration `toml:"polling_period"`
-	TimeoutPeriod time.Duration `toml:"timeout_duration"`
-	UpdatePath    string        `toml:"update_path"`
+	Path                  string        `toml:"path"`
+	Com                   string        `toml:"com"`
+	Time                  string        `toml:"time"`
+	Connection            string        `toml:"baseurl"`
+	PollingPeriod         time.Duration `toml:"polling_period"`
+	TimeoutPeriod         time.Duration `toml:"timeout_duration"`
+	UpdatePath            string        `toml:"update_path"`
+	PrinterName           string        `toml:"printer_name"`
+	PrinterServiceAddress string        `toml:"printer_service_address"`
 }
 
 type SessionInfo struct {

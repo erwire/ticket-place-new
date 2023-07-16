@@ -84,7 +84,7 @@ func (s *ClientService) GetLastReceipt(connectionURL string, session entities.Se
 
 }
 
-func (s *ClientService) PrintSell(info entities.Info, id string, uuid *string) error {
+func (s *ClientService) PrintSell(info entities.Info, id string, uuid *string, dto entities.PageParamsDTO, box entities.PrintCheckBox) error {
 	uuidStr := ""
 
 	if uuid == nil {
@@ -132,6 +132,14 @@ func (s *ClientService) PrintSell(info entities.Info, id string, uuid *string) e
 			s.Errorf("Ошибка во время печати чека продажи заказа с номером %s, uuid: %s, ККТ: %v", id, uuidStr, err)
 		}
 		return err
+	}
+	if box.PrintOnPrinterTicketBox {
+		orderDTO := sell.ConvertToNewStruct()
+		err = s.gw.Print(info.AppConfig.Driver, orderDTO, dto)
+		if err != nil {
+			s.Errorf("Ошибка во время печати билета с номером %s, uuid: %s : %v", id, uuidStr, err)
+			return err
+		}
 	}
 	s.Infof("Выполнена печать чека заказа с номером: %s, uuid: %s\n", id, uuidStr)
 	return nil

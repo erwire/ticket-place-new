@@ -6,6 +6,7 @@ import (
 	"fptr/internal/entities"
 	"fptr/pkg/fptr10"
 	"fptr/pkg/toml"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"time"
 )
@@ -250,28 +251,21 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 			if f.flag.DebugOn {
 				// отладка
 			} else {
-				if f.flag.PrintCheckBox {
+				if f.flag.printCheckBox.PrintCheckBox {
 					uuid := fmt.Sprint(click.Data.Id)
 					switch click.Data.Type {
 					case "order":
-						if err = f.service.PrintSell(*f.info, fmt.Sprint(click.Data.OrderId), &uuid); err != nil {
+						if err = f.service.PrintSell(*f.info, fmt.Sprint(click.Data.OrderId), &uuid, f.flag.pageParams, f.flag.printCheckBox); err != nil {
 							f.ErrorHandler(err, SellResponsibility)
 							continue
 						}
+
 					default:
 						if err = f.service.PrintRefound(*f.info, fmt.Sprint(click.Data.OrderId), &uuid); err != nil {
 							f.ErrorHandler(err, RefoundResponsibility)
 							continue
 						}
 					}
-				}
-
-				if f.flag.PrintOnPrinterTicketBox {
-
-				}
-
-				if f.flag.PrintOnKKTTicketCheckBox {
-
 				}
 
 			}
@@ -282,7 +276,7 @@ func (f *FyneApp) Listen(ctx context.Context, info entities.Info) {
 }
 
 func (f *FyneApp) ShowCriticalError(err error, text string, link ...string) {
-
+	f.NewCriticalAlert()
 	f.CriticalError.ErrorText.Text = ""
 
 	if link != nil {
@@ -294,6 +288,8 @@ func (f *FyneApp) ShowCriticalError(err error, text string, link ...string) {
 		f.CriticalError.ErrorLinkButton.Hide()
 	}
 	f.CriticalError.AdditionalText.Text = text
+	box := container.NewCenter(container.NewVBox(f.CriticalError.AdditionalText, container.NewCenter(container.NewHBox(f.CriticalError.ErrorLinkButton, f.CriticalError.ErrorConfirmButton))))
+	f.CriticalError.ErrorWindow.SetContent(box)
 	f.CriticalError.ErrorWindow.ShowAndRun()
 }
 

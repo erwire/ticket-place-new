@@ -1,11 +1,10 @@
+// Provides an example of the jmoiron/sqlx data mapping library with sqlite
 package main
 
-import "log"
+import (
+	_ "github.com/mattn/go-sqlite3"
+)
 
 func main() {
-	s := "Hello"
-	s_link := &s
-	s_double := *s_link
-	log.Printf("s_double %s", s_double)
 
 }
