@@ -176,7 +176,7 @@ func (f *FyneApp) CloseShift() {
 }
 
 func (f *FyneApp) OpenConnection() {
-	err := f.service.KKT.MakeSession(f.info.Session.UserData.FullName)
+	err := f.service.KKT.MakeSession(f.info.Session.UserData.FullName, f.info.Session.UserData.Inn)
 	if err != nil {
 		f.ErrorHandler(err, FunctionResponsibility)
 		return

@@ -323,9 +323,9 @@ func (g *KKTGateway) PositionRegister(data entities.TicketData) error {
 
 	return g.IFptr.Registration()
 }
-func (g *KKTGateway) NewCashierRegister(fullName string) error {
+func (g *KKTGateway) NewCashierRegister(fullName string, inn uint64) error {
 	g.IFptr.SetParam(1021, fullName)
-	g.IFptr.SetParam(1203, "500100732259")
+	g.IFptr.SetParam(1203, strconv.FormatUint(inn, 10))
 	if err := g.IFptr.OperatorLogin(); err != nil {
 		return err
 	}

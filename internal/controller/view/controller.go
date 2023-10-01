@@ -82,7 +82,7 @@ func (f *FyneApp) Login(conf entities.AppConfig) {
 		return
 	}
 
-	if err := f.service.MakeSession(f.info.Session.UserData.FullName); err != nil {
+	if err := f.service.MakeSession(f.info.Session.UserData.FullName, f.info.Session.UserData.Inn); err != nil {
 		f.authForm.form.Show()
 		f.ErrorHandler(err, LoginResponsibility)
 		return

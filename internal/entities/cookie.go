@@ -44,7 +44,7 @@ type SessionInfo struct {
 		Avatar   string `json:"avatar" toml:"avatar"`
 		Email    string `json:"email" toml:"email"`
 		Role     string `json:"role" toml:"role"`
-
+		Inn      uint64 `json:"inn" toml:"inn"`
 		//Ability  []struct {
 		//	Subject string `json:"subject" toml:"subject"`
 		//	Action  string `json:"action" toml:"action"`

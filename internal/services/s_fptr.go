@@ -33,12 +33,12 @@ func (s *KKTService) Open() error {
 	return nil
 }
 
-func (s *KKTService) MakeSession(fullName string) error {
+func (s *KKTService) MakeSession(fullName string, inn uint64) error {
 	if err := s.Open(); err != nil {
 		s.Errorf("Ошибка при создании соединения с кассой: %v\n", err)
 		return err
 	}
-	if err := s.gw.NewCashierRegister(fullName); err != nil {
+	if err := s.gw.NewCashierRegister(fullName, inn); err != nil {
 		s.Errorf("Ошибка при регистрации кассира: %v\n", err)
 		return err
 	}
