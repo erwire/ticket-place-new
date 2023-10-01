@@ -224,7 +224,7 @@ func (f *FyneApp) StartApp() {
 		f.HideAuthForm()
 		f.context.ctx, f.context.cancel = context.WithCancel(context.Background())
 
-		err = f.service.MakeSession(f.info.Session.UserData.FullName)
+		err = f.service.MakeSession(f.info.Session.UserData.FullName, f.info.Session.UserData.Inn)
 		if err != nil {
 			f.ErrorHandler(err, LoginResponsibility)
 		}

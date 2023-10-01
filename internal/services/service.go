@@ -33,7 +33,7 @@ type Listener interface {
 
 type KKT interface {
 	PrintXReport() error
-	MakeSession(fullName string) error
+	MakeSession(fullName string, inn uint64) error
 	CloseShift() error
 	ShiftIsOpened() bool
 	ShiftIsClosed() bool
