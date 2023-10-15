@@ -37,6 +37,7 @@ func (f *FyneApp) ErrorHandler(err error, dependence string) {
 	case *apperr.BusinessError:
 		//f.Beep(WarningBeep)
 		f.BusinessErrorHandler(err.(*apperr.BusinessError))
+	case *apperr.DatabaseError:
 	default:
 		go f.Beep(WarningBeep)
 	}

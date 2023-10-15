@@ -2,7 +2,9 @@ package gateways
 
 import (
 	"fptr/internal/entities"
+	"fptr/internal/gateways/db/sqlite"
 	"fptr/pkg/fptr10"
+	"github.com/jmoiron/sqlx"
 	"net/http"
 	"time"
 )
@@ -13,13 +15,15 @@ type Gateway struct {
 	Listener
 	KKT
 	PrinterInterface
+	DatabaseInterface
 }
 
-func NewGateway(client *http.Client, iFptr *fptr10.IFptr) *Gateway {
+func NewGateway(client *http.Client, iFptr *fptr10.IFptr, db *sqlx.DB) *Gateway {
 	return &Gateway{
-		Listener:         NewClientGateway(client),
-		KKT:              NewKKTGateway(iFptr),
-		PrinterInterface: NewPrinter(),
+		Listener:          NewClientGateway(client),
+		KKT:               NewKKTGateway(iFptr),
+		PrinterInterface:  NewPrinter(),
+		DatabaseInterface: sqlite.NewSqliteDB(db),
 	}
 }
 
@@ -52,4 +56,15 @@ type KKT interface {
 	PrintLastCheckPressedFromKKT() error
 	WarningBeep()
 	ErrorBeep()
+}
+
+type DatabaseInterface interface {
+	UploadSellsNote(dto entities.SellsDTO) (string, error)
+	CreateSellsNote(dto entities.SellsDTO) (string, error)
+	UpdateSellsNote(dto entities.SellsDTO) (string, error)
+	GetAllSellsNote() ([]entities.SellsDTO, error)
+	DeleteSellsNote(sellID string) error
+	GetSellNoteByID(sellID string) (entities.SellsDTO, error)
+	DeleteAllSellsNote() error
+	GetUnfinishedSellsNote(status string) ([]entities.SellsDTO, error)
 }

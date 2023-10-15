@@ -6,6 +6,7 @@ import (
 	"fptr/internal/gateways"
 	"fyne.io/fyne/v2/data/binding"
 	"github.com/google/logger"
+	"log"
 	"net/http"
 	"time"
 )
@@ -15,15 +16,17 @@ const AttemptCount = 5
 
 type ClientService struct {
 	gw             *gateways.Gateway
+	ds             *DatabaseService
 	ProgressCount  binding.Float //+ Внедрение Progress Bar
 	ProgressStatus binding.String
 	*logger.Logger
 }
 
-func NewClientService(gw *gateways.Gateway, logg *logger.Logger) *ClientService {
+func NewClientService(gw *gateways.Gateway, logg *logger.Logger, ds *DatabaseService) *ClientService {
 	return &ClientService{
 		gw:     gw,
 		Logger: logg,
+		ds:     ds,
 	}
 }
 
@@ -120,28 +123,39 @@ func (s *ClientService) PrintSell(info entities.Info, id string, uuid *string, d
 	}
 
 	if err != nil {
+		dto := *entities.GetSellsDTO(*sell, entities.ErrorStatus, "Не получен ответ от сервера")
+		s.ds.UploadSellsNote(dto)
 		s.Errorf("[Попытки закончены неудачно] -> ID: %s, UUID: %s, ERR: %v", id, uuidStr, err)
 		return err
 	}
-
-	if err = s.gw.KKT.PrintSell(*sell); err != nil {
-		switch err.(type) {
-		case *apperr.BusinessError:
-			s.Warningf("Ошибка во время печати чека продажи заказа с номером %s, uuid: %s, ККТ: %v", id, uuidStr, err)
-		default:
-			s.Errorf("Ошибка во время печати чека продажи заказа с номером %s, uuid: %s, ККТ: %v", id, uuidStr, err)
+	if box.PrintCheckBox {
+		if err = s.gw.KKT.PrintSell(*sell); err != nil {
+			switch err.(type) {
+			case *apperr.BusinessError:
+				s.Warningf("Ошибка во время печати чека продажи заказа с номером %s, uuid: %s, ККТ: %v", id, uuidStr, err)
+			default:
+				dto := *entities.GetSellsDTO(*sell, entities.ErrorStatus, "Ошибка печати чека")
+				s.ds.UploadSellsNote(dto)
+				s.Errorf("Ошибка во время печати чека продажи заказа с номером %s, uuid: %s, ККТ: %v", id, uuidStr, err)
+			}
+			return err
 		}
-		return err
 	}
+
 	if box.PrintOnPrinterTicketBox {
 		orderDTO := sell.ConvertToNewStruct()
 		err = s.gw.Print(info.AppConfig.Driver, orderDTO, dto)
 		if err != nil {
 			s.Errorf("Ошибка во время печати билета с номером %s, uuid: %s : %v", id, uuidStr, err)
+			dto := *entities.GetSellsDTO(*sell, entities.ErrorStatus, "Ошибка печати билета")
+			s.ds.UploadSellsNote(dto)
 			return err
 		}
 	}
 	s.Infof("Выполнена печать чека заказа с номером: %s, uuid: %s\n", id, uuidStr)
+	dtoDB := *entities.GetSellsDTO(*sell, entities.DoneStatus, "Ошибок нет")
+	log.Println("!")
+	s.ds.UploadSellsNote(dtoDB)
 	return nil
 }
 

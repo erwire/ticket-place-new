@@ -40,3 +40,16 @@ func NewBusinessError(message string, businessErr error) *BusinessError {
 func (e *BusinessError) Error() string {
 	return fmt.Sprintf("Message: %s Error: %v", e.Message, e.BusinessErr)
 }
+
+type DatabaseError struct {
+	Message string
+	Err     error
+}
+
+func NewDatabaseError(message string, error error) *DatabaseError {
+	return &DatabaseError{Message: message, Err: error}
+}
+
+func (e *DatabaseError) Error() string {
+	return fmt.Sprintf("Message: %s Error: %v", e.Message, e.Err)
+}

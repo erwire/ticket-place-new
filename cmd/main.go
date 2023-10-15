@@ -9,6 +9,8 @@ import (
 	"fptr/internal/services"
 	"fptr/pkg/fptr10"
 	"fyne.io/fyne/v2/app"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"net/http"
 	"time"
@@ -37,9 +39,9 @@ func main() {
 	fptrDriver, err := fptr10.NewSafe()
 
 	mainLogger.Infoln("Запуск драйвера KKT")
-
+	db, err := sqlx.Connect("sqlite3", middleware.DatabasePath)
 	client := &http.Client{Timeout: 20 * time.Second}
-	gateway := gateways.NewGateway(client, fptrDriver)
+	gateway := gateways.NewGateway(client, fptrDriver, db)
 	service := services.NewServices(gateway, mainLogger)
 	fyneApp := view.NewFyneApp(app.New(), service, info)
 

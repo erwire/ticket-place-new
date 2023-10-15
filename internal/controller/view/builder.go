@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -23,6 +24,66 @@ const (
 func (f *FyneApp) NewMainWindow() {
 	f.MainWindow = f.application.NewWindow("Ticket Place")
 	f.MainWindow.SetMaster()
+}
+
+func (f *FyneApp) NewHistoryWindow() {
+	f.flag.CheckedHistory = make(map[int]*HistoryValue)
+	f.HistoryWindow = f.application.NewWindow("История операций")
+	f.HistoryWindow.SetCloseIntercept(func() {
+		f.HistoryWindow.Hide()
+	})
+	icoResource, err := fyne.LoadResourceFromPath(iconPath)
+	if err != nil {
+		f.service.Errorf("Ошибка установки иконки: %v", err)
+	} else {
+		f.HistoryWindow.SetIcon(icoResource)
+	}
+	f.HistoryWindow.SetFixedSize(true)
+	f.History.PrintTicket = widget.NewButton("Напечатать билет", nil)
+	f.History.PrintCheck = widget.NewButton("Напечатать чек", nil)
+	f.History.SellsTable = widget.NewTableWithHeaders(func() (rows int, cols int) {
+		return 0, 6
+	}, func() fyne.CanvasObject {
+		return widget.NewLabel("")
+
+	}, func(id widget.TableCellID, object fyne.CanvasObject) {
+		object.(*widget.Label).SetText("")
+	})
+
+	f.History.SellsTable.SetColumnWidth(0, 100)
+	f.History.SellsTable.SetColumnWidth(1, 200)
+	f.History.SellsTable.SetColumnWidth(2, 300)
+	f.History.SellsTable.SetColumnWidth(3, 100)
+	f.History.SellsTable.SetColumnWidth(4, 100)
+	f.History.SellsTable.SetColumnWidth(5, 200)
+
+	f.History.SellsTable.UpdateHeader = func(id widget.TableCellID, template fyne.CanvasObject) {
+		if id.Row == -1 {
+			switch id.Col {
+			case 0:
+				template.(*widget.Label).SetText("ID")
+			case 1:
+				template.(*widget.Label).SetText("Дата и время операции")
+			case 2:
+				template.(*widget.Label).SetText("Событие")
+			case 3:
+				template.(*widget.Label).SetText("Сумма")
+			case 4:
+				template.(*widget.Label).SetText("Статус")
+			case 5:
+				template.(*widget.Label).SetText("Ошибка")
+			}
+		} else {
+			if id.Row >= 0 {
+				template.(*widget.Label).SetText(strconv.Itoa(id.Row))
+			}
+		}
+	}
+
+	//buttonsSellsBox := container.NewGridWithColumns(2, f.History.PrintCheck, f.History.PrintTicket)
+	boxSells := container.NewBorder(nil, nil, nil, nil, container.NewHScroll(f.History.SellsTable))
+	f.History.Tabs = container.NewAppTabs(container.NewTabItem("История продаж", boxSells))
+	f.HistoryWindow.SetContent(f.History.Tabs)
 }
 
 func (f *FyneApp) NewPrinterSettings() {
@@ -172,6 +233,7 @@ func (f *FyneApp) NewPrintsRefoundAndDepositsAccordionItem() {
 func (f *FyneApp) NewDriverSettingAccordionItem() {
 	f.DriverSetting.DriverSettingButton = widget.NewButton("Открыть настройки принтера", f.DriverSettingButtonPressed)
 	f.DriverSetting.DriverPrintHistoryButton = widget.NewButton("Открыть историю печати", f.DriverPrintHistoryButtonPressed)
+
 	f.DriverSetting.DriverSettingLabel = widget.NewLabel("Настройки локального драйвера")
 
 	f.DriverSetting.DriverComPortEntry = widget.NewEntry()
@@ -302,4 +364,34 @@ func (f *FyneApp) NewProgressAction() { //+ Внедрение Progress Bar
 	f.service.SetProgressData(f.ProgressAction.ProgressValue, f.ProgressAction.ProgressStatus)
 	f.ProgressAction.StatusText = widget.NewLabelWithData(f.ProgressAction.ProgressStatus)
 	f.ProgressAction.Progress = widget.NewProgressBarWithData(f.ProgressAction.ProgressValue)
+}
+
+func (f *FyneApp) NewUnprintedWindow() {
+	f.flag.CheckedHistory = make(map[int]*HistoryValue)
+	f.UnprintedWindow = f.application.NewWindow("Невыполненные операции")
+	f.UnprintedWindow.SetCloseIntercept(func() {
+		f.UnprintedWindow.Hide()
+	})
+	icoResource, err := fyne.LoadResourceFromPath(iconPath)
+	if err != nil {
+		f.service.Errorf("Ошибка установки иконки: %v", err)
+	} else {
+		f.UnprintedWindow.SetIcon(icoResource)
+	}
+	f.UnprintedWindow.SetFixedSize(true)
+
+	f.Unprinted.CheckBoxCheck = widget.NewCheck("Печать чеков", nil)
+	f.Unprinted.CheckBoxTicket = widget.NewCheck("Печать билетов", nil)
+	f.Unprinted.PrintButton = widget.NewButton("Распечатать", f.PrintUnprinted)
+	f.Unprinted.SellsTable = widget.NewList(func() int {
+		return 0
+	}, func() fyne.CanvasObject {
+		var temp bool
+		return container.NewGridWithColumns(4, widget.NewCheckWithData("", binding.BindBool(&temp)), widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""))
+	}, func(id widget.ListItemID, object fyne.CanvasObject) {
+
+	})
+
+	f.Unprinted.Tabs = container.NewAppTabs(container.NewTabItem("Продажи", container.NewBorder(container.NewGridWithColumns(2, f.Unprinted.CheckBoxCheck, f.Unprinted.CheckBoxTicket), container.NewCenter(f.Unprinted.PrintButton), nil, nil, f.Unprinted.SellsTable)))
+	f.UnprintedWindow.SetContent(f.Unprinted.Tabs)
 }

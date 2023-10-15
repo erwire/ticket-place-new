@@ -12,14 +12,17 @@ type Services struct {
 	KKT
 	PrinterInterface
 	*LoggerService
+	DS *DatabaseService
 }
 
 func NewServices(g *gateways.Gateway, logger *LoggerService) *Services {
+	ds := NewDatabaseService(logger.Logger, g)
 	return &Services{
-		Listener:         NewClientService(g, logger.Logger),
+		Listener:         NewClientService(g, logger.Logger, ds),
 		KKT:              NewKKTService(g, logger.Logger),
 		PrinterInterface: NewPrinterService(logger.Logger),
 		LoggerService:    logger,
+		DS:               ds,
 	}
 }
 

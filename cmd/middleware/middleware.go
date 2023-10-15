@@ -9,6 +9,8 @@ import (
 	"os"
 )
 
+const DatabasePath = "./db/sqlite.db"
+
 var Directories = [...]string{
 	"./log",
 	"./debug_info",

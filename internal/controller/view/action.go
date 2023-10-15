@@ -1,10 +1,16 @@
 package view
 
 import (
+	"context"
 	"fmt"
 	"fptr/internal/entities"
 	"fptr/pkg/toml"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
+	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -15,7 +21,109 @@ func (f *FyneApp) DriverSettingButtonPressed() {
 
 }
 
+func (f *FyneApp) ShowUnprintedWindow() {
+	f.FullfilUnprintedWindow()
+	f.UnprintedWindow.Show()
+}
+
+func (f *FyneApp) PrintUnprinted() {
+	var ecount int = 0
+	for _, value := range f.flag.CheckedUnprinted {
+		status, err := value.Checked.Get()
+		if err != nil {
+			ecount++
+			continue
+		}
+		if status {
+			err := f.service.PrintSell(*f.info, value.Data, nil, f.flag.pageParams, entities.PrintCheckBox{PrintCheckBox: f.Unprinted.CheckBoxCheck.Checked, PrintOnPrinterTicketBox: f.Unprinted.CheckBoxTicket.Checked})
+			if err != nil {
+				ecount++
+			}
+		}
+
+	}
+
+	f.UnprintedWindow.Hide()
+	if f.flag.UnprintedContext != nil {
+		f.flag.UnprintedCancel()
+	}
+}
+
+func (f *FyneApp) FullfilUnprintedWindow() {
+	f.flag.CheckedUnprinted = make(map[int]*UnprintedValue)
+
+	notes, err := f.service.DS.GetUnfinishedSellsNote(entities.ErrorStatus)
+	if err != nil {
+		f.ErrorHandler(err, "")
+		return
+	}
+
+	f.Unprinted.SellsTable.Length = func() (rows int) {
+		return len(notes)
+	}
+	f.Unprinted.SellsTable.CreateItem = func() fyne.CanvasObject {
+		var temp bool
+		return container.NewGridWithColumns(4, widget.NewCheckWithData("", binding.BindBool(&temp)), widget.NewLabel(""), widget.NewLabel(""), widget.NewLabel(""))
+	}
+	f.Unprinted.SellsTable.Refresh()
+	f.Unprinted.SellsTable.UpdateItem = func(id widget.ListItemID, item fyne.CanvasObject) {
+		if len(notes) > 0 {
+			log.Println(len(f.flag.CheckedUnprinted))
+			f.flag.CheckedUnprinted[id] = &UnprintedValue{Checked: binding.NewBool(), Data: notes[id].SellID}
+			f.flag.CheckedUnprinted[id].Checked.Set(false)
+			item.(*fyne.Container).Objects[0].(*widget.Check).Bind(f.flag.CheckedUnprinted[id].Checked)
+			item.(*fyne.Container).Objects[1].(*widget.Label).SetText(notes[id].SellID)
+			item.(*fyne.Container).Objects[2].(*widget.Label).SetText(notes[id].Date)
+			item.(*fyne.Container).Objects[3].(*widget.Label).SetText(notes[id].Event)
+
+		}
+	}
+
+}
+
 func (f *FyneApp) DriverPrintHistoryButtonPressed() {
+	f.HistoryWindow.CenterOnScreen()
+	f.FullfilHistoryWindow()
+	f.HistoryWindow.Show()
+
+}
+
+func (f *FyneApp) FullfilHistoryWindow() {
+	f.flag.CheckedHistory = make(map[int]*HistoryValue)
+	notes, err := f.service.DS.GetAllSellsNote()
+	if err != nil {
+		f.ErrorHandler(err, "")
+		return
+	}
+	f.History.SellsTable.Length = func() (rows int, cols int) {
+		return len(notes), 6
+	}
+
+	f.History.SellsTable.UpdateCell = func(id widget.TableCellID, template fyne.CanvasObject) {
+		f.flag.CheckedHistory[id.Row] = &HistoryValue{Checked: false, Data: notes[id.Row].SellID}
+		switch id.Col {
+		case 0:
+			//template.(*fyne.Container).Objects[0].Hide()
+			template.(*widget.Label).SetText(notes[id.Row].SellID)
+		case 1:
+			//template.(*fyne.Container).Objects[0].Hide()
+			template.(*widget.Label).SetText(notes[id.Row].Date)
+		case 2:
+			//template.(*fyne.Container).Objects[0].Hide()
+			template.(*widget.Label).SetText(notes[id.Row].Event)
+		case 3:
+			//template.(*fyne.Container).Objects[0].Hide()
+			template.(*widget.Label).SetText(strconv.Itoa(int(notes[id.Row].Amount)))
+		case 4:
+			//template.(*fyne.Container).Objects[0].Hide()
+			template.(*widget.Label).SetText(notes[id.Row].Status)
+		case 5:
+			//template.(*fyne.Container).Objects[0].Hide()
+			template.(*widget.Label).SetText(notes[id.Row].Error)
+		}
+	}
+
+	// запрос к базе
 
 }
 
@@ -55,6 +163,7 @@ func (f *FyneApp) PrintCheckOnSubmit() {
 	f.service.Infof("Запрос на печать заказа с номером %s", id)
 
 	if err := f.service.PrintSell(*f.info, id, nil, f.flag.pageParams, f.flag.printCheckBox); err != nil {
+
 		f.ErrorHandler(err, SellResponsibility)
 		return
 	}
@@ -166,6 +275,17 @@ func (f *FyneApp) listenerStatusAction() {
 }
 
 func (f *FyneApp) exitAndCloseShiftButtonPressed() {
+	data, err := f.service.DS.GetUnfinishedSellsNote(entities.ErrorStatus)
+	if err == nil {
+		if len(data) > 0 {
+			f.flag.UnprintedContext, f.flag.UnprintedCancel = context.WithCancel(context.TODO())
+			f.ShowUnprintedWindow()
+			select {
+			case <-f.flag.UnprintedContext.Done():
+				break
+			}
+		}
+	}
 	f.LogoutWS()
 }
 

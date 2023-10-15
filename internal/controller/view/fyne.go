@@ -6,6 +6,7 @@ import (
 	"fptr/internal/services"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
@@ -24,6 +25,20 @@ type Flags struct {
 	FirstStart                                                       bool
 	Waiter                                                           chan bool
 	UpdateTimer                                                      time.Time
+	CheckedHistory                                                   map[int]*HistoryValue
+	CheckedUnprinted                                                 map[int]*UnprintedValue
+	UnprintedContext                                                 context.Context
+	UnprintedCancel                                                  context.CancelFunc
+}
+
+type UnprintedValue struct {
+	Data    string
+	Checked binding.Bool
+}
+
+type HistoryValue struct {
+	Data    string
+	Checked bool
 }
 
 type Selected struct {
@@ -58,6 +73,22 @@ type FyneApp struct {
 	//! главное окно
 	MainWindow fyne.Window
 	//элементы окна
+	HistoryWindow fyne.Window
+
+	History struct {
+		Tabs                    *container.AppTabs
+		SellsTable, RefTable    *widget.Table
+		PrintTicket, PrintCheck *widget.Button
+	}
+
+	Unprinted struct {
+		Tabs                          *container.AppTabs
+		SellsTable, RefTable          *widget.List
+		CheckBoxTicket, CheckBoxCheck *widget.Check
+		PrintButton                   *widget.Button
+	}
+
+	UnprintedWindow fyne.Window
 
 	//Меню
 	Toolbar struct {
@@ -225,6 +256,8 @@ func (f *FyneApp) StartApp() {
 	f.ConfigurateAboutDialogWindow()
 	f.ConfigurateDoubleConfirm()
 	f.ConfiguratePrinterSettings()
+	f.ConfigurateHistoryWindow()
+	f.ConfigurateUnprintedWindows()
 	if err := f.service.Configurate(); err != nil {
 		f.ErrorHandler(err, FunctionResponsibility)
 	}

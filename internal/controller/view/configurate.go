@@ -151,10 +151,11 @@ func (f *FyneApp) ConfigureDriverSettingAccordionItem() {
 	f.NewDriverSettingAccordionItem()
 	f.DriverSetting.DriverSettingForm.SubmitText = "Подтвердить"
 	f.DriverSetting.DriverSettingForm.OnSubmit = f.DriverSettingFormOnSubmit
-
+	UnfinishedButton := widget.NewButton("Показать нераспечатанные", f.ShowUnprintedWindow)
 	box := container.NewVBox(
 		widget.NewLabel("Настройки принтера"),
-		container.NewHBox(f.DriverSetting.DriverSettingButton, f.DriverSetting.DriverPrintHistoryButton),
+		f.DriverSetting.DriverSettingButton,
+		container.NewGridWithColumns(2, UnfinishedButton, f.DriverSetting.DriverPrintHistoryButton),
 		//f.DriverSetting.DriverSettingLabel,
 		//f.DriverSetting.DriverSettingForm,
 	)
@@ -256,4 +257,15 @@ func (f *FyneApp) SavePrinterSettingsAction(confirm bool) {
 	if !confirm {
 		f.setupPrinterSettingsIntoEntry()
 	}
+}
+
+func (f *FyneApp) ConfigurateHistoryWindow() {
+	f.NewHistoryWindow()
+	f.HistoryWindow.Resize(fyne.NewSize(800, 700))
+
+}
+
+func (f *FyneApp) ConfigurateUnprintedWindows() {
+	f.NewUnprintedWindow()
+	f.UnprintedWindow.Resize(fyne.NewSize(700, 700))
 }
