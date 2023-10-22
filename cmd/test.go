@@ -64,5 +64,12 @@ func main() {
 		}))
 	table.Resize(fyne.NewSize(500, 500))
 	myWindow.SetContent(container.NewBorder(nil, y, nil, nil, container.NewVScroll(table)))
+
+	menuSettings := fyne.NewMenu("Настройки")
+	menuHelp := fyne.NewMenu("Справка", fyne.NewMenuItem("Обновление", func() {
+
+	}))
+	menu := fyne.NewMainMenu(menuSettings, menuHelp)
+	myWindow.SetMainMenu(menu)
 	myWindow.ShowAndRun()
 }

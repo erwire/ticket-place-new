@@ -25,11 +25,29 @@ type Flags struct {
 	FirstStart                                                       bool
 	Waiter                                                           chan bool
 	UpdateTimer                                                      time.Time
-	CheckedHistory                                                   map[int]*HistoryValue
-	CheckedUnprinted                                                 map[int]*UnprintedValue
-	UnprintedContext                                                 context.Context
-	UnprintedCancel                                                  context.CancelFunc
+	//CheckedHistory                                                   map[int]*HistoryValue
+	CheckedUnprinted map[int]*UnprintedValue
+	UnprintedContext context.Context
+	UnprintedCancel  context.CancelFunc
 }
+
+//type HistoryCachedMutex struct {
+//	mx sync.Mutex
+//	m  map[int]*UnprintedValue
+//}
+//
+//func (m *HistoryCachedMutex) Load(key int) (*UnprintedValue, bool) {
+//	m.mx.Lock()
+//	defer m.mx.Unlock()
+//	val, ok := m.m[key]
+//	return val, ok
+//}
+//
+//func (m *HistoryCachedMutex) Store(key int, value *UnprintedValue) {
+//	m.mx.Lock()
+//	defer m.mx.Unlock()
+//	m.m[key] = value
+//}
 
 type UnprintedValue struct {
 	Data    string
@@ -99,9 +117,11 @@ type FyneApp struct {
 	}
 
 	authForm struct {
-		form                      dialog.Dialog
-		loginEntry, passwordEntry *widget.Entry
-		settingButton             *widget.Button
+		form          dialog.Dialog
+		loginEntry    *widget.SelectEntry
+		passwordEntry *widget.Entry
+		settingButton *widget.Button
+		saveData      *widget.Check
 	}
 
 	header struct {

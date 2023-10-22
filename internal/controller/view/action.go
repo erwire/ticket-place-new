@@ -28,6 +28,7 @@ func (f *FyneApp) ShowUnprintedWindow() {
 
 func (f *FyneApp) PrintUnprinted() {
 	var ecount int = 0
+	log.Println(len(f.flag.CheckedUnprinted))
 	for _, value := range f.flag.CheckedUnprinted {
 		status, err := value.Checked.Get()
 		if err != nil {
@@ -68,7 +69,7 @@ func (f *FyneApp) FullfilUnprintedWindow() {
 	f.Unprinted.SellsTable.Refresh()
 	f.Unprinted.SellsTable.UpdateItem = func(id widget.ListItemID, item fyne.CanvasObject) {
 		if len(notes) > 0 {
-			log.Println(len(f.flag.CheckedUnprinted))
+
 			f.flag.CheckedUnprinted[id] = &UnprintedValue{Checked: binding.NewBool(), Data: notes[id].SellID}
 			f.flag.CheckedUnprinted[id].Checked.Set(false)
 			item.(*fyne.Container).Objects[0].(*widget.Check).Bind(f.flag.CheckedUnprinted[id].Checked)
@@ -89,7 +90,7 @@ func (f *FyneApp) DriverPrintHistoryButtonPressed() {
 }
 
 func (f *FyneApp) FullfilHistoryWindow() {
-	f.flag.CheckedHistory = make(map[int]*HistoryValue)
+
 	notes, err := f.service.DS.GetAllSellsNote()
 	if err != nil {
 		f.ErrorHandler(err, "")
@@ -100,7 +101,6 @@ func (f *FyneApp) FullfilHistoryWindow() {
 	}
 
 	f.History.SellsTable.UpdateCell = func(id widget.TableCellID, template fyne.CanvasObject) {
-		f.flag.CheckedHistory[id.Row] = &HistoryValue{Checked: false, Data: notes[id.Row].SellID}
 		switch id.Col {
 		case 0:
 			//template.(*fyne.Container).Objects[0].Hide()
@@ -236,6 +236,10 @@ func (f *FyneApp) WarningPressed() {
 
 func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик действий
 	if choice {
+		if f.authForm.saveData.Checked {
+			f.service.DS.UploadUsers(entities.Users{Login: f.authForm.loginEntry.Text, Password: f.authForm.passwordEntry.Text})
+		}
+
 		conf := f.formAppConfig()
 		f.Login(conf)
 

@@ -27,7 +27,6 @@ func (f *FyneApp) NewMainWindow() {
 }
 
 func (f *FyneApp) NewHistoryWindow() {
-	f.flag.CheckedHistory = make(map[int]*HistoryValue)
 	f.HistoryWindow = f.application.NewWindow("История операций")
 	f.HistoryWindow.SetCloseIntercept(func() {
 		f.HistoryWindow.Hide()
@@ -166,15 +165,24 @@ func (f *FyneApp) NewSettingWindow() {
 }
 
 func (f *FyneApp) NewAuthForm() {
-	f.authForm.loginEntry, f.authForm.passwordEntry = widget.NewEntry(), widget.NewPasswordEntry()
+
+	f.authForm.loginEntry, f.authForm.passwordEntry = widget.NewSelectEntry([]string{}), widget.NewPasswordEntry()
+	f.UpdateUsersInAuthForm()
+	f.authForm.loginEntry.OnChanged = func(s string) {
+		f.authForm.passwordEntry.Text = ""
+		f.authForm.passwordEntry.Refresh()
+	}
 	f.authForm.settingButton = widget.NewButton("Настройки", func() {
 		f.SettingWindow.Show()
 	})
+	f.authForm.saveData = widget.NewCheck("Запомнить", nil)
 	var authFormItems []*widget.FormItem
 	authFormItems = append(authFormItems,
 		widget.NewFormItem("Логин", f.authForm.loginEntry),
 		widget.NewFormItem("Пароль", f.authForm.passwordEntry),
+		widget.NewFormItem("", f.authForm.saveData),
 		widget.NewFormItem("Настройки", f.authForm.settingButton),
+		widget.NewFormItem("", widget.NewLabel("")),
 	)
 	f.authForm.form = dialog.NewForm("Авторизация", "Войти", "Выйти", authFormItems, f.AuthorizationPressed, f.MainWindow)
 }
@@ -207,12 +215,19 @@ func (f *FyneApp) NewPrintSettingsContainer() {
 	f.PrintSettingsItem.PageSizeRadioGroup = widget.NewRadioGroup([]string{PageA4, PageA5}, func(s string) {
 		f.flag.pageParams.PageSize = s
 	})
+
 	f.PrintSettingsItem.PageSizeRadioGroup.Horizontal = true
 	f.PrintSettingsItem.PageOrientationRadioGroup = widget.NewRadioGroup([]string{PageLandscape, PagePortrait}, func(s string) {
 		f.flag.pageParams.PageOrientation = s
 
 	})
 	f.PrintSettingsItem.PageOrientationRadioGroup.Horizontal = true
+
+	f.PrintSettingsItem.PageSizeRadioGroup.SetSelected(PageA5)
+	f.PrintSettingsItem.PageOrientationRadioGroup.SetSelected(PageLandscape)
+	f.flag.pageParams.PageSize = PageA5
+	f.flag.pageParams.PageOrientation = PageLandscape
+
 }
 
 func (f *FyneApp) NewPrintsRefoundAndDepositsAccordionItem() {
@@ -367,9 +382,11 @@ func (f *FyneApp) NewProgressAction() { //+ Внедрение Progress Bar
 }
 
 func (f *FyneApp) NewUnprintedWindow() {
-	f.flag.CheckedHistory = make(map[int]*HistoryValue)
 	f.UnprintedWindow = f.application.NewWindow("Невыполненные операции")
 	f.UnprintedWindow.SetCloseIntercept(func() {
+		if f.flag.UnprintedContext != nil {
+			f.flag.UnprintedCancel()
+		}
 		f.UnprintedWindow.Hide()
 	})
 	icoResource, err := fyne.LoadResourceFromPath(iconPath)
@@ -392,6 +409,6 @@ func (f *FyneApp) NewUnprintedWindow() {
 
 	})
 
-	f.Unprinted.Tabs = container.NewAppTabs(container.NewTabItem("Продажи", container.NewBorder(container.NewGridWithColumns(2, f.Unprinted.CheckBoxCheck, f.Unprinted.CheckBoxTicket), container.NewCenter(f.Unprinted.PrintButton), nil, nil, f.Unprinted.SellsTable)))
+	f.Unprinted.Tabs = container.NewAppTabs(container.NewTabItem("Продажи", container.NewBorder(container.NewGridWithColumns(2, container.NewCenter(f.Unprinted.CheckBoxCheck), container.NewCenter(f.Unprinted.CheckBoxTicket)), container.NewCenter(f.Unprinted.PrintButton), nil, nil, f.Unprinted.SellsTable)))
 	f.UnprintedWindow.SetContent(f.Unprinted.Tabs)
 }

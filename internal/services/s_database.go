@@ -18,7 +18,7 @@ func NewDatabaseService(logger *logger.Logger, gw *gateways.Gateway) *DatabaseSe
 }
 
 func (s *DatabaseService) UploadSellsNote(dto entities.SellsDTO) error {
-	_, err := s.gw.DatabaseInterface.UploadSellsNote(dto)
+	_, err := s.gw.UploadSellsNote(dto)
 	if err != nil {
 		message := "Ошибка в процессе создания записи в истории операции продаж"
 		logger.Errorf(message+" -> %v", err)
@@ -70,4 +70,33 @@ func (s *DatabaseService) GetUnfinishedSellsNote(status string) ([]entities.Sell
 		return notes, apperr.NewDatabaseError(message, err)
 	}
 	return notes, nil
+}
+
+func (s *DatabaseService) UploadUsers(dto entities.Users) error {
+	_, err := s.gw.UploadUsers(dto)
+	if err != nil {
+		message := "Ошибка в процессе создания записи в таблице пользователей"
+		logger.Errorf(message+" -> %v", err)
+		return apperr.NewDatabaseError(message, err)
+	}
+	logger.Infof(fmt.Sprintf("Успешное добавление пользователя %s в базу", dto.Login))
+	return nil
+}
+func (s *DatabaseService) GetAllUsers() ([]entities.Users, error) {
+	users, err := s.gw.GetAllUsers()
+	if err != nil {
+		message := "Ошибка в процессе получения записей в таблице пользователей"
+		logger.Errorf(message+" -> %v", err)
+		return users, apperr.NewDatabaseError(message, err)
+	}
+	return users, nil
+}
+func (s *DatabaseService) GetUser(login string) (entities.Users, error) {
+	user, err := s.gw.GetUser(login)
+	if err != nil {
+		message := "Ошибка в процессе получения записи в таблице пользователей"
+		logger.Errorf(message+" -> %v", err)
+		return user, apperr.NewDatabaseError(message, err)
+	}
+	return user, nil
 }

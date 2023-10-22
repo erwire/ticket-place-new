@@ -3,7 +3,6 @@ package view
 import (
 	"fptr/internal/entities"
 	"fptr/pkg/toml"
-	"log"
 	"time"
 )
 
@@ -19,7 +18,9 @@ func (f *FyneApp) formAuthData() entities.UserInfo {
 func (f *FyneApp) formDriverData() entities.DriverInfo {
 	duration, _ := time.ParseDuration(f.DriverSetting.DriverPollingPeriodSelect.Selected)
 	timeoutDuration, err := time.ParseDuration(f.DriverSetting.DriverTimeoutSelect.Selected)
-	log.Println(timeoutDuration, err)
+	if err != nil {
+		f.service.Logger.Warningf("Ошибка в процессе сбора данных из формы в структуру данных", err)
+	}
 	return entities.DriverInfo{
 		Path:                  f.DriverSetting.DriverPathEntry.Text,
 		Com:                   f.DriverSetting.DriverComPortEntry.Text,
@@ -94,7 +95,7 @@ func (f *FyneApp) setupDefaultIntoCookie() {
 	}
 
 	if f.info.AppConfig.Driver.PrinterServiceAddress == "" {
-		f.info.AppConfig.Driver.PrinterServiceAddress = "http://localhost:1000"
+		f.info.AppConfig.Driver.PrinterServiceAddress = "1000"
 		f.service.Logger.Infof("Установлено значение по умолчанию %s", f.info.AppConfig.Driver.PrinterServiceAddress)
 	}
 

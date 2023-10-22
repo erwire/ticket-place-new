@@ -10,7 +10,6 @@ import (
 	errorlog "fptr/pkg/error_logs"
 	"html/template"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -43,7 +42,7 @@ func NewPrinter() *Printer {
 
 func (p *Printer) Ping(config entities.DriverInfo) error {
 	address := fmt.Sprintf("http://localhost:%s/ping", config.PrinterServiceAddress)
-	log.Println(address)
+
 	request, err := http.NewRequest(http.MethodGet, address, nil)
 	if err != nil {
 		return err
@@ -73,8 +72,6 @@ func (p *Printer) Print(config entities.DriverInfo, dto entities.OrderDTO, pp en
 	requestData.PrinterName = config.PrinterName
 	requestData.PageOrientation = pp.PageOrientation
 	requestData.PageSize = pp.PageSize
-
-	log.Println()
 
 	message, err := json.Marshal(requestData)
 

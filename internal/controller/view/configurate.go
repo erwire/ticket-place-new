@@ -51,6 +51,7 @@ func (f *FyneApp) ConfigureMainWindows() {
 func (f *FyneApp) ConfigureAuthDialogForm() {
 	f.NewAuthForm()
 	f.authForm.form.Resize(fyne.NewSize(500, 250))
+	f.UpdateUsersInAuthForm()
 	f.authForm.form.Show()
 }
 

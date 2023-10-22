@@ -41,11 +41,13 @@ func (f *FyneApp) IsNewUser(newUser entities.UserInfo) bool {
 func (f *FyneApp) Login(conf entities.AppConfig) {
 	session, err := f.service.Login(conf)
 	if err != nil {
+		f.UpdateUsersInAuthForm()
 		f.authForm.form.Show()
 		f.ErrorHandler(err, LoginResponsibility)
 		return
 	}
 	if err := f.service.Open(); err != nil {
+		f.UpdateUsersInAuthForm()
 		f.authForm.form.Show()
 		f.ErrorHandler(err, LoginResponsibility)
 		return
@@ -57,6 +59,7 @@ func (f *FyneApp) Login(conf entities.AppConfig) {
 			break
 		case fptr10.LIBFPTR_SS_OPENED, fptr10.LIBFPTR_SS_EXPIRED:
 			if err := f.service.CloseShift(); err != nil {
+				f.UpdateUsersInAuthForm()
 				f.authForm.form.Show()
 				f.ErrorHandler(err, LoginResponsibility)
 			}
@@ -68,22 +71,26 @@ func (f *FyneApp) Login(conf entities.AppConfig) {
 	session.CreatedAt = time.Now()
 
 	if err := f.UpdateUserInfo(conf.User); err != nil {
+		f.UpdateUsersInAuthForm()
 		f.authForm.form.Show()
 		f.ErrorHandler(err, LoginResponsibility)
 		return
 	}
 	if err := f.UpdateDriverInfo(conf.Driver); err != nil {
+		f.UpdateUsersInAuthForm()
 		f.authForm.form.Show()
 		f.ErrorHandler(err, LoginResponsibility)
 		return
 	}
 	if err := f.UpdateSession(*session); err != nil {
+		f.UpdateUsersInAuthForm()
 		f.authForm.form.Show()
 		f.ErrorHandler(err, LoginResponsibility)
 		return
 	}
 
 	if err := f.service.MakeSession(f.info.Session.UserData.FullName); err != nil {
+		f.UpdateUsersInAuthForm()
 		f.authForm.form.Show()
 		f.ErrorHandler(err, LoginResponsibility)
 		return
@@ -101,6 +108,7 @@ func (f *FyneApp) Login(conf entities.AppConfig) {
 func (f *FyneApp) Logout() {
 	f.UpdateSession(entities.SessionInfo{})
 	f.header.usernameLabel.Text = ""
+	f.UpdateUsersInAuthForm()
 	f.authForm.form.Show()
 	f.StopListen()
 } //# выход из сессии
@@ -115,6 +123,7 @@ func (f *FyneApp) LogoutWS() {
 
 	f.UpdateSession(entities.SessionInfo{})
 	f.header.usernameLabel.Text = ""
+	f.UpdateUsersInAuthForm()
 	f.authForm.form.Show()
 	f.service.Infof("Произошел успешный выход из сессии с закрытием смены")
 } //# выход из сессии с закрытием смены
@@ -343,4 +352,17 @@ func (f *FyneApp) ShowProgresser() {
 func (f *FyneApp) HideAuthForm() {
 	f.flag.AuthJustHide = true
 	f.authForm.form.Hide()
+}
+
+func (f *FyneApp) UpdateUsersInAuthForm() {
+	users, err := f.service.DS.GetAllUsers()
+	var usersLogin []string
+	if err == nil {
+		for _, user := range users {
+			usersLogin = append(usersLogin, user.Login)
+		}
+	}
+	f.authForm.loginEntry.SetOptions(usersLogin)
+	f.authForm.loginEntry.Refresh()
+
 }

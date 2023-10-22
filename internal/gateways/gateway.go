@@ -59,6 +59,11 @@ type KKT interface {
 }
 
 type DatabaseInterface interface {
+	SellInterface
+	UsersDatabaseInterface
+}
+
+type SellInterface interface {
 	UploadSellsNote(dto entities.SellsDTO) (string, error)
 	CreateSellsNote(dto entities.SellsDTO) (string, error)
 	UpdateSellsNote(dto entities.SellsDTO) (string, error)
@@ -67,4 +72,12 @@ type DatabaseInterface interface {
 	GetSellNoteByID(sellID string) (entities.SellsDTO, error)
 	DeleteAllSellsNote() error
 	GetUnfinishedSellsNote(status string) ([]entities.SellsDTO, error)
+}
+
+type UsersDatabaseInterface interface {
+	UploadUsers(dto entities.Users) (string, error)
+	CreateUsers(dto entities.Users) (string, error)
+	UpdateUsers(dto entities.Users) (string, error)
+	GetAllUsers() ([]entities.Users, error)
+	GetUser(login string) (entities.Users, error)
 }

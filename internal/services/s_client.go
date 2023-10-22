@@ -6,7 +6,6 @@ import (
 	"fptr/internal/gateways"
 	"fyne.io/fyne/v2/data/binding"
 	"github.com/google/logger"
-	"log"
 	"net/http"
 	"time"
 )
@@ -154,7 +153,7 @@ func (s *ClientService) PrintSell(info entities.Info, id string, uuid *string, d
 	}
 	s.Infof("Выполнена печать чека заказа с номером: %s, uuid: %s\n", id, uuidStr)
 	dtoDB := *entities.GetSellsDTO(*sell, entities.DoneStatus, "Ошибок нет")
-	log.Println("!")
+
 	s.ds.UploadSellsNote(dtoDB)
 	return nil
 }
