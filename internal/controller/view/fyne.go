@@ -166,6 +166,16 @@ type FyneApp struct {
 		PrintCheckEntry                 *widget.Entry
 	}
 
+	FormMenu struct {
+		Main                         *fyne.MainMenu
+		SettingItem                  *fyne.MenuItem
+		HelpUpdateItem, HelpInfoItem *fyne.MenuItem
+		QuitMainItem                 *fyne.MenuItem
+		SettingsMenu                 *fyne.Menu
+		HelpMenu                     *fyne.Menu
+		MainMenu                     *fyne.Menu
+	}
+
 	DriverSetting struct {
 		DriverSettingAccordion                                  *widget.AccordionItem
 		DriverSettingButton, DriverPrintHistoryButton           *widget.Button
@@ -278,6 +288,7 @@ func (f *FyneApp) StartApp() {
 	f.ConfiguratePrinterSettings()
 	f.ConfigurateHistoryWindow()
 	f.ConfigurateUnprintedWindows()
+	f.Menu()
 	if err := f.service.Configurate(); err != nil {
 		f.ErrorHandler(err, FunctionResponsibility)
 	}

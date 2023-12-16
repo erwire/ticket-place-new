@@ -1,0 +1,14 @@
+{
+  "token": "4703|jwqvoNNs14NXniugw1CpMfPGPRxDayo18IqrdEF6",
+  "token_type": "Bearer",
+  "created_at": "2023-04-06T23:01:32.1402379+03:00",
+  "expired_at": "2023-04-07T23:01:32.1402379+03:00",
+  "user": {
+    "id": 10185,
+    "full_name": "Тестовый кассир",
+    "user_name": "Тестовый кассир",
+    "avatar": "",
+    "email": "kas@dp.not",
+    "role": "seller"
+  }
+}

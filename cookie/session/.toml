@@ -1,11 +1,11 @@
-access_token = ""
-token_type = ""
-created_at = 0001-01-01T00:00:00Z
+access_token = "42973|iBnN6xbNfM0xbI5kySx0eJDfKTBXrE82K5swl0xZ"
+token_type = "Bearer"
+created_at = 2023-10-25T14:40:18.8118819+03:00
 
 [user_data]
-  id = 0
-  full_name = ""
-  user_name = ""
+  id = 1
+  full_name = "Админ"
+  user_name = "Админ"
   avatar = ""
-  email = ""
-  role = ""
+  email = "admin@domain.not"
+  role = "admin"

@@ -1,0 +1,23 @@
+{
+  "id": 1,
+  "type": "sell",
+  "cashier_name": "Оганянц И.Г.",
+  "payment_type": "cash",
+  "status": "returned",
+  "ticket": [
+    {
+      "id": 0,
+      "number": "22013005617",
+      "order_date": "2014-03-12T13:37:27+00:00",
+      "event_manager": "Тульский государственный цирк",
+      "event_address": "Советская ул., 96, Тула, Россия",
+      "event_name": "Шоу Легенда",
+      "event_age_limit": "0+",
+      "event_date": "2014-03-12T13:37:27+00:00",
+      "seat_row": "9",
+      "seat_place": "25",
+      "seat_zona": "Левая сторона, желтый, сектор 2",
+      "amount": 0
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+INFO : 2023/07/02 12:58:30.239126 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 12:58:30.240170 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:06:21.473700 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:06:21.474222 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:08:54.451430 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:08:54.451954 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:11:56.594736 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:11:56.595769 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:12:34.565498 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:12:34.566546 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:19:43.729546 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:19:43.730073 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:22:12.558731 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:22:12.559252 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:24:17.879466 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:24:17.879466 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:25:09.360005 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:25:09.361053 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:25:50.549271 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:25:50.550325 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:26:27.250928 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:26:27.251987 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:26:49.225862 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:26:49.226386 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:27:25.021741 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:27:25.022266 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:27:58.067986 main.go:40: Запуск драйвера KKT
+ERROR: 2023/07/02 13:27:58.069036 main.go:50: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:27:59.555534 main.go:54: Начало работы приложения
+INFO : 2023/07/02 13:28:26.571857 main.go:39: Запуск драйвера KKT
+ERROR: 2023/07/02 13:28:26.572906 main.go:49: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:29:02.487577 main.go:39: Запуск драйвера KKT
+ERROR: 2023/07/02 13:29:02.488102 main.go:49: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:29:14.781497 main.go:39: Запуск драйвера KKT
+ERROR: 2023/07/02 13:29:14.782005 main.go:49: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:29:27.493304 main.go:39: Запуск драйвера KKT
+ERROR: 2023/07/02 13:29:27.494842 main.go:49: Запуск драйвера ККТ завершился с ошибкой: can't load library "fptr10.dll" - The specified module could not be found.
+INFO : 2023/07/02 13:35:31.355382 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 13:35:31.367715 main.go:54: Начало работы приложения
+WARN : 2023/07/02 13:35:32.127588 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 13:36:06.565134 s_fptr.go:126: Успешная печать копии последнего чека, напечатанного на ККТ
+ERROR: 2023/07/02 15:13:03.642643 s_client.go:248: Во время авторизации произошла ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/07/02 15:13:03.644034 s_client.go:249: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/07/02 15:13:05.666472 s_client.go:251: [Попытка номер 1] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:13:07.684427 s_client.go:251: [Попытка номер 2] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:13:09.713922 s_client.go:251: [Попытка номер 3] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:13:11.741085 s_client.go:251: [Попытка номер 4] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:13:13.761816 s_client.go:266: [Попытки завершились неудачно] -> Во время авторизации произошла ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:13:31.260070 s_client.go:248: Во время авторизации произошла ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/07/02 15:13:31.260581 s_client.go:249: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/07/02 15:13:33.291073 s_client.go:251: [Попытка номер 1] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:13:35.325727 s_client.go:251: [Попытка номер 2] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:13:37.349396 s_client.go:251: [Попытка номер 3] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:13:39.387883 s_client.go:251: [Попытка номер 4] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:13:41.397359 s_client.go:266: [Попытки завершились неудачно] -> Во время авторизации произошла ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:14:19.290807 s_client.go:248: Во время авторизации произошла ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/07/02 15:14:19.292530 s_client.go:249: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/07/02 15:14:21.325668 s_client.go:251: [Попытка номер 1] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:14:23.349437 s_client.go:251: [Попытка номер 2] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:14:25.373305 s_client.go:251: [Попытка номер 3] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:14:27.397509 s_client.go:251: [Попытка номер 4] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:14:29.402973 s_client.go:266: [Попытки завершились неудачно] -> Во время авторизации произошла ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:14:36.719073 s_client.go:248: Во время авторизации произошла ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/07/02 15:14:36.723263 s_client.go:249: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/07/02 15:14:38.755431 s_client.go:251: [Попытка номер 1] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:14:40.788369 s_client.go:251: [Попытка номер 2] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:14:42.820622 s_client.go:251: [Попытка номер 3] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:14:44.853463 s_client.go:251: [Попытка номер 4] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:14:46.856261 s_client.go:266: [Попытки завершились неудачно] -> Во время авторизации произошла ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:14:58.451248 s_client.go:248: Во время авторизации произошла ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/07/02 15:14:58.455697 s_client.go:249: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/07/02 15:15:00.475688 s_client.go:251: [Попытка номер 1] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:15:02.496226 s_client.go:251: [Попытка номер 2] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:15:04.532018 s_client.go:251: [Попытка номер 3] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:15:06.557969 s_client.go:251: [Попытка номер 4] -> Ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/07/02 15:15:08.569900 s_client.go:266: [Попытки завершились неудачно] -> Во время авторизации произошла ошибка: Status Code: 403 Message: Некорректный код статуса ответа Error: default http response status code error
+INFO : 2023/07/02 15:16:00.210170 main.go:62: Завершение работы приложения
+INFO : 2023/07/02 16:35:41.917074 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 16:35:41.918104 main.go:54: Начало работы приложения
+WARN : 2023/07/02 16:35:42.699218 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 16:36:25.214606 main.go:62: Завершение работы приложения
+INFO : 2023/07/02 16:37:19.926655 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 16:37:19.927656 main.go:54: Начало работы приложения
+WARN : 2023/07/02 16:37:20.665014 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 16:37:40.885890 main.go:62: Завершение работы приложения
+INFO : 2023/07/02 16:44:12.138190 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 16:44:12.139212 main.go:54: Начало работы приложения
+WARN : 2023/07/02 16:44:12.867493 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 16:44:22.183479 main.go:62: Завершение работы приложения
+INFO : 2023/07/02 16:44:43.177284 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 16:44:43.177284 main.go:54: Начало работы приложения
+WARN : 2023/07/02 16:44:43.914488 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 16:45:04.231745 main.go:62: Завершение работы приложения
+INFO : 2023/07/02 16:45:10.668543 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 16:45:10.669585 main.go:54: Начало работы приложения
+WARN : 2023/07/02 16:45:11.398235 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 16:45:33.816548 main.go:62: Завершение работы приложения
+INFO : 2023/07/02 23:22:59.851274 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 23:22:59.851802 main.go:54: Начало работы приложения
+WARN : 2023/07/02 23:23:00.604265 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 23:23:53.449201 main.go:62: Завершение работы приложения
+INFO : 2023/07/02 23:27:28.517326 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 23:27:28.517906 main.go:54: Начало работы приложения
+INFO : 2023/07/02 23:27:28.868027 panic.go:884: Завершение работы приложения
+INFO : 2023/07/02 23:29:04.056127 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 23:29:04.061221 main.go:54: Начало работы приложения
+INFO : 2023/07/02 23:29:04.404244 panic.go:884: Завершение работы приложения
+INFO : 2023/07/02 23:29:23.894914 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 23:29:23.895451 main.go:54: Начало работы приложения
+INFO : 2023/07/02 23:29:24.240355 panic.go:884: Завершение работы приложения
+INFO : 2023/07/02 23:31:48.649992 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 23:31:48.650519 main.go:54: Начало работы приложения
+WARN : 2023/07/02 23:31:49.411807 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 23:32:17.300482 main.go:62: Завершение работы приложения
+INFO : 2023/07/02 23:32:23.907737 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 23:32:23.908913 main.go:54: Начало работы приложения
+WARN : 2023/07/02 23:32:24.686915 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 23:33:25.356003 main.go:62: Завершение работы приложения
+INFO : 2023/07/02 23:35:04.330360 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 23:35:04.331407 main.go:54: Начало работы приложения
+WARN : 2023/07/02 23:35:05.070341 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 23:35:40.795794 main.go:62: Завершение работы приложения
+INFO : 2023/07/02 23:35:56.754759 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 23:35:56.755263 main.go:54: Начало работы приложения
+WARN : 2023/07/02 23:35:57.496242 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 23:36:17.050795 main.go:62: Завершение работы приложения
+INFO : 2023/07/02 23:36:35.773259 main.go:39: Запуск драйвера KKT
+INFO : 2023/07/02 23:36:35.774445 main.go:54: Начало работы приложения
+WARN : 2023/07/02 23:36:36.524410 controller.go:146: Попытка закрыть поток, который еще не создан!
+INFO : 2023/07/02 23:36:48.713135 main.go:62: Завершение работы приложения

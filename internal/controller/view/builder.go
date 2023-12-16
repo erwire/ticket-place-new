@@ -21,6 +21,28 @@ const (
 	PageLandscape = "Landscape"
 )
 
+func (f *FyneApp) Menu() {
+
+	f.FormMenu.HelpUpdateItem = fyne.NewMenuItem("Обновление", f.ToolbarInfoPressed)
+	// f.FormMenu.HelpInfoItem = fyne.NewMenuItem("О программе", nil)
+	f.FormMenu.SettingItem = fyne.NewMenuItem("Настройки ККТ", nil)
+	f.FormMenu.QuitMainItem = fyne.NewMenuItem("Выход", nil)
+	f.FormMenu.QuitMainItem.IsQuit = true
+
+	setPrint := fyne.NewMenuItem("Настройки печати", nil)
+	setPrinter := fyne.NewMenuItem("Настройки принтера", nil)
+
+	f.FormMenu.HelpMenu = fyne.NewMenu("Сервис", f.FormMenu.HelpUpdateItem) //, f.FormMenu.HelpInfoItem)
+
+	f.FormMenu.SettingsMenu = fyne.NewMenu("Настройки", f.FormMenu.SettingItem, setPrinter, setPrint)
+
+	f.FormMenu.MainMenu = fyne.NewMenu("Главная", f.FormMenu.QuitMainItem)
+
+	f.FormMenu.Main = fyne.NewMainMenu(f.FormMenu.MainMenu, f.FormMenu.SettingsMenu, f.FormMenu.HelpMenu)
+
+	f.MainWindow.SetMainMenu(f.FormMenu.Main)
+}
+
 func (f *FyneApp) NewMainWindow() {
 	f.MainWindow = f.application.NewWindow("Ticket Place")
 	f.MainWindow.SetMaster()

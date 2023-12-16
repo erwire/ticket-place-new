@@ -1,0 +1,112 @@
+INFO : 2023/04/06 23:00:59.556806 main.go:43: Запуск драйвера KKT
+INFO : 2023/04/06 23:00:59.559489 main.go:52: Начало работы приложения
+WARN : 2023/04/06 23:00:59.815577 controller.go:145: Попытка закрыть поток, который еще не создан!
+WARN : 2023/04/06 23:00:59.837248 controller.go:145: Попытка закрыть поток, который еще не создан!
+INFO : 2023/04/06 23:01:32.140237 s_fptr.go:71: Успешное закрытие смены
+ERROR: 2023/04/06 23:01:34.615099 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:01:34.617366 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:01:36.761823 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:01:38.940046 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:01:41.117081 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:01:43.284728 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+INFO : 2023/04/06 23:01:45.291264 controller.go:127: Запущен поток прослушивания по адресу: http://188.225.26.201/
+INFO : 2023/04/06 23:01:45.291264 s_client.go:37: Установлена длительность попытки запроса на 5s
+ERROR: 2023/04/06 23:01:47.455428 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:01:47.456432 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:01:49.603118 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:01:51.750037 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:01:53.937209 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:01:56.118516 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:00.302468 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:02:00.303467 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:02:02.481571 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:04.642313 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:06.796062 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:08.958002 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:13.120641 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:02:13.121691 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:02:15.279850 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:17.430428 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:19.594508 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:21.748108 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:25.904776 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:02:25.905021 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:02:28.046528 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:30.192380 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:32.342431 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:34.485070 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:38.655503 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:02:38.655503 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:02:40.801326 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:42.950096 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:45.094594 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:47.257178 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:51.419399 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:02:51.420398 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:02:53.582623 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:55.750309 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:02:57.906865 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:00.072986 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:04.289055 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:03:04.296102 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:03:06.435919 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:08.597268 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:10.774412 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:12.932038 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:17.087711 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:03:17.087994 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:03:19.245404 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:21.400360 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:23.545739 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:25.692308 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:29.864001 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:03:29.864927 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:03:32.015069 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:34.164513 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:36.320650 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:38.510791 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:42.667886 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:03:42.668425 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:03:44.811689 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:46.957857 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:49.119933 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:51.276268 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:55.441473 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:03:55.442474 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:03:57.596202 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:03:59.758915 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:04:01.926998 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:04:04.082626 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:04:08.247082 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:04:08.247082 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:04:10.412620 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:04:12.571232 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:04:14.715150 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:04:16.870382 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:04:21.027184 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:04:21.027184 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:04:23.188901 s_client.go:53: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:04:25.359962 s_client.go:53: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:04:27.514016 s_client.go:53: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:04:29.673013 s_client.go:53: [Попытка номер 4] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:04:33.846466 s_client.go:50: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:04:33.847466 s_client.go:51: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+INFO : 2023/04/06 23:04:34.330779 main.go:66: Завершение работы приложения
+INFO : 2023/04/06 23:07:06.855431 main.go:43: Запуск драйвера KKT
+INFO : 2023/04/06 23:07:06.856431 main.go:52: Начало работы приложения
+INFO : 2023/04/06 23:07:08.144289 fyne.go:231: Данные из сессии подгрузились. Успешная авторизация под пользователем Тестовый кассир
+ERROR: 2023/04/06 23:07:10.298984 s_client.go:59: Во время запроса к истории печати произошла ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+WARN : 2023/04/06 23:07:10.298984 s_client.go:60: [Операция закончилась неуспешно, запуск повторных попыток подключения]
+ERROR: 2023/04/06 23:07:12.442076 s_client.go:62: [Попытка номер 1] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:07:14.587374 s_client.go:62: [Попытка номер 2] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+ERROR: 2023/04/06 23:07:16.739978 s_client.go:62: [Попытка номер 3] -> Ошибка: Status Code: 404 Message: Некорректный код статуса ответа Error: default http response status code error
+INFO : 2023/04/06 23:07:18.059669 main.go:66: Завершение работы приложения
+INFO : 2023/04/06 23:08:16.001660 main.go:43: Запуск драйвера KKT
+INFO : 2023/04/06 23:08:16.002663 main.go:52: Начало работы приложения
+INFO : 2023/04/06 23:08:17.333156 fyne.go:231: Данные из сессии подгрузились. Успешная авторизация под пользователем Тестовый кассир
+INFO : 2023/04/06 23:08:58.485696 s_fptr.go:113: Успешная печать копии последнего чека, напечатанного на ККТ
+INFO : 2023/04/06 23:09:59.973869 main.go:66: Завершение работы приложения
+INFO : 2023/04/06 23:10:18.720510 main.go:43: Запуск драйвера KKT
+INFO : 2023/04/06 23:10:18.721594 main.go:52: Начало работы приложения
+INFO : 2023/04/06 23:10:20.012945 fyne.go:231: Данные из сессии подгрузились. Успешная авторизация под пользователем Тестовый кассир
+INFO : 2023/04/06 23:14:23.298051 main.go:66: Завершение работы приложения
