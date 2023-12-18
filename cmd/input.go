@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 )
@@ -22,7 +21,7 @@ func main() {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
-		log.Println("Не пашет")
+
 	}
 	fmt.Println(string(stdout.Bytes()), string(stderr.Bytes()))
 

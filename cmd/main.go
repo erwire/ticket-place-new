@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-var version = "1.0.9"
+var version = "1.0.10"
 var updatePath = "jahngeor"
 var updateRepo = "test"
 var updType = "github"

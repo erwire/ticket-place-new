@@ -167,7 +167,7 @@ func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
 		switch sell.Data.PaymentType {
 		case "cash":
 			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_CASH)
-		case "card":
+		case "card", "account_individual":
 			g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PAYMENT_TYPE, fptr10.LIBFPTR_PT_ELECTRONICALLY)
 		}
 
@@ -416,16 +416,16 @@ func (g *KKTGateway) AcceptedForPrint(data interface{}) bool {
 	switch data.(type) {
 	case entities.Sell:
 		sell := data.(entities.Sell)
-		return sell.Data.PaymentType == "cash" || sell.Data.PaymentType == "card"
+		return sell.Data.PaymentType == "cash" || sell.Data.PaymentType == "card" || sell.Data.PaymentType == "account_individual"
 	case *entities.Sell:
 		sell := data.(*entities.Sell)
-		return sell.Data.PaymentType == "cash" || sell.Data.PaymentType == "card"
+		return sell.Data.PaymentType == "cash" || sell.Data.PaymentType == "card" || sell.Data.PaymentType == "account_individual"
 	case entities.Refound:
 		refound := data.(entities.Refound)
-		return refound.Data.Order.PaymentType == "cash" || refound.Data.Order.PaymentType == "card" || refound.Data.PaymentType == "cash" || refound.Data.PaymentType == "card"
+		return refound.Data.Order.PaymentType == "cash" || refound.Data.Order.PaymentType == "card" || refound.Data.PaymentType == "cash" || refound.Data.PaymentType == "card" || refound.Data.PaymentType == "account_individual" || refound.Data.Order.PaymentType == "account_individual"
 	case *entities.Refound:
 		refound := data.(*entities.Refound)
-		return refound.Data.Order.PaymentType == "cash" || refound.Data.Order.PaymentType == "card" || refound.Data.PaymentType == "cash" || refound.Data.PaymentType == "card"
+		return refound.Data.Order.PaymentType == "cash" || refound.Data.Order.PaymentType == "card" || refound.Data.PaymentType == "cash" || refound.Data.PaymentType == "card" || refound.Data.PaymentType == "account_individual" || refound.Data.Order.PaymentType == "account_individual"
 	default:
 		return false
 	}
