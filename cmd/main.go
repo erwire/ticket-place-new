@@ -36,6 +36,7 @@ func main() {
 	middleware.NewMiddleware(mainLogger.Logger).BasicMiddleware()
 
 	fptrDriver, err := fptr10.NewSafe()
+
 	fptrDriver.SetSingleSetting(fptr10.LIBFPTR_SETTING_AUTO_RECONNECT, "false")
 	fptrDriver.ApplySingleSettings()
 	fmt.Println(fptrDriver.GetSingleSetting(fptr10.LIBFPTR_SETTING_AUTO_RECONNECT))

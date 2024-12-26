@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	logExt  = ".log"
-	logPath = "./log/"
+	logExt  = "log"
+	logPath = "log"
 )
 
 type LoggerService struct {
@@ -25,12 +25,20 @@ func NewLogger(logVerbose bool) *LoggerService {
 
 func (l *LoggerService) InitLog() error {
 	if _, err := os.Stat(logPath); err != nil && os.IsNotExist(err) {
-		err = os.Mkdir(logPath, 0660)
+		err = os.Mkdir(logPath, 0666)
 		if err != nil {
 			return err
 		}
 	}
-	file, err := os.OpenFile(logPath+time.Now().Format("2006-01-02")+logExt, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
+	file, err := os.OpenFile(
+		fmt.Sprintf("%s/%s.%s",
+			logPath,
+			time.Now().Format("2006-01-02"),
+			logExt,
+		),
+		os.O_WRONLY|os.O_APPEND|os.O_CREATE,
+		0660,
+	)
 	if err != nil {
 		return err
 	}
@@ -44,7 +52,11 @@ func (l *LoggerService) Reinit() error {
 	if err != nil {
 		return err
 	}
-	if info.Name() == logPath+time.Now().Format("2006-01-02")+logExt {
+	if info.Name() == fmt.Sprintf("%s/%s.%s",
+		logPath,
+		time.Now().Format("2006-01-02"),
+		logExt,
+	) {
 		return fmt.Errorf("уже ведется запись в файл с таким именем")
 	}
 
@@ -71,7 +83,13 @@ func (l *LoggerService) CurrentTime() (time.Time, error) {
 	return currentTime, nil
 }
 func (l *LoggerService) InitLogDebugger(duration time.Duration) error {
-	file, err := os.OpenFile(logPath+time.Now().Add(duration).Format("2006-01-02")+logExt, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
+	file, err := os.OpenFile(
+		fmt.Sprintf("%s/%s.%s",
+			logPath,
+			time.Now().Add(duration).Format("2006-01-02"),
+			logExt,
+		),
+		os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
 	if err != nil {
 		err = fmt.Errorf("ошибка открытия файла: %w", err)
 		return err
@@ -86,7 +104,11 @@ func (l *LoggerService) ReinitDebugger(duration time.Duration) error {
 	if err != nil {
 		return err
 	}
-	if info.Name() == logPath+time.Now().Add(duration).Format("2006-01-02")+logExt {
+	if info.Name() == fmt.Sprintf("%s/%s.%s",
+		logPath,
+		time.Now().Add(duration).Format("2006-01-02"),
+		logExt,
+	) {
 		return fmt.Errorf("уже ведется запись в файл с таким именем")
 	}
 	l.Logger.Infoln("Начат перенос в следующий файл")
