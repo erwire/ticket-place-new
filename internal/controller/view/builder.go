@@ -1,6 +1,7 @@
 package view
 
 import (
+	"fptr/internal/entities"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -57,12 +58,26 @@ func (f *FyneApp) NewAuthForm() {
 	f.authForm.settingButton = widget.NewButton("Настройки", func() {
 		f.SettingWindow.Show()
 	})
+
+	var taxTypes []string
+
+	for _, value := range entities.NewCalculationTypeList() {
+		taxTypes = append(taxTypes, value.String())
+	}
+
+	f.authForm.taxesCalculationTypeComboBox = widget.NewSelectEntry(taxTypes)
+
 	var authFormItems []*widget.FormItem
 	authFormItems = append(authFormItems,
 		widget.NewFormItem("Логин", f.authForm.loginEntry),
 		widget.NewFormItem("Пароль", f.authForm.passwordEntry),
 		widget.NewFormItem("Настройки", f.authForm.settingButton),
+		widget.NewFormItem("НДС", container.NewStack(
+			f.authForm.taxesCalculationTypeComboBox,
+		),
+		),
 	)
+
 	f.authForm.form = dialog.NewForm("Авторизация", "Войти", "Выйти", authFormItems, f.AuthorizationPressed, f.MainWindow)
 }
 

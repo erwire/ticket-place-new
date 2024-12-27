@@ -10,7 +10,7 @@ import (
 
 const (
 	logExt  = "log"
-	logPath = "log"
+	logPath = "./log"
 )
 
 type LoggerService struct {
@@ -25,7 +25,7 @@ func NewLogger(logVerbose bool) *LoggerService {
 
 func (l *LoggerService) InitLog() error {
 	if _, err := os.Stat(logPath); err != nil && os.IsNotExist(err) {
-		err = os.Mkdir(logPath, 0666)
+		err = os.Mkdir(logPath, 0776)
 		if err != nil {
 			return err
 		}
@@ -37,7 +37,7 @@ func (l *LoggerService) InitLog() error {
 			logExt,
 		),
 		os.O_WRONLY|os.O_APPEND|os.O_CREATE,
-		0660,
+		0666,
 	)
 	if err != nil {
 		return err
@@ -75,7 +75,11 @@ func (l *LoggerService) CurrentTime() (time.Time, error) {
 		err = fmt.Errorf("ошибка чтения информации о текущем log-файле: %w", err)
 		return time.Time{}, err
 	}
-	currentTime, err := time.Parse("2006-01-02", strings.ReplaceAll(strings.ReplaceAll(info.Name(), logPath, ""), logExt, ""))
+
+	timeLogFileWithExt := strings.ReplaceAll(info.Name(), logPath, "")
+	timeLogFile := strings.ReplaceAll(timeLogFileWithExt, fmt.Sprintf(".%s", logExt), "")
+
+	currentTime, err := time.Parse("2006-01-02", timeLogFile)
 	if err != nil {
 		err = fmt.Errorf("ошибка чтения даты из текущего log-файла: %w", err)
 		return time.Time{}, err

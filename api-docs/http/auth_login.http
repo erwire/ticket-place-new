@@ -1,0 +1,2 @@
+### Authorization
+POST https://tiplace.ru/api/auth/login?email={{email}}&password={{password}}

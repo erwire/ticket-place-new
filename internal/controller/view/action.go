@@ -129,7 +129,6 @@ func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик �
 	if choice {
 		conf := f.formAppConfig()
 		f.Login(conf)
-
 	} else {
 		if f.flag.AuthJustHide {
 			f.flag.AuthJustHide = false

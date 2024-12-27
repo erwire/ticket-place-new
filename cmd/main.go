@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"fptr/cmd/middleware"
 	"fptr/internal/controller/view"
 	"fptr/internal/entities"
@@ -12,18 +11,19 @@ import (
 	"fyne.io/fyne/v2/app"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
-var version = "1.0.10"
-var updatePath = "jahngeor"
-var updateRepo = "test"
-var updType = "github"
+var (
+	version    = "1.0.10"
+	updatePath = "jahngeor"
+	updateRepo = "test"
+	updType    = "github"
+)
 
 func main() {
 	info := &entities.Info{}
-
-	//log.Printf("Количество горутин в начале запуска: %d", runtime.NumGoroutine())
 
 	logVerbose := flag.Bool("log", false, "используется для логирования в консоль всех уровней")
 	flag.Parse()
@@ -36,19 +36,25 @@ func main() {
 	middleware.NewMiddleware(mainLogger.Logger).BasicMiddleware()
 
 	fptrDriver, err := fptr10.NewSafe()
+	if err != nil {
+		mainLogger.Fatal(err.Error())
+		os.Exit(1)
+	}
 
 	fptrDriver.SetSingleSetting(fptr10.LIBFPTR_SETTING_AUTO_RECONNECT, "false")
-	fptrDriver.ApplySingleSettings()
-	fmt.Println(fptrDriver.GetSingleSetting(fptr10.LIBFPTR_SETTING_AUTO_RECONNECT))
+	if err := fptrDriver.ApplySingleSettings(); err != nil {
+		mainLogger.Fatalf("Ошибка активации настроек ККТ: %s", err.Error())
+	}
+
 	defer fptrDriver.Destroy()
 	mainLogger.Infoln("Запуск драйвера KKT")
 
 	client := &http.Client{Timeout: 20 * time.Second}
 	gateway := gateways.NewGateway(client, fptrDriver)
 	service := services.NewServices(gateway, mainLogger)
-	view := view.NewFyneApp(app.New(), service, info)
+	viewController := view.NewFyneApp(app.New(), service, info)
 
-	view.SetAppInfo(version, updatePath, updType, updateRepo)
+	viewController.SetAppInfo(version, updatePath, updType, updateRepo)
 
 	service.LoggerService.Infoln("Начало работы приложения")
 	//service.LoggerService.ReinitDebugger(time.Hour * 24)
@@ -56,12 +62,12 @@ func main() {
 	defer service.LoggerService.Close()
 	defer service.Logger.Infoln("Завершение работы приложения")
 
-	view.StartApp()
+	viewController.StartApp()
 
-	if err != nil {
-		service.Errorf("Запуск драйвера ККТ завершился с ошибкой: %v", err)
-		view.ShowCriticalError(err, "Пожалуйста, скачайте драйвер и перезапустите приложение", "https://atoldriver.ru/")
-		return
-	}
+	//if err != nil {
+	//	service.Errorf("Запуск драйвера ККТ завершился с ошибкой: %v", err)
+	//	view.ShowCriticalError(err, "Пожалуйста, скачайте драйвер и перезапустите приложение", "https://atoldriver.ru/")
+	//	return
+	//}
 
 }
