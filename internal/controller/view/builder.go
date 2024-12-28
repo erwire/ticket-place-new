@@ -55,6 +55,12 @@ func (f *FyneApp) NewSettingWindow() {
 
 func (f *FyneApp) NewAuthForm() {
 	f.authForm.loginEntry, f.authForm.passwordEntry = widget.NewEntry(), widget.NewPasswordEntry()
+
+	f.authForm.loginEntry.OnChanged = func(s string) {
+		f.authForm.taxesCalculationTypeComboBox.Text = entities.UndefinedTaxes.String()
+		f.authForm.taxesCalculationTypeComboBox.Refresh()
+	}
+
 	f.authForm.settingButton = widget.NewButton("Настройки", func() {
 		f.SettingWindow.Show()
 	})
@@ -106,7 +112,6 @@ func (f *FyneApp) NewPrintSettingsContainer() {
 	f.PrintSettingsItem.CashIncomeFormItem = widget.NewFormItem("Внесение наличных", f.PrintSettingsItem.CashIncomeEntry)
 	f.PrintSettingsItem.CashIncomeForm = widget.NewForm(f.PrintSettingsItem.CashIncomeFormItem)
 	f.PrintSettingsItem.reconnectButton = widget.NewButton("Восстановить соединение с кассой", f.OpenConnection)
-
 }
 
 func (f *FyneApp) NewPrintsRefoundAndDepositsAccordionItem() {
@@ -132,9 +137,15 @@ func (f *FyneApp) NewDriverSettingAccordionItem() {
 	f.DriverSetting.DriverComPortEntry = widget.NewEntry()
 	f.DriverSetting.DriverPathEntry = widget.NewEntry()
 	f.DriverSetting.DriverAddressEntry = widget.NewEntry()
-	f.DriverSetting.DriverTimeoutSelect = widget.NewSelect([]string{"2s", "5s", "10s", "20s", "40s", "60s", "70s", "80s", "90s", "100s", "120s"}, nil)
+	f.DriverSetting.DriverTimeoutSelect = widget.NewSelect(
+		[]string{
+			"2s", "5s", "10s", "20s", "40s", "60s", "70s", "80s", "90s", "100s", "120s",
+		},
+		nil)
 	f.DriverSetting.DriverPollingPeriodSelect = widget.NewSelect(
-		[]string{"1s", "2s", "3s", "4s", "5s", "10s", "15s"},
+		[]string{
+			"1s", "2s", "3s", "4s", "5s", "10s", "15s",
+		},
 		f.DriverPollingPeriodSelected,
 	)
 	f.DriverSetting.DriverTimeoutSelect.Selected = "20s"

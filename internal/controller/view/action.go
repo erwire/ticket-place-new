@@ -128,6 +128,13 @@ func (f *FyneApp) WarningPressed() {
 func (f *FyneApp) AuthorizationPressed(choice bool) { //! обработчик действий
 	if choice {
 		conf := f.formAppConfig()
+
+		if entities.NewCalculationType(f.authForm.taxesCalculationTypeComboBox.Text) == entities.UndefinedTaxes {
+			f.authForm.form.Show()
+			f.ShowWarning("Пожалуйста, установите параметр расчета НДС")
+			return
+		}
+
 		f.Login(conf)
 	} else {
 		if f.flag.AuthJustHide {

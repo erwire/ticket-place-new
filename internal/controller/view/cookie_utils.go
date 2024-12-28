@@ -94,7 +94,7 @@ func (f *FyneApp) setupDefaultIntoCookie() {
 	}
 
 	if f.info.AppConfig.User.TaxesInfo.Taxes == entities.UndefinedTaxes {
-		f.info.AppConfig.User.TaxesInfo.Taxes = entities.NoTaxes
+		f.info.AppConfig.User.TaxesInfo.Taxes = entities.UndefinedTaxes
 	}
 }
 

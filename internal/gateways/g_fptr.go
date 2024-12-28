@@ -1,6 +1,7 @@
 package gateways
 
 import (
+	"errors"
 	"fmt"
 	"fptr/internal/entities"
 	apperr "fptr/internal/error_list"
@@ -347,14 +348,6 @@ func (g *KKTGateway) GetTaxTypeParam(tax entities.TaxesInfo) (int, error) {
 	switch tax.Taxes {
 	case entities.NoTaxes:
 		return fptr10.LIBFPTR_TAX_NO, nil
-	case entities.TaxesValue0:
-		return fptr10.LIBFPTR_TAX_VAT0, nil
-	case entities.TaxesValue5:
-		return fptr10.LIBFPTR_TAX_VAT5, nil
-	case entities.TaxesValue10:
-		return fptr10.LIBFPTR_TAX_VAT10, nil
-	case entities.TaxesValue20:
-		return fptr10.LIBFPTR_TAX_VAT20, nil
 	case entities.TaxesValue105:
 		return fptr10.LIBFPTR_TAX_VAT105, nil
 	case entities.TaxesValue107:
@@ -364,7 +357,7 @@ func (g *KKTGateway) GetTaxTypeParam(tax entities.TaxesInfo) (int, error) {
 	case entities.TaxesValue120:
 		return fptr10.LIBFPTR_TAX_VAT120, nil
 	default:
-		return fptr10.LIBFPTR_TAX_NO, nil
+		return 0, errors.New("invalid taxes type")
 	}
 }
 

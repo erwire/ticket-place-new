@@ -9,10 +9,6 @@ func (f *FyneApp) ShowWarning(err string) {
 	f.Error.ErrorWindow.RequestFocus()
 	f.Error.ErrorWindow.Show()
 
-	//f.Warning.WarningText.Text = err
-	//f.Warning.WarningText.Refresh()
-	//f.Warning.WarningWindow.Show()
-
 }
 
 func (f *FyneApp) ShowPrintConfirm() {
