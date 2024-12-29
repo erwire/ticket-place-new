@@ -35,8 +35,8 @@ type KKT interface {
 	Configurate() error
 	OpenShift() error
 	CloseShift() error
-	PrintSell(sell entities.Sell) error
-	PrintRefound(refound entities.Refound) error
+	PrintSell(sell entities.Sell, taxes entities.TaxesInfo) error
+	PrintRefound(refound entities.Refound, taxes entities.TaxesInfo) error
 	NewCashierRegister(fullName string, inn uint64) error
 	ShiftIsExpired() bool
 	ShiftIsOpened() bool
@@ -45,7 +45,7 @@ type KKT interface {
 	PrintXReport() error
 	CashIncome(income float64) error
 	CurrentErrorStatusCode() error
-	PrintRefoundFromCheck(sell entities.Sell) error
+	PrintRefoundFromCheck(sell entities.Sell, taxes entities.TaxesInfo) error
 	PrintLastCheckPressedFromKKT() error
 	WarningBeep()
 	ErrorBeep()

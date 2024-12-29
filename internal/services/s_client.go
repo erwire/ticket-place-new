@@ -124,7 +124,7 @@ func (s *ClientService) PrintSell(info entities.Info, id string, uuid *string) e
 		return err
 	}
 
-	if err = s.gw.KKT.PrintSell(*sell); err != nil {
+	if err = s.gw.KKT.PrintSell(*sell, info.AppConfig.User.TaxesInfo); err != nil {
 		switch err.(type) {
 		case *apperr.BusinessError:
 			s.Warningf("Ошибка во время печати чека продажи заказа с номером %s, uuid: %s, ККТ: %v", id, uuidStr, err)
@@ -168,7 +168,7 @@ func (s *ClientService) PrintRefoundFromSell(info entities.Info, id string) erro
 		return err
 	}
 
-	err = s.gw.KKT.PrintRefoundFromCheck(*sell)
+	err = s.gw.KKT.PrintRefoundFromCheck(*sell, info.AppConfig.User.TaxesInfo)
 	if err != nil {
 		switch err.(type) {
 		case *apperr.BusinessError:
@@ -221,7 +221,7 @@ func (s *ClientService) PrintRefound(info entities.Info, id string, uuid *string
 		return err
 	}
 
-	err = s.gw.KKT.PrintRefound(*refound)
+	err = s.gw.KKT.PrintRefound(*refound, info.AppConfig.User.TaxesInfo)
 	if err != nil {
 		switch err.(type) {
 		case *apperr.BusinessError:

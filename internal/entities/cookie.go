@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-const INN = "7702060003"
-
 type Info struct {
 	AppConfig AppConfig   `toml:"app_config"`
 	Session   SessionInfo `toml:"session_info"`
@@ -18,8 +16,9 @@ type AppConfig struct {
 }
 
 type UserInfo struct {
-	Login    string `toml:"login"`
-	Password string `toml:"password"`
+	Login     string    `toml:"login"`
+	Password  string    `toml:"password"`
+	TaxesInfo TaxesInfo `toml:"taxes"`
 }
 
 type DriverInfo struct {
@@ -30,6 +29,71 @@ type DriverInfo struct {
 	PollingPeriod time.Duration `toml:"polling_period"`
 	TimeoutPeriod time.Duration `toml:"timeout_duration"`
 	UpdatePath    string        `toml:"update_path"`
+}
+
+type TaxesCalculationType int
+
+const (
+	UndefinedTaxes TaxesCalculationType = iota
+	NoTaxes
+	TaxesValue0
+	TaxesValue105
+	TaxesValue107
+	TaxesValue110
+	TaxesValue120
+)
+
+func NewCalculationTypeList() []TaxesCalculationType {
+	return []TaxesCalculationType{
+		NoTaxes,
+		TaxesValue0,
+		TaxesValue105,
+		TaxesValue107,
+		TaxesValue110,
+		TaxesValue120,
+	}
+}
+
+func NewCalculationType(t string) TaxesCalculationType {
+	switch t {
+	case "Без НДС":
+		return NoTaxes
+	case "0% НДС":
+		return TaxesValue0
+	case "НДС рассчитанный 5/105":
+		return TaxesValue105
+	case "НДС рассчитанный 7/107":
+		return TaxesValue107
+	case "НДС рассчитанный 10/110":
+		return TaxesValue110
+	case "НДС рассчитанный 20/120":
+		return TaxesValue120
+	}
+
+	return TaxesCalculationType(0)
+}
+
+func (t TaxesCalculationType) String() string {
+	switch t {
+	case NoTaxes:
+		return "Без НДС"
+	case TaxesValue0:
+		return "0% НДС"
+	case TaxesValue105:
+		return "НДС рассчитанный 5/105"
+	case TaxesValue107:
+		return "НДС рассчитанный 7/107"
+	case TaxesValue110:
+		return "НДС рассчитанный 10/110"
+	case TaxesValue120:
+		return "НДС рассчитанный 20/120"
+	default:
+		return "Неизвестный"
+	}
+}
+
+type TaxesInfo struct {
+	Taxes TaxesCalculationType `toml:"taxes_type"`
 }
 
 type SessionInfo struct {
@@ -45,10 +109,6 @@ type SessionInfo struct {
 		Email    string `json:"email" toml:"email"`
 		Role     string `json:"role" toml:"role"`
 		Inn      uint64 `json:"inn" toml:"inn"`
-		//Ability  []struct {
-		//	Subject string `json:"subject" toml:"subject"`
-		//	Action  string `json:"action" toml:"action"`
-		//} `json:"ability" toml:"ability"`
 	} `json:"userData" toml:"user_data"`
 }
 

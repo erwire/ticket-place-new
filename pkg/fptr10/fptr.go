@@ -60,6 +60,10 @@ int bridge_libfptr_error_description_func(libfptr_error_description_func f, libf
     return f(fptr, value, size);
 }
 
+int bridge_libfptr_error_recommendation_func(libfptr_error_recommendation_func f, libfptr_handle fptr, wchar_t *value, int size) {
+    return f(fptr, value, size);
+}
+
 int bridge_libfptr_reset_error_func(libfptr_reset_error_func f, libfptr_handle fptr) {
     return f(fptr);
 }
@@ -110,6 +114,10 @@ int bridge_libfptr_get_param_bytearray_func(libfptr_get_param_bytearray_func f, 
 
 void bridge_libfptr_get_param_datetime_func(libfptr_get_param_datetime_func f, libfptr_handle fptr, int param_id, int *year, int *month, int *day, int *hour, int *minute, int *second) {
     return f(fptr, param_id, year, month, day, hour, minute, second);
+}
+
+int bridge_libfptr_is_param_available_func(libfptr_is_param_available_func f, libfptr_handle fptr, int param_id) {
+    return f(fptr, param_id);
 }
 
 int bridge_libfptr_log_write_func(libfptr_log_write_func f, libfptr_handle fptr, const wchar_t *tag, int level, const wchar_t *message) {
@@ -484,7 +492,7 @@ const (
 	LIBFPTR_PARAM_MARKING_CODE_ONLINE_VALIDATION_RESULT            = 65886
 	LIBFPTR_PARAM_MARKING_CODE_ONLINE_VALIDATION_ERROR_DESCRIPTION = 65887
 	LIBFPTR_PARAM_FN_CONTAINS_KEYS_UPDATER_SERVER_URI              = 65888
-	LIBFPTR_PARAM_MARKING_CODE_CLEAR                               = 65889
+	LIBFPTR_PARAM_CLEAR_MARKING_TABLE                              = 65889
 	LIBFPTR_PARAM_MODULE_ADDRESS                                   = 65890
 	LIBFPTR_PARAM_SEGMENT_ADDRESS                                  = 65891
 	LIBFPTR_PARAM_LAST_SUCCESSFUL_OKP                              = 65892
@@ -498,6 +506,42 @@ const (
 	LIBFPTR_PARAM_PRINT_UPDATE_FNM_KEYS_REPORT                     = 65900
 	LIBFPTR_PARAM_FN_KEYS_UPDATER_SERVER_URI                       = 65901
 	LIBFPTR_PARAM_DOCUMENT_ELECTRONICALLY                          = 65902
+	LIBFPTR_PARAM_FORMAT_TEXT                                      = 65903
+	LIBFPTR_PARAM_RECEIPT_SIZE                                     = 65904
+	LIBFPTR_PARAM_MARK_SIZE                                        = 65905
+	LIBFPTR_PARAM_MCU_TEMPERATURE                                  = 65906
+	LIBFPTR_PARAM_DATA_FOR_SEND_IS_EMPTY                           = 65907
+	LIBFPTR_PARAM_AVAILABLE_CLOSING                                = 65908
+	LIBFPTR_PARAM_AVAILABLE_CANCELLATION                           = 65909
+	LIBFPTR_PARAM_AVAILABLE_POSITION_ADDING                        = 65910
+	LIBFPTR_PARAM_AVAILABLE_PAYMENT                                = 65911
+	LIBFPTR_PARAM_AVAILABLE_TOTAL                                  = 65912
+	LIBFPTR_PARAM_AVAILABLE_ATTRIBUTES_ADDING                      = 65913
+	LIBFPTR_PARAM_OPERATOR_REGISTERED                              = 65914
+	LIBFPTR_PARAM_DEVICE_PLATFORM_VERSION                          = 65915
+	LIBFPTR_PARAM_GUID                                             = 65916
+	LIBFPTR_PARAM_PATTERN_REGISTERS                                = 65917
+	LIBFPTR_PARAM_PATTERN_TAGS                                     = 65918
+	LIBFPTR_PARAM_PATTERN_SETTINGS                                 = 65919
+	LIBFPTR_PARAM_VENDING                                          = 65920
+	LIBFPTR_PARAM_CATERING                                         = 65921
+	LIBFPTR_PARAM_WHOLESALE                                        = 65922
+	LIBFPTR_PARAM_REGISTRATION_POSITION_FORM                       = 65923
+	LIBFPTR_PARAM_MERGE_POSITIONS                                  = 65924
+	LIBFPTR_PARAM_DATAFLASH_JEDEC_ID                               = 65925
+	LIBFPTR_PARAM_DATAFLASH_NAME                                   = 65926
+	LIBFPTR_PARAM_DATAFLASH_SIZE                                   = 65927
+	LIBFPTR_PARAM_FRAM_EEPROM_NAME                                 = 65928
+	LIBFPTR_PARAM_FRAM_EEPROM_SIZE                                 = 65929
+	LIBFPTR_PARAM_MARKING_NOT_FORM_REQUEST                         = 65930
+	LIBFPTR_PARAM_PRINT_ENTITY_TYPE                                = 65931
+	LIBFPTR_PARAM_RECEIPT_TAPE_PATH_LENGTH                         = 65932
+	LIBFPTR_PARAM_LICENSE_INDEX                                    = 65933
+	LIBFPTR_PARAM_IS_LICENSE_VALID                                 = 65934
+	LIBFPTR_PARAM_RECEIPT_PERCENTAGE_SIZE                          = 65935
+	LIBFPTR_PARAM_LAST_SUCCESS_FNM_UPDATE_KEYS_DATE_TIME           = 65936
+	LIBFPTR_PARAM_LAST_ATTEMPTION_FNM_UPDATE_KEYS_DATE_TIME        = 65937
+	LIBFPTR_PARAM_COUNT_ATTEMPTION_FNM_UPDATE_KEYS                 = 65938
 )
 
 const (
@@ -771,6 +815,15 @@ const (
 	LIBFPTR_ERROR_OVERLAY_DATA_OVERFLOW                   = 267
 	LIBFPTR_ERROR_INVALID_MODULE_ADDRESS                  = 268
 	LIBFPTR_ERROR_ECR_MODEL_NOT_SUPPORTED                 = 269
+	LIBFPTR_ERROR_PAID_NOT_REQUIRED                       = 270
+	LIBFPTR_ERROR_NON_PRINTABLE_CHAR                      = 271
+	LIBFPTR_ERROR_INVALID_USER_TAG                        = 272
+	LIBFPTR_ERROR_COMMODITIES_TABLE_ITERATION_STOPPED     = 273
+	LIBFPTR_ERROR_COMMODITIES_TABLE_INVALID_CSV_FORMAT    = 274
+	LIBFPTR_ERROR_MINIPOS_NO_FILE_ON_USB_STORE            = 275
+	LIBFPTR_ERROR_MINIPOS_NO_AGENT_FISCAL_PROPERTY        = 276
+	LIBFPTR_ERROR_NO_CONNECTION_WITH_PRINT_SERVICE        = 277
+	LIBFPTR_ERROR_UNIVERSAL_COUNTERS_ARE_DISABLED         = 278
 )
 
 const (
@@ -963,7 +1016,11 @@ const (
 	LIBFPTR_TAX_NO         = 6
 	LIBFPTR_TAX_VAT20      = 7
 	LIBFPTR_TAX_VAT120     = 8
-	LIBFPTR_TAX_INVALID    = 9
+	LIBFPTR_TAX_VAT5       = 9
+	LIBFPTR_TAX_VAT7       = 10
+	LIBFPTR_TAX_VAT105     = 11
+	LIBFPTR_TAX_VAT107     = 12
+	LIBFPTR_TAX_INVALID    = 13
 )
 
 const (
@@ -1027,32 +1084,40 @@ const (
 	LIBFPTR_DT_MCU_INFO                         = 50
 	LIBFPTR_DT_MODULE_ADDRESS                   = 51
 	LIBFPTR_DT_CACHE_REQUISITES                 = 52
+	LIBFPTR_DT_DEPARTMENT_SUM                   = 53
+	LIBFPTR_DT_MCU_TEMPERATURE                  = 54
+	LIBFPTR_DT_AVAILABLE_OPERATIONS             = 55
+	LIBFPTR_DT_PATTERN_PARAMETERS               = 56
+	LIBFPTR_DT_RECEIPT_TAPE_PATH_LENGTH         = 57
 )
 
 const (
-	LIBFPTR_FNDT_TAG_VALUE                = 0
-	LIBFPTR_FNDT_OFD_EXCHANGE_STATUS      = 1
-	LIBFPTR_FNDT_FN_INFO                  = 2
-	LIBFPTR_FNDT_LAST_REGISTRATION        = 3
-	LIBFPTR_FNDT_LAST_RECEIPT             = 4
-	LIBFPTR_FNDT_LAST_DOCUMENT            = 5
-	LIBFPTR_FNDT_SHIFT                    = 6
-	LIBFPTR_FNDT_FFD_VERSIONS             = 7
-	LIBFPTR_FNDT_VALIDITY                 = 8
-	LIBFPTR_FNDT_REG_INFO                 = 9
-	LIBFPTR_FNDT_DOCUMENTS_COUNT_IN_SHIFT = 10
-	LIBFPTR_FNDT_ERRORS                   = 11
-	LIBFPTR_FNDT_TICKET_BY_DOC_NUMBER     = 12
-	LIBFPTR_FNDT_DOCUMENT_BY_NUMBER       = 13
-	LIBFPTR_FNDT_REGISTRATION_TLV         = 14
-	LIBFPTR_FNDT_ERROR_DETAIL             = 15
-	LIBFPTR_FNDT_VALIDITY_DAYS            = 16
-	LIBFPTR_FNDT_FREE_MEMORY              = 17
-	LIBFPTR_FNDT_TOTALS                   = 18
-	LIBFPTR_FNDT_ISM_ERRORS               = 19
-	LIBFPTR_FNDT_ISM_EXCHANGE_STATUS      = 20
-	LIBFPTR_FNDT_MARKING_MODE_STATUS      = 21
-	LIBFPTR_FNDT_CHECK_MARK_TIME          = 22
+	LIBFPTR_FNDT_TAG_VALUE                 = 0
+	LIBFPTR_FNDT_OFD_EXCHANGE_STATUS       = 1
+	LIBFPTR_FNDT_FN_INFO                   = 2
+	LIBFPTR_FNDT_LAST_REGISTRATION         = 3
+	LIBFPTR_FNDT_LAST_RECEIPT              = 4
+	LIBFPTR_FNDT_LAST_DOCUMENT             = 5
+	LIBFPTR_FNDT_SHIFT                     = 6
+	LIBFPTR_FNDT_FFD_VERSIONS              = 7
+	LIBFPTR_FNDT_VALIDITY                  = 8
+	LIBFPTR_FNDT_REG_INFO                  = 9
+	LIBFPTR_FNDT_DOCUMENTS_COUNT_IN_SHIFT  = 10
+	LIBFPTR_FNDT_ERRORS                    = 11
+	LIBFPTR_FNDT_TICKET_BY_DOC_NUMBER      = 12
+	LIBFPTR_FNDT_DOCUMENT_BY_NUMBER        = 13
+	LIBFPTR_FNDT_REGISTRATION_TLV          = 14
+	LIBFPTR_FNDT_ERROR_DETAIL              = 15
+	LIBFPTR_FNDT_VALIDITY_DAYS             = 16
+	LIBFPTR_FNDT_FREE_MEMORY               = 17
+	LIBFPTR_FNDT_TOTALS                    = 18
+	LIBFPTR_FNDT_ISM_ERRORS                = 19
+	LIBFPTR_FNDT_ISM_EXCHANGE_STATUS       = 20
+	LIBFPTR_FNDT_MARKING_MODE_STATUS       = 21
+	LIBFPTR_FNDT_CHECK_MARK_TIME           = 22
+	LIBFPTR_FNDT_RECEIPT_SIZE              = 23
+	LIBFPTR_FNDT_NOTIFICATION_STATUS       = 24
+	LIBFPTR_FNDT_FNM_KEYS_UPDATE_DATE_TIME = 25
 )
 
 const (
@@ -1255,6 +1320,7 @@ const (
 	LIBFPTR_MCT_WAIT_FOR_RESULT = 1
 	LIBFPTR_MCT_RESULT_NOT_WAIT = 2
 	LIBFPTR_MCT_QUERY_NOT_SEND  = 3
+	LIBFPTR_MCT_QUERY_NOT_FORM  = 4
 )
 
 const (
@@ -1272,6 +1338,46 @@ const (
 	LIBFPTR_SILENT_REBOOT_NO                  = 0
 	LIBFPTR_SILENT_REBOOT_AFTER_SESSION_CLOSE = 1
 	LIBFPTR_SILENT_REBOOT_BEFORE_SESSION_OPEN = 2
+)
+
+const (
+	LIBFPTR_MERGE_RECEIPT_NO        = 0
+	LIBFPTR_MERGE_RECEIPT_ALL       = 1
+	LIBFPTR_MERGE_RECEIPT_MARK_ONLY = 2
+)
+
+const (
+	LIBFPTR_RPF_ELECTRONIC_AND_PRINT = 0
+	LIBFPTR_RPF_ONLY_ELECTRONIC      = 1
+	LIBFPTR_RPF_ONLY_PRINT           = 2
+)
+
+const (
+	LIBFPTR_PET_STRINGS         = 0
+	LIBFPTR_PET_PICTURES        = 1
+	LIBFPTR_PET_FISCAL_DOCUMENT = 2
+)
+
+const (
+	LIBFPTR_LIC_BASE_FISCAL = 0
+	LIBFPTR_LIC_WRITE_FW    = 1
+	LIBFPTR_LIC_TAX_20      = 2
+	LIBFPTR_LIC_FFD_1_1     = 3
+	LIBFPTR_LIC_MARK_CODE   = 4
+	LIBFPTR_LIC_EXT_FUNC    = 5
+	LIBFPTR_LIC_TEMPLATE    = 6
+	LIBFPTR_LIC_PRINT_BMP   = 7
+	LIBFPTR_LIC_DISABLE_PF  = 8
+	LIBFPTR_LIC_FFD_1_2     = 9
+	LIBFPTR_LIC_FR_WORK     = 10
+	LIBFPTR_LIC_WEB         = 11
+	LIBFPTR_LIC_FFD_1_1_2   = 12
+	LIBFPTR_LIC_TEST_LAB    = 13
+	LIBFPTR_LIC_WEB_REQ     = 14
+	LIBFPTR_LIC_RELESE      = 15
+	LIBFPTR_LIC_EXT_PRINT   = 16
+	LIBFPTR_LIC_OSU         = 17
+	LIBFPTR_LIC_EXT_FISCAL  = 18
 )
 
 const (
@@ -1313,6 +1419,10 @@ const (
 	LIBFPTR_SETTING_VALIDATE_MARK_WITH_FNM_ONLY      = "ValidateMarksWithFnmOnly"
 	LIBFPTR_SETTING_AUTO_MEASUREMENT_UNIT            = "AutoMeasurementUnit"
 	LIBFPTR_SETTING_SILENT_REBOOT                    = "SilentReboot"
+	LIBFPTR_SETTING_LOG_PATHS                        = "LogPaths"
+	LIBFPTR_SETTING_AUTO_TIME_SYNC                   = "AutoTimeSync"
+	LIBFPTR_SETTING_AUTO_TIME_SYNC_TIME              = "AutoTimeSyncTime"
+	LIBFPTR_SETTING_MERGE_RECEIPT_ITEMS              = "MergeReceiptItems"
 	LIBFPTR_MODEL_UNKNOWN                            = 0
 	LIBFPTR_MODEL_ATOL_25F                           = 57
 	LIBFPTR_MODEL_ATOL_30F                           = 61
@@ -1339,6 +1449,12 @@ const (
 	LIBFPTR_MODEL_ATOL_AUTO                          = 500
 	LIBFPTR_MODEL_ATOL_47FA                          = 48
 	LIBFPTR_MODEL_ATOL_PT_5F                         = 89
+	LIBFPTR_MODEL_ATOL_27_FP7_F                      = 99
+	LIBFPTR_MODEL_ATOL_42FA                          = 70
+	LIBFPTR_MODEL_ALLIANCE_20F                       = 50
+	LIBFPTR_MODEL_ATOL_55V2F                         = 66
+	LIBFPTR_MODEL_ATOL_STB_6F                        = 92
+	LIBFPTR_MODEL_ATOL_35F                           = 97
 	LIBFPTR_PORT_BR_1200                             = 1200
 	LIBFPTR_PORT_BR_2400                             = 2400
 	LIBFPTR_PORT_BR_4800                             = 4800
@@ -1445,6 +1561,9 @@ const (
 	LIBFPTR_IU_TERABYTE                              = 83
 	LIBFPTR_IU_OTHER                                 = 255
 	LIBFPTR_ERROR_USERS_SCRIPTS_BASE                 = 1000
+	LIBFPTR_PLATFORM_UNKNOWN                         = 0
+	LIBFPTR_PLATFORM_25                              = 25
+	LIBFPTR_PLATFORM_50                              = 50
 	LIBFPTR_ERROR_USERS_SCRIPTS_END                  = 1999
 	LIBFPTR_ERROR_RPC_END                            = 699
 )
@@ -1466,6 +1585,7 @@ type functionPointers struct {
 	libfptr_is_opened                         C.libfptr_is_opened_func
 	libfptr_error_code                        C.libfptr_error_code_func
 	libfptr_error_description                 C.libfptr_error_description_func
+	libfptr_error_recommendation              C.libfptr_error_recommendation_func
 	libfptr_reset_error                       C.libfptr_reset_error_func
 	libfptr_set_param_bool                    C.libfptr_set_param_bool_func
 	libfptr_set_param_int                     C.libfptr_set_param_int_func
@@ -1485,6 +1605,7 @@ type functionPointers struct {
 	libfptr_get_param_str                     C.libfptr_get_param_str_func
 	libfptr_get_param_bytearray               C.libfptr_get_param_bytearray_func
 	libfptr_get_param_datetime                C.libfptr_get_param_datetime_func
+	libfptr_is_param_available                C.libfptr_is_param_available_func
 	libfptr_log_write                         C.libfptr_log_write_func
 	libfptr_change_label                      C.libfptr_change_label_func
 	libfptr_show_properties                   C.libfptr_show_properties_func
@@ -1614,6 +1735,8 @@ type functionPointers struct {
 	libfptr_get_marking_server_status            C.libfptr_simple_call_func
 	libfptr_is_driver_locked                     C.libfptr_simple_call_func
 	libfptr_get_last_document_journal            C.libfptr_simple_call_func
+	libfptr_find_document_in_journal             C.libfptr_simple_call_func
+	libfptr_run_fn_command                       C.libfptr_simple_call_func
 }
 
 func New() *IFptr {
@@ -1709,6 +1832,10 @@ func (fptr *IFptr) Version() string {
 	return C.GoString(C.bridge_libfptr_get_version_string_func(fptr.functions.libfptr_get_version_string, fptr.nativePointer))
 }
 
+func (fptr *IFptr) WrapperVersion() string {
+	return "10.10.6.0"
+}
+
 func (fptr *IFptr) SetSettings(settings string) error {
 	str, _ := StringToWcharT(settings)
 	err := C.bridge_libfptr_set_settings_func(fptr.functions.libfptr_set_settings, fptr.nativePointer, str)
@@ -1766,6 +1893,18 @@ func (fptr *IFptr) ErrorDescription() string {
 	if size > len(buf) {
 		buf = make([]C.wchar_t, size)
 		C.bridge_libfptr_error_description_func(fptr.functions.libfptr_error_description, fptr.nativePointer, &buf[0], C.int(len(buf)))
+	}
+	str, _ := WcharTToString(&buf[0])
+
+	return str
+}
+
+func (fptr *IFptr) ErrorRecommendation() string {
+	buf := make([]C.wchar_t, 128)
+	size := int(C.bridge_libfptr_error_recommendation_func(fptr.functions.libfptr_error_recommendation, fptr.nativePointer, &buf[0], C.int(len(buf))))
+	if size > len(buf) {
+		buf = make([]C.wchar_t, size)
+		C.bridge_libfptr_error_recommendation_func(fptr.functions.libfptr_error_recommendation, fptr.nativePointer, &buf[0], C.int(len(buf)))
 	}
 	str, _ := WcharTToString(&buf[0])
 
@@ -2119,6 +2258,15 @@ func (fptr *IFptr) GetParamDateTime(paramId int) time.Time {
 	var year, month, day, hour, minute, second C.int
 	C.bridge_libfptr_get_param_datetime_func(fptr.functions.libfptr_get_param_datetime, fptr.nativePointer, C.int(paramId), &year, &month, &day, &hour, &minute, &second)
 	return time.Date(int(year), time.Month(month), int(day), int(hour), int(minute), int(second), 0, time.Now().Location())
+}
+
+func (fptr *IFptr) IsParamAvailable(paramId int) bool {
+	res := C.bridge_libfptr_is_param_available_func(fptr.functions.libfptr_is_param_available, fptr.nativePointer, C.int(paramId))
+	if res > 0 {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (fptr *IFptr) LogWrite(tag string, level int, message string) error {
@@ -3451,6 +3599,28 @@ func (fptr *IFptr) GetLastDocumentJournal() error {
 		return &Error{LIBFPTR_ERROR_NOT_LOADED, fmt.Sprintf("Can`t find method \"libfptr_get_last_document_journal\" in library")}
 	}
 	err := C.bridge_libfptr_simple_func(fptr.functions.libfptr_get_last_document_journal, fptr.nativePointer)
+	if err == 0 {
+		return nil
+	}
+	return &Error{fptr.ErrorCode(), fptr.ErrorDescription()}
+}
+
+func (fptr *IFptr) FindDocumentInJournal() error {
+	if fptr.functions.libfptr_find_document_in_journal == nil {
+		return &Error{LIBFPTR_ERROR_NOT_LOADED, fmt.Sprintf("Can`t find method \"libfptr_find_document_in_journal\" in library")}
+	}
+	err := C.bridge_libfptr_simple_func(fptr.functions.libfptr_find_document_in_journal, fptr.nativePointer)
+	if err == 0 {
+		return nil
+	}
+	return &Error{fptr.ErrorCode(), fptr.ErrorDescription()}
+}
+
+func (fptr *IFptr) RunFnCommand() error {
+	if fptr.functions.libfptr_run_fn_command == nil {
+		return &Error{LIBFPTR_ERROR_NOT_LOADED, fmt.Sprintf("Can`t find method \"libfptr_run_fn_command\" in library")}
+	}
+	err := C.bridge_libfptr_simple_func(fptr.functions.libfptr_run_fn_command, fptr.nativePointer)
 	if err == 0 {
 		return nil
 	}

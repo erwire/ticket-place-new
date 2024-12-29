@@ -66,9 +66,10 @@ type FyneApp struct {
 	}
 
 	authForm struct {
-		form                      dialog.Dialog
-		loginEntry, passwordEntry *widget.Entry
-		settingButton             *widget.Button
+		form                         dialog.Dialog
+		loginEntry, passwordEntry    *widget.Entry
+		settingButton                *widget.Button
+		taxesCalculationTypeComboBox *widget.SelectEntry
 	}
 
 	header struct {
@@ -254,6 +255,7 @@ func (f *FyneApp) ClockUpdater() {
 		if err != nil {
 			f.service.Warning(err)
 		}
+
 		if time.Now().Format("2006-01-02") != timeLog.Format("2006-01-02") {
 			if err := f.service.LoggerService.Reinit(); err != nil {
 				f.service.Warning(err)

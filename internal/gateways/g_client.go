@@ -249,7 +249,6 @@ func (l *ClientGateway) GetRefound(info entities.Info, refoundID string) (*entit
 }
 
 func (l *ClientGateway) writeProblemDataIntoJSONDump(body []byte, filepath string) {
-
 	file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0660)
 	if err != nil {
 		// return err -> в дальнейшем избавиться от функций без обработчика ошибок. Можно не возвращать в handler, но в сервисе быть должны однозначно для логирования

@@ -1,6 +1,7 @@
 package gateways
 
 import (
+	"errors"
 	"fmt"
 	"fptr/internal/entities"
 	apperr "fptr/internal/error_list"
@@ -55,7 +56,7 @@ func (g *KKTGateway) PrintTicket() error {
 	return nil
 }
 
-func (g *KKTGateway) PrintSell(sell entities.Sell) error {
+func (g *KKTGateway) PrintSell(sell entities.Sell, taxes entities.TaxesInfo) error {
 	zeroAmountFlag, acceptedFlag, checkStatus := g.ZeroAmountStatus(sell), g.AcceptedForPrint(sell), g.CheckStatus(sell, CheckType)
 	if !zeroAmountFlag && acceptedFlag && checkStatus {
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL)
@@ -69,7 +70,7 @@ func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 
 		for _, ticket := range sell.Data.Tickets {
 			if ticket.Amount != 0 && g.TicketStatus(ticket, CheckType) {
-				if err := g.PositionRegister(ticket); err != nil {
+				if err := g.PositionRegister(ticket, &taxes); err != nil {
 					g.IFptr.CancelReceipt()
 					return err
 				}
@@ -136,7 +137,7 @@ func (g *KKTGateway) PrintSell(sell entities.Sell) error {
 	}
 
 }
-func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
+func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell, taxes entities.TaxesInfo) error {
 	zeroAmountFlag, acceptedFlag, checkStatus := g.ZeroAmountStatus(sell), g.AcceptedForPrint(sell), g.CheckStatus(sell, CheckType)
 	if !zeroAmountFlag && acceptedFlag && checkStatus {
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL_RETURN)
@@ -153,7 +154,10 @@ func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
 		var sum int
 		for _, ticket := range sell.Data.Tickets {
 			if ticket.Amount != 0 && g.TicketStatus(ticket, CheckType) {
-				g.PositionRegister(ticket)
+				if err := g.PositionRegister(ticket, &taxes); err != nil {
+					g.IFptr.CancelReceipt()
+					return err
+				}
 				sum += ticket.Amount
 			}
 		}
@@ -213,7 +217,7 @@ func (g *KKTGateway) PrintRefoundFromCheck(sell entities.Sell) error {
 		return g.NotPrintReason(zeroAmountFlag, acceptedFlag, checkStatus)
 	}
 }
-func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
+func (g *KKTGateway) PrintRefound(refound entities.Refound, taxes entities.TaxesInfo) error {
 	zeroAmountFlag, acceptedFlag, checkStatus := g.ZeroAmountStatus(refound), g.AcceptedForPrint(refound), g.CheckStatus(refound, CheckType)
 	if !zeroAmountFlag && acceptedFlag && checkStatus {
 		g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_RECEIPT_TYPE, fptr10.LIBFPTR_RT_SELL_RETURN)
@@ -230,7 +234,11 @@ func (g *KKTGateway) PrintRefound(refound entities.Refound) error {
 		var sum int
 		for _, ticket := range refound.Data.Tickets {
 			if ticket.Amount != 0 && g.TicketStatus(ticket, CheckType) {
-				g.PositionRegister(ticket) //добавить обработку ошибки
+				err := g.PositionRegister(ticket, &taxes) //добавить обработку ошибки
+				if err != nil {
+					g.IFptr.CancelReceipt()
+					return err
+				}
 				sum += ticket.Amount
 			}
 		}
@@ -313,16 +321,48 @@ func (g *KKTGateway) NotPrintReason(zeroAmountFlag, acceptedFlag, checkStatus bo
 
 //# Регистраторы
 
-func (g *KKTGateway) PositionRegister(data entities.TicketData) error {
+func (g *KKTGateway) PositionRegister(data entities.TicketData, info *entities.TaxesInfo) error {
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_COMMODITY_NAME, fmt.Sprint(data.Number, ",", data.Event.Show.Name, ",", data.Event.Show.AgeLimit, ",", data.Event.DateTime, ",", data.Zona, ", Ряд:", data.RowSector, ", Место:", data.SeatNumber))
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_PRICE, data.Amount)
 	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_QUANTITY, 1)
-	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_TAX_TYPE, fptr10.LIBFPTR_TAX_NO)
+
+	taxParam := fptr10.LIBFPTR_TAX_NO
+
+	if info != nil {
+		var err error
+		taxParam, err = g.GetTaxTypeParam(*info)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	g.IFptr.SetParam(fptr10.LIBFPTR_PARAM_TAX_TYPE, taxParam)
 	g.IFptr.SetParam(1212, 4)
 	g.IFptr.SetParam(1214, 4)
 
 	return g.IFptr.Registration()
 }
+
+func (g *KKTGateway) GetTaxTypeParam(tax entities.TaxesInfo) (int, error) {
+	switch tax.Taxes {
+	case entities.NoTaxes:
+		return fptr10.LIBFPTR_TAX_NO, nil
+	case entities.TaxesValue0:
+		return fptr10.LIBFPTR_TAX_VAT0, nil
+	case entities.TaxesValue105:
+		return fptr10.LIBFPTR_TAX_VAT105, nil
+	case entities.TaxesValue107:
+		return fptr10.LIBFPTR_TAX_VAT107, nil
+	case entities.TaxesValue110:
+		return fptr10.LIBFPTR_TAX_VAT110, nil
+	case entities.TaxesValue120:
+		return fptr10.LIBFPTR_TAX_VAT120, nil
+	default:
+		return 0, errors.New("invalid taxes type")
+	}
+}
+
 func (g *KKTGateway) NewCashierRegister(fullName string, inn uint64) error {
 	g.IFptr.SetParam(1021, fullName)
 	g.IFptr.SetParam(1203, strconv.FormatUint(inn, 10))

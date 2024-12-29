@@ -2,3 +2,4 @@
 build/
 build/release/
 debug_info/
+cookie/*

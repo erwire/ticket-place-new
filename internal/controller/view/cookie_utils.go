@@ -7,10 +7,17 @@ import (
 	"time"
 )
 
+func (f *FyneApp) formTaxesData() entities.TaxesInfo {
+	return entities.TaxesInfo{
+		Taxes: entities.NewCalculationType(f.authForm.taxesCalculationTypeComboBox.Text),
+	}
+}
+
 func (f *FyneApp) formAuthData() entities.UserInfo {
 	return entities.UserInfo{
-		Login:    f.authForm.loginEntry.Text,
-		Password: f.authForm.passwordEntry.Text,
+		Login:     f.authForm.loginEntry.Text,
+		Password:  f.authForm.passwordEntry.Text,
+		TaxesInfo: f.formTaxesData(),
 	}
 } //собирает данные из программы в структуру
 
@@ -86,6 +93,9 @@ func (f *FyneApp) setupDefaultIntoCookie() {
 		f.service.Logger.Infof("Установлено значение по умолчанию %s", f.info.AppConfig.Driver.UpdatePath)
 	}
 
+	if f.info.AppConfig.User.TaxesInfo.Taxes == entities.UndefinedTaxes {
+		f.info.AppConfig.User.TaxesInfo.Taxes = entities.UndefinedTaxes
+	}
 }
 
 func (f *FyneApp) setupCookieIntoEntry() {
@@ -100,6 +110,7 @@ func (f *FyneApp) setupCookieIntoEntry() {
 
 	f.authForm.loginEntry.Text = f.info.AppConfig.User.Login
 	f.authForm.passwordEntry.Text = f.info.AppConfig.User.Password
+	f.authForm.taxesCalculationTypeComboBox.Text = f.info.AppConfig.User.TaxesInfo.Taxes.String()
 
 	f.DriverSetting.DriverPathEntry.Refresh()
 	f.DriverSetting.DriverAddressEntry.Refresh()

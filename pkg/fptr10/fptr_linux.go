@@ -87,6 +87,7 @@ func loadLibrary(path string) (*functionPointers, error) {
 
 		C.libfptr_error_code_func(getProcAddress(lib, "libfptr_error_code")),
 		C.libfptr_error_description_func(getProcAddress(lib, "libfptr_error_description")),
+		C.libfptr_error_recommendation_func(getProcAddress(lib, "libfptr_error_recommendation")),
 		C.libfptr_reset_error_func(getProcAddress(lib, "libfptr_reset_error")),
 
 		C.libfptr_set_param_bool_func(getProcAddress(lib, "libfptr_set_param_bool")),
@@ -109,6 +110,8 @@ func loadLibrary(path string) (*functionPointers, error) {
 		C.libfptr_get_param_str_func(getProcAddress(lib, "libfptr_get_param_str")),
 		C.libfptr_get_param_bytearray_func(getProcAddress(lib, "libfptr_get_param_bytearray")),
 		C.libfptr_get_param_datetime_func(getProcAddress(lib, "libfptr_get_param_datetime")),
+
+		C.libfptr_is_param_available_func(getProcAddress(lib, "libfptr_is_param_available")),
 
 		C.libfptr_log_write_func(getProcAddress(lib, "libfptr_log_write_ex")),
 		C.libfptr_change_label_func(getProcAddress(lib, "libfptr_change_label")),
@@ -241,5 +244,7 @@ func loadLibrary(path string) (*functionPointers, error) {
 		C.libfptr_simple_call_func(getProcAddress(lib, "libfptr_get_marking_server_status")),
 		C.libfptr_simple_call_func(getProcAddress(lib, "libfptr_is_driver_locked")),
 		C.libfptr_simple_call_func(getProcAddress(lib, "libfptr_get_last_document_journal")),
+		C.libfptr_simple_call_func(getProcAddress(lib, "libfptr_find_document_in_journal")),
+		C.libfptr_simple_call_func(getProcAddress(lib, "libfptr_run_fn_command")),
 	}, nil
 }
