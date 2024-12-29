@@ -348,6 +348,8 @@ func (g *KKTGateway) GetTaxTypeParam(tax entities.TaxesInfo) (int, error) {
 	switch tax.Taxes {
 	case entities.NoTaxes:
 		return fptr10.LIBFPTR_TAX_NO, nil
+	case entities.TaxesValue0:
+		return fptr10.LIBFPTR_TAX_VAT0, nil
 	case entities.TaxesValue105:
 		return fptr10.LIBFPTR_TAX_VAT105, nil
 	case entities.TaxesValue107:

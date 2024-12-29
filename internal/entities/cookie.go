@@ -36,6 +36,7 @@ type TaxesCalculationType int
 const (
 	UndefinedTaxes TaxesCalculationType = iota
 	NoTaxes
+	TaxesValue0
 	TaxesValue105
 	TaxesValue107
 	TaxesValue110
@@ -45,6 +46,7 @@ const (
 func NewCalculationTypeList() []TaxesCalculationType {
 	return []TaxesCalculationType{
 		NoTaxes,
+		TaxesValue0,
 		TaxesValue105,
 		TaxesValue107,
 		TaxesValue110,
@@ -56,6 +58,8 @@ func NewCalculationType(t string) TaxesCalculationType {
 	switch t {
 	case "Без НДС":
 		return NoTaxes
+	case "0% НДС":
+		return TaxesValue0
 	case "НДС рассчитанный 5/105":
 		return TaxesValue105
 	case "НДС рассчитанный 7/107":
@@ -73,6 +77,8 @@ func (t TaxesCalculationType) String() string {
 	switch t {
 	case NoTaxes:
 		return "Без НДС"
+	case TaxesValue0:
+		return "0% НДС"
 	case TaxesValue105:
 		return "НДС рассчитанный 5/105"
 	case TaxesValue107:
