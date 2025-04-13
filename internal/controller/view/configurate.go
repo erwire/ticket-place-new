@@ -66,6 +66,7 @@ func (f *FyneApp) ConfigureMainWindowHeader() *fyne.Container {
 
 	f.header.usernameLabel.TextSize = 18
 	f.header.localTimeLabel.TextSize = 18
+	f.header.taxTypeLabel.TextSize = 18
 
 	f.header.localTimeLabel.Refresh()
 	f.header.usernameLabel.Refresh()
@@ -74,8 +75,9 @@ func (f *FyneApp) ConfigureMainWindowHeader() *fyne.Container {
 		f.header.usernameLabel,
 		f.header.localTimeLabel,
 		layout.NewSpacer(),
-		//f.header.listenerStatus.listenerToolbar,
+		f.header.taxTypeLabel,
 	)
+
 	return box
 }
 
@@ -205,7 +207,6 @@ func (f *FyneApp) ConfigurateToolbar() {
 	//boxImage := container.NewGridWrap(fyne.NewSize(165, 40), f.Toolbar.Logo)
 	f.Toolbar.Toolbar = widget.NewToolbar(widget.NewToolbarSpacer(), f.Toolbar.Info)
 	f.Toolbar.Box = container.New(layout.NewMaxLayout(), f.Toolbar.Toolbar)
-
 }
 
 func (f *FyneApp) ConfigurateAboutDialogWindow() {

@@ -90,6 +90,10 @@ func (f *FyneApp) Login(conf entities.AppConfig) {
 
 	f.header.usernameLabel.Text = f.info.Session.UserData.Username
 	f.header.usernameLabel.Refresh()
+
+	f.header.taxTypeLabel.Text = f.info.AppConfig.User.TaxesInfo.Taxes.String()
+	f.header.taxTypeLabel.Refresh()
+
 	f.GetClickAndWriteIntoToml()
 
 	f.context.ctx, f.context.cancel = context.WithCancel(context.Background())
@@ -100,6 +104,7 @@ func (f *FyneApp) Login(conf entities.AppConfig) {
 func (f *FyneApp) Logout() {
 	f.UpdateSession(entities.SessionInfo{})
 	f.header.usernameLabel.Text = ""
+	f.header.taxTypeLabel.Text = ""
 	f.authForm.form.Show()
 	f.StopListen()
 } //# выход из сессии
@@ -114,6 +119,7 @@ func (f *FyneApp) LogoutWS() {
 
 	f.UpdateSession(entities.SessionInfo{})
 	f.header.usernameLabel.Text = ""
+	f.header.taxTypeLabel.Text = ""
 	f.authForm.form.Show()
 	f.service.Infof("Произошел успешный выход из сессии с закрытием смены")
 } //# выход из сессии с закрытием смены
