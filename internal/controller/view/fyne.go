@@ -75,6 +75,7 @@ type FyneApp struct {
 	header struct {
 		usernameLabel  *canvas.Text
 		localTimeLabel *canvas.Text
+		taxTypeLabel   *canvas.Text
 
 		listenerStatus struct {
 			listenerToolbar     *widget.Toolbar
@@ -222,6 +223,7 @@ func (f *FyneApp) StartApp() {
 	} else {
 
 		f.header.usernameLabel.Text = f.info.Session.UserData.Username
+		f.header.taxTypeLabel.Text = f.info.AppConfig.User.TaxesInfo.Taxes.String()
 		f.HideAuthForm()
 		f.context.ctx, f.context.cancel = context.WithCancel(context.Background())
 

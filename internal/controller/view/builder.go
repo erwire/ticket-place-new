@@ -90,6 +90,7 @@ func (f *FyneApp) NewAuthForm() {
 func (f *FyneApp) NewMainWindowHeader() {
 	f.header.usernameLabel = canvas.NewText("", theme.ForegroundColor())
 	f.header.localTimeLabel = canvas.NewText(time.Now().Format("2.01.2006 15:04:05"), theme.ForegroundColor())
+	f.header.taxTypeLabel = canvas.NewText("", theme.ForegroundColor())
 
 	f.header.listenerStatus.listenerToolbarItem = widget.NewToolbarAction(theme.CancelIcon(), f.listenerStatusAction)
 	f.header.listenerStatus.listenerToolbar = widget.NewToolbar(
